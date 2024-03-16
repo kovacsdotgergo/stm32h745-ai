@@ -36,9 +36,9 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-../../../CM7/X-CUBE-AI/App/sine_model_data.c \
-../../../CM7/X-CUBE-AI/App/sine_model.c \
-../../../CM7/X-CUBE-AI/App/sine_model_data_params.c \
+../../CM7/X-CUBE-AI/App/sine_model_data.c \
+../../CM7/X-CUBE-AI/App/sine_model.c \
+../../CM7/X-CUBE-AI/App/sine_model_data_params.c \
 ../../CM7/Core/Src/main.c \
 ../../CM7/Core/Src/gpio.c \
 ../../CM7/Core/Src/crc.c \
@@ -133,8 +133,8 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -I../../CM7/Core/Inc \
--I../../../Middlewares/ST/AI/Inc \
--I../../../CM7/X-CUBE-AI/App \
+-I../../Middlewares/ST/AI/Inc \
+-I../../CM7/X-CUBE-AI/App \
 -I../../Drivers/STM32H7xx_HAL_Driver/Inc \
 -I../../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -I../../Drivers/CMSIS/Device/ST/STM32H7xx/Include \

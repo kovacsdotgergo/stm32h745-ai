@@ -36,9 +36,6 @@ BUILD_DIR = build
 ######################################
 # C sources
 C_SOURCES =  \
-../../../CM7/X-CUBE-AI/App/sine_model_data.c \
-../../../CM7/X-CUBE-AI/App/sine_model.c \
-../../../CM7/X-CUBE-AI/App/sine_model_data_params.c \
 ../../CM4/Core/Src/main.c \
 ../../CM4/Core/Src/usart.c \
 ../../CM4/Core/Src/stm32h7xx_it.c \
@@ -157,8 +154,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = stm32h745xx_flash_CM4.ld
 
 # libraries
-LIBS = -lc -lm -lnosys  \
--l:NetworkRuntime810_CM7_GCC.a
+LIBS = -lc -lm -lnosys
 LIBDIR =  \
 -L../Middlewares/ST/AI/Lib
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
