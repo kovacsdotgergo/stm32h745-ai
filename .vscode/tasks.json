@@ -1,0 +1,42 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build all",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build m4",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/CM4",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build m7",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/CM7",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "erase flash",
+            "type": "shell",
+            "command": "/opt/st/stm32cubeclt_1.15.0/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=PowerDown -e all"
+        },
+        {
+            "label": "probe",
+            "type": "shell",
+            "command": "st-info --probe"
+        },
+        {
+            "label": "program both cores",
+            "type": "shell",
+            "command": [
+                "./scripts/flash_both_cores.py"
+            ]
+        }
+    ]
+}
