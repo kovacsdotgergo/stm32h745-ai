@@ -63,7 +63,8 @@ void Error_Handler(void);
 #define STLINK_TX_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
-
+#define LD_RED_GPIO GPIOB
+#define LD_RED_GPIO_PIN GPIO_PIN_14
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

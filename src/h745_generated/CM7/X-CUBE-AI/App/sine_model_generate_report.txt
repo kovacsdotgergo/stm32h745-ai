@@ -1,6 +1,6 @@
 Neural Network Tools for STM32 family v1.7.0 (stm.ai v8.1.0-19520)
-Created date          : 2024-04-04 12:38:21
-Parameters            : generate --name sine_model -m /home/gergo/workspace/stm32h745-ai/src/nn/sine_model.tflite --type tflite --compression none --verbosity 1 --workspace /tmp/mxAI_workspace28576034340863217114794672396556 --output /home/gergo/.stm32cubemx/sine_model_output --allocate-inputs --series stm32h7 --allocate-outputs
+Created date          : 2024-04-04 18:51:37
+Parameters            : generate --name sine_model -m /home/gergo/workspace/stm32h745-ai/src/nn/sine_model.tflite --type tflite --compression none --verbosity 1 --workspace /tmp/mxAI_workspace94279894341318130449700444303888 --output /home/gergo/.stm32cubemx/sine_model_output --allocate-inputs --series stm32h7 --allocate-outputs
 
 Exec/report summary (generate)
 -----------------------------------------------------------------------------------------
@@ -11,7 +11,7 @@ compression        :   none
 options            :   allocate-inputs, allocate-outputs                                 
 optimization       :   balanced                                                          
 target/series      :   stm32h7                                                           
-workspace dir      :   /tmp/mxAI_workspace28576034340863217114794672396556               
+workspace dir      :   /tmp/mxAI_workspace94279894341318130449700444303888               
 output dir         :   /home/gergo/.stm32cubemx/sine_model_output                        
 model_fmt          :   float                                                             
 model_name         :   sine_model                                                        

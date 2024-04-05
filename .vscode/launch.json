@@ -1,96 +1,4 @@
 // to use the intellisense configuration: https://stackoverflow.com/questions/54495406/how-to-switch-between-build-targets-in-visual-studio-code
-// {
-//     "version": "0.2.0",
-//     "configurations": [
-//         {
-//             "name": "Debug CM7 - ST-Link",
-//             "cwd": "${workspaceFolder}",
-//             "type": "cortex-debug",
-//             "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
-//             "loadFiles": [
-//                 "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
-//                 "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
-//             ],
-//             "request": "launch",        
-//             "servertype": "stlink",
-//             "device": "STM32H745ZI",
-//             "interface": "swd",
-//             "runToEntryPoint": "main",
-//             //"svdFile": "${workspaceFolder}/STM32WL5x_CM4.svd",
-//             "v1": false,
-//             "showDevDebugOutput": "both",
-//             "serverArgs": [
-//                 "-l", "1",
-//                 "-m", "0",
-//                 "-k",
-//                 "-t","-s"
-//             ],
-//         },
-//         {
-//             /* In this launch config, the CM4 debug is started,
-//             then we wait 10s for the M0 to boot. After than,
-//             a launch config to attach to the CM0PLUS is started.
-//             */
-//             "name": "Debug CM7+CM4 - ST-Link",
-//             "cwd": "${workspaceFolder}",
-//             "type": "cortex-debug",
-//             "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
-//             "loadFiles": [
-//                 "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
-//                 "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
-//             ],
-//             "request": "launch",
-//             "servertype": "stlink",
-//             "device": "STM32H745ZI",
-//             "interface": "swd",
-//             "serialNumber": "",
-//             // "runToEntryPoint": "main",       // No run to main to let the CM4 reach the start point of the CM0PLUS
-//             //"svdFile": "${workspaceFolder}/STM32WL5x_CM4.svd",
-//             "v1": false,
-//             "showDevDebugOutput": "both",
-//             "serverArgs": [
-//                 "-l", "1",
-//                 "-m", "0",
-//                 "-k",
-//                 "-t","-s"
-//             ],
-    
-//             "chainedConfigurations": {
-//                 "enabled": true,
-//                 "waitOnEvent": "postInit",
-//                 "detached": true,
-//                 "delayMs":5000,    // Wait 5s, could be optimized
-//                 "lifecycleManagedByParent": true,   
-//                 "launches": [ 
-//                     {
-//                         "name": "Attach CM4 - ST-Link",
-//                         "folder": "${workspaceFolder}"
-//                     }
-//                 ]
-//             }
-//         },
-//         {
-//             "name": "Attach CM4 - ST-Link",
-//             "cwd": "${workspaceFolder}",    
-//             "type": "cortex-debug",
-//             "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
-//             "request": "attach", 
-//             "servertype": "stlink",
-//             "device": "STM32H745ZI",
-//             "interface": "swd",
-//             "serialNumber": "",
-//             //"svdFile": "${workspaceFolder}/STM32WL5x_CM0P.svd",
-//             "v1": false,
-//             "showDevDebugOutput": "both",
-//             "serverArgs": [
-//                 "-l", "1",
-//                 "-m", "1",
-//                 "-t", "-s",
-//             ],
-//         }
-//     ]
-// }
-
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
@@ -112,12 +20,12 @@
                 "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
                 "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf"
             ],
-            //"preLaunchTask": "Build binary",
+            "preLaunchTask": "build all",
             "preLaunchCommands": [
                 "monitor init",
                 "monitor reset halt"
             ],
-            "postLaunchCommands": ["monitor reset run"] // This is to prevent the debugger from stopping before the program is executed        
+            "postLaunchCommands": ["monitor reset run"]    
         },
         {
             "name": "Attach CM4 - openocd",
@@ -125,7 +33,6 @@
             "type": "cortex-debug",
             "cwd": "${workspaceRoot}",
             "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
-            //"executable": "${workspaceFolder}/nucleo-h745zi-q_CM4.elf",
             "servertype": "external",
             "gdbTarget": "localhost:50001",
             "device": "STM32H745ZI",
@@ -141,9 +48,6 @@
                 "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
                 "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
             ],
-            // "executable": "${workspaceFolder}/nucleo-h745zi-q_CM7.elf",
-            // "loadFiles": ["${workspaceFolder}/nucleo-h745zi-q_CM4.elf",
-            //               "${workspaceFolder}/nucleo-h745zi-q_CM7.elf"],
             "request": "launch",
             "servertype": "openocd",
             "device": "STM32H745ZI",
@@ -151,6 +55,7 @@
             "numberOfProcessors": 2,
             "targetProcessor": 0,
             "configFiles": ["st_nucleo_h745zi.cfg"],
+            "preLaunchTask": "build all",
             "preLaunchCommands": [
                 "monitor init",
                 "monitor reset halt"
@@ -160,7 +65,7 @@
                 "enabled": true,
                 "waitOnEvent": "postInit",
                 "detached": false,
-                "delayMs":7000,    // Wait 5s, could be optimized
+                "delayMs": 5000,    // Wait 5s, could be optimized
                 "lifecycleManagedByParent": true,   
                 "launches": [ 
                     {
@@ -172,5 +77,3 @@
         }
     ]
 }
-
-// todo finalize when the binaries are correct

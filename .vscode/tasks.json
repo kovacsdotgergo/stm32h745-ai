@@ -34,8 +34,9 @@
         {
             "label": "program both cores",
             "type": "shell",
+            "dependsOn": "build all",
             "command": [
-                "./scripts/flash_both_cores.py"
+                "st-flash --format=ihex write src/h745/Makefile/CM4/build/stm32h745-ai_CM4.hex && st-flash --format=ihex --connect-under-reset write src/h745/Makefile/CM7/build/stm32h745-ai_CM7.hex"
             ]
         }
     ]

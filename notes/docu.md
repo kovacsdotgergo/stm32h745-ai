@@ -10,9 +10,11 @@
 
 * cubeai and tflite tutorial [link](https://www.digikey.com/en/maker/projects/tinyml-getting-started-with-stm32-x-cube-ai/f94e1c8bfc1e4b6291d0f672d780d2c0)
 
+* contex-debug extension documentation [link](https://github.com/Marus/cortex-debug/wiki#vscode-settings-for-cortex-debug)
+
 ## Building and debugging
 
-Currently using openocd to debug. todo finish when the binaries are correct
+Currently using openocd to debug. todo finish when the binaries are correctg
 
 ### Flashing
 

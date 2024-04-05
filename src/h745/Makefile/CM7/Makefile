@@ -71,7 +71,18 @@ C_SOURCES =  \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
 ../../Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c \
-../../Common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.c  
+../../Common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.c  \
+../../CM7/Core/Src/freertos.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/list.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -138,7 +149,10 @@ C_INCLUDES =  \
 -I../../Drivers/STM32H7xx_HAL_Driver/Inc \
 -I../../Drivers/CMSIS/Device/ST/STM32H7xx/Include \
 -I../../Drivers/CMSIS/Device/ST/STM32H7xx/Include \
--I../../Drivers/CMSIS/Include
+-I../../Drivers/CMSIS/Include \
+-I../../Middlewares/Third_Party/FreeRTOS/Source/include \
+-I../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
+-I../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 
 # compile gcc flags

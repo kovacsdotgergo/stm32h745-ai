@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,14 +51,14 @@
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-#define LD_RED_GPIO GPIOB
-#define LD_RED_GPIO_PIN GPIO_PIN_14
+
 /* USER CODE END 0 */
 
 /**
@@ -111,14 +112,24 @@ int main(void)
 
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
+  /* Call init function for freertos objects (in cmsis_os2.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
+  
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
-    HAL_GPIO_TogglePin(LD_RED_GPIO, LD_RED_GPIO_PIN);
-    HAL_Delay(500);
+    
   }
   /* USER CODE END 3 */
 }
