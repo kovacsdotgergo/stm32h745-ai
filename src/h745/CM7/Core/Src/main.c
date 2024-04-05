@@ -77,6 +77,9 @@ int main(void)
   /* USER CODE END 1 */
 /* USER CODE BEGIN Boot_Mode_Sequence_0 */
   int32_t timeout;
+  SCB_InvalidateICache();
+  SCB_InvalidateDCache();
+  
 /* USER CODE END Boot_Mode_Sequence_0 */
 /* Enable the CPU Cache */
 
