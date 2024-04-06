@@ -39,13 +39,19 @@ if not os.path.isfile(own_file):
 # diff format in git merge style for vscode editor support
 conflict_format = "<<<<<<< own file\n%<=======\n%>\n>>>>>>> generated file\n"
 incoming_format = "<<<<<<< own file\n=======\n%>\n>>>>>>> generated file\n"
+current_format = "<<<<<<< own file\n%<\n=======\n>>>>>>> generated file\n"
 cmd = ("diff "
-       "--old-group-format='%<' "
+       f"--old-group-format='{current_format}' "
        f"--new-group-format='{incoming_format}' "
        f"--changed-group-format='{conflict_format}' "
-       f"{own_file} {generated_file} > {out_path}")
+       f"{own_file} {generated_file}")
 
-compl = subprocess.run(cmd, shell=True)
+compl = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
+
+# writing out after buffering output because `diff old, new > old` didn't 
+# produce the same result
+with open(out_path, "wb") as out:
+    out.write(compl.stdout)
 
 DIFF_ERR_RET = 2
 if compl.returncode == DIFF_ERR_RET:

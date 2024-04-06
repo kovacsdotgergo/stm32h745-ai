@@ -76,7 +76,11 @@ C_SOURCES =  \
 ../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+../../CM4/Core/Src/stm32h7xx_hal_timebase_tim.c
+# ../../CM4/Core/Src/sysmem.c
+# ../../CM4/Core/Src/syscalls.c todo
+
 
 # ASM sources
 ASM_SOURCES =  \

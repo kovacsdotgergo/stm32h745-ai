@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file    sine_model_config.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    Thu Apr  4 18:51:35 2024
+  * @date    Sat Apr  6 14:56:31 2024
   * @brief   AI Tool Automatic Code Generator for Custom Layers Implementation
   ******************************************************************************
   * @attention

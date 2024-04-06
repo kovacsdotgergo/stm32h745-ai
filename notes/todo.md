@@ -11,8 +11,11 @@
 * ~~compare to prev project~~
 * make a starter project with freertos
   * ~~using the generated mx project~~
-  * move (update) the drivers as well after running
+  * ~~move (update) the drivers as well after running~~
+  * ~~update hal sys timer~~
+  * ~~fix script for deletions~~
   * update to newer version with the help of the demo
+  * fix the newlib stuff, syscalls...
   * remove everything unneccesary (e.g. cmsis os...)
 * update cmsis to the version with the correct cache functions
 * finalize vscode setup after running correctly

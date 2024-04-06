@@ -82,7 +82,11 @@ C_SOURCES =  \
 ../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
-../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
+../../CM7/Core/Src/stm32h7xx_hal_timebase_tim.c
+# ../../CM7/Core/Src/sysmem.c
+# ../../CM7/Core/Src/syscalls.c todo
+
 
 # ASM sources
 ASM_SOURCES =  \
@@ -147,7 +151,7 @@ C_INCLUDES =  \
 -I../../Middlewares/ST/AI/Inc \
 -I../../CM7/X-CUBE-AI/App \
 -I../../Drivers/STM32H7xx_HAL_Driver/Inc \
--I../../Drivers/CMSIS/Device/ST/STM32H7xx/Include \
+-I../../Drivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -I../../Drivers/CMSIS/Device/ST/STM32H7xx/Include \
 -I../../Drivers/CMSIS/Include \
 -I../../Middlewares/Third_Party/FreeRTOS/Source/include \
