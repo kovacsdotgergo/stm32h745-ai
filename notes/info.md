@@ -13,3 +13,7 @@ When generating the project, I edited the generated makefile, and it seems like 
 When generating the MX project with FreeRTOS, these two files were added in the makefile as sources of the project, without adding the actual files. Of course the project didn't build without them. They contain posix system calls, some from the `man syscalls` page. These functions can also be found in `unistd.h` (this file can be found in the arm-none-eabi include folder).
 
 After searching for places where any of the functions can be called in the project or where the files would be included, I deleted these files (I didn't find any call or include).
+
+### IMPORTANT
+
+Due to how sbrk works, if I later add a custom section for the shared variables, then the end of the stack (_end symbol) should be updated, because heap allocation starts from there.

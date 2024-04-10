@@ -1,6 +1,9 @@
+// Includes DRN additions for MSP (ISR) stack-use checking
+// From: https://github.com/DRNadler/FreeRTOS_helpers
+
 /*
- * FreeRTOS Kernel V10.3.1
- * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V10.2.1
+ * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -246,7 +249,7 @@ void vPortSVCHandler( void )
 					"	ldr r1, [r3]					\n" /* Use pxCurrentTCBConst to get the pxCurrentTCB address. */
 					"	ldr r0, [r1]					\n" /* The first item in pxCurrentTCB is the task top of stack. */
 					"	ldmia r0!, {r4-r11, r14}		\n" /* Pop the registers that are not automatically saved on exception entry and the critical nesting count. */
-					"	msr psp, r0						\n" /* Restore the task stack pointer. */
+					"	msr psp, r0						\n" /* Restore the *TASK* stack pointer PSP. */
 					"	isb								\n"
 					"	mov r0, #0 						\n"
 					"	msr	basepri, r0					\n"
@@ -258,6 +261,13 @@ void vPortSVCHandler( void )
 }
 /*-----------------------------------------------------------*/
 
+#define QUOTE(str) #str
+#define EXPAND_AND_QUOTE(str) QUOTE(str)
+
+#if defined(configSUPPORT_ISR_STACK_CHECK) && configSUPPORT_ISR_STACK_CHECK && !defined(configISR_STACK_SIZE_WORDS)
+  #error "configISR_STACK_SIZE_WORDS must be defined for ISR stack checking (WORDS to reserve for MSP stack, ie (0x100) )"
+#endif
+
 static void prvPortStartFirstTask( void )
 {
 	/* Start the first task.  This also clears the bit that indicates the FPU is
@@ -267,8 +277,19 @@ static void prvPortStartFirstTask( void )
 	__asm volatile(
 					" ldr r0, =0xE000ED08 	\n" /* Use the NVIC offset register to locate the stack. */
 					" ldr r0, [r0] 			\n"
-					" ldr r0, [r0] 			\n"
-					" msr msp, r0			\n" /* Set the msp back to the start of the stack. */
+					" ldr r0, [r0] 			\n" /* r0 now has top of stack (actually, word above beginning of stack) */
+					" msr msp, r0			\n" /* Set the MSP (*ISR* stack register) back to the start of the stack (top of RAM). */
+		#if defined(configSUPPORT_ISR_STACK_CHECK) && configSUPPORT_ISR_STACK_CHECK // DRN extension
+					// Zero the MSP stack before use, to facilitate stack use check
+					" mov r1, #0			\n" /* value to store into stack */
+					" ldr r2, pxMSRstackLen	\n" /* remaining words to clear in stack */
+					"FillZeroMSPstack:		\n"
+					" sub r0, r0, #4		\n" /* next word to zero */
+					" str r1, [r0]			\n" /* store a zero */
+					" sub r2, r2, #1		\n" /* decrement word count */
+					" cmp r2, #0			\n" /* finished clearing stack? */
+					" bne FillZeroMSPstack	\n"
+		#endif // #if defined(configSUPPORT_ISR_STACK_CHECK) && configSUPPORT_ISR_STACK_CHECK
 					" mov r0, #0			\n" /* Clear the bit that indicates the FPU is in use, see comment above. */
 					" msr control, r0		\n"
 					" cpsie i				\n" /* Globally enable interrupts. */
@@ -278,7 +299,32 @@ static void prvPortStartFirstTask( void )
 					" svc 0					\n" /* System call to start first task. */
 					" nop					\n"
 				);
+	#if defined(configSUPPORT_ISR_STACK_CHECK) && configSUPPORT_ISR_STACK_CHECK // DRN extension
+		__asm volatile (
+					" .align 4				\n"
+					"pxMSRstackLen: .word " EXPAND_AND_QUOTE(configISR_STACK_SIZE_WORDS) "\n"
+				);
+	#endif // #if defined(configUSE_ISR_STACK_CHECK) && configUSE_ISR_STACK_CHECK
 }
+/*-----------------------------------------------------------*/
+#if defined(configSUPPORT_ISR_STACK_CHECK) && configSUPPORT_ISR_STACK_CHECK // DRN extension
+	UBaseType_t xUnusedISRstackWords( void ) {
+		register uint32_t *pStackOrigin;
+		UBaseType_t unusedStackWords = 0;
+		__asm volatile(
+					" ldr r0, =0xE000ED08	\n" /* Use the NVIC offset register to locate the initial stack. */
+					" ldr r0, [r0]			\n"
+					" ldr r0, [r0]			\n" /* r0 now has top of stack (actually, word above beginning of stack) */
+					" mov %[result], r0 \n" : [result] "=r" (pStackOrigin) :: "r0"
+		);
+		uint32_t *pStackUseEnd = pStackOrigin - configISR_STACK_SIZE_WORDS; // start testing at stack limit
+		for(int lim=configISR_STACK_SIZE_WORDS; lim; lim--) {
+			if(*pStackUseEnd++) break; // break at first used word
+			unusedStackWords++;
+		}
+		return unusedStackWords;
+}
+#endif // #if defined(configUSE_ISR_STACK_CHECK) && configUSE_ISR_STACK_CHECK
 /*-----------------------------------------------------------*/
 
 /*
@@ -491,17 +537,17 @@ void xPortSysTickHandler( void )
 	executes all interrupts must be unmasked.  There is therefore no need to
 	save and then restore the interrupt mask value as its value is already
 	known. */
-	portDISABLE_INTERRUPTS();
+	portDISABLE_INTERRUPTS(); // DRN: Disable interrupts lower priority than configMAX_SYSCALL_INTERRUPT_PRIORITY (5<<4 ie 0x50)
 	{
 		/* Increment the RTOS tick. */
 		if( xTaskIncrementTick() != pdFALSE )
 		{
 			/* A context switch is required.  Context switching is performed in
 			the PendSV interrupt.  Pend the PendSV interrupt. */
-			portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT;
+			portNVIC_INT_CTRL_REG = portNVIC_PENDSVSET_BIT; // DRN: ie ( 1UL << 28UL )
 		}
 	}
-	portENABLE_INTERRUPTS();
+	portENABLE_INTERRUPTS(); // DRN: set ARM base priority 0; ie do not block any interrupts
 }
 /*-----------------------------------------------------------*/
 
@@ -583,7 +629,7 @@ void xPortSysTickHandler( void )
 				__asm volatile( "wfi" );
 				__asm volatile( "isb" );
 			}
-			configPOST_SLEEP_PROCESSING( xExpectedIdleTime );
+			configPOST_SLEEP_PROCESSING( &xExpectedIdleTime );
 
 			/* Re-enable interrupts to allow the interrupt that brought the MCU
 			out of sleep mode to execute immediately.  see comments above
@@ -664,7 +710,7 @@ void xPortSysTickHandler( void )
 			vTaskStepTick( ulCompleteTickPeriods );
 			portNVIC_SYSTICK_LOAD_REG = ulTimerCountsForOneTick - 1UL;
 
-			/* Exit with interrupts enabled. */
+			/* Exit with interrpts enabled. */
 			__asm volatile( "cpsie i" ::: "memory" );
 		}
 	}

@@ -81,12 +81,13 @@ C_SOURCES =  \
 ../../Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
-../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
-../../CM7/Core/Src/stm32h7xx_hal_timebase_tim.c
-# ../../CM7/Core/Src/sysmem.c
-# ../../CM7/Core/Src/syscalls.c todo
-
+../../CM7/Core/Src/stm32h7xx_hal_timebase_tim.c \
+../../CM7/Core/Src/sysmem.c \
+../../CM7/Core/Src/syscalls.c \
+../../Common/Src/heap_useNewlib_ST.c
+# Excluded according to https://nadler.com/embedded/newlibAndFreeRTOS.html
+# ../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 
 # ASM sources
 ASM_SOURCES =  \
@@ -107,11 +108,13 @@ CC = $(GCC_PATH)/$(PREFIX)gcc
 AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
+DP = $(GCC_PATH)/$(PREFIX)objdump
 else
 CC = $(PREFIX)gcc
 AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
+DP = $(PREFIX)objdump
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
@@ -187,7 +190,7 @@ LIBDIR =  \
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin $(BUILD_DIR)/$(TARGET).list
 
 
 #######################################
@@ -219,7 +222,10 @@ $(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	
 $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 	$(BIN) $< $@	
-	
+
+$(BUILD_DIR)/%.list: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
+	$(DP) -h -S $< > $@
+
 $(BUILD_DIR):
 	mkdir $@		
 

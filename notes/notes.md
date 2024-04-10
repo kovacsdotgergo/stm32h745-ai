@@ -24,9 +24,19 @@ args = [
 * documentation about the required functionality [link](https://sourceware.org/newlib/libc.html#Stubs)
 * article about FreeRTOS and reentrancy [**link**](https://nadler.com/embedded/newlibAndFreeRTOS.html)
 
+### Malloc inside ISR
+
+It's problematic due to reentrancy, malloc is usually not safe for this purpose, so mallocing messes up the memory pool.
+
+It can be solved if reentry into malloc is not possible, e.g. wrapping malloc into a call with disabling interrupts.
+
 ## Tracking a call to a function
 
 * --trace_symbol=x linker option will list all the places where the function is called
 * also for more insight, a breakpoint on the function can also be used
 * [link](https://community.st.com/t5/stm32cubemx-mcus/bug-cubemx-freertos-projects-corrupt-memory/m-p/267070)
 * --wrap symbol option of ld [link](https://ftp.gnu.org/old-gnu/Manuals/ld-2.9.1/html_node/ld_3.html)
+
+## Deferred interrupt handling in FreeRTOS
+
+Handling the interrupts in a task not in the ISR [link](https://www.freertos.org/deferred_interrupt_processing.html).
