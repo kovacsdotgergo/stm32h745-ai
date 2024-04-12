@@ -80,7 +80,6 @@ C_SOURCES =  \
 ../../Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
-../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 ../../CM7/Core/Src/stm32h7xx_hal_timebase_tim.c \
 ../../CM7/Core/Src/sysmem.c \

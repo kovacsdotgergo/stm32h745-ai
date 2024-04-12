@@ -18,11 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "cmsis_os.h"
 #include "crc.h"
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
 
 
 /* Private includes ----------------------------------------------------------*/
@@ -136,6 +138,7 @@ Error_Handler();
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_CRC_Init();
@@ -145,13 +148,11 @@ Error_Handler();
 
   /* Init scheduler */
 
-  osKernelInitialize();
-
   /* Call init function for freertos objects (in cmsis_os2.c) */
   MX_FREERTOS_Init();
 
   /* Start scheduler */
-  osKernelStart();
+	vTaskStartScheduler();
 
   /* We should never get here as control is now taken by the scheduler */
 
