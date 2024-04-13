@@ -30,11 +30,11 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+#include <assert.h>
+#include "usart.h"
 
 /* Variables */
-extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
-
 
 char *__env[1] = { 0 };
 char **environ = __env;
@@ -80,12 +80,10 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
   (void)file;
-  int DataIdx;
-
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    __io_putchar(*ptr++);
-  }
+  // todo: this solution is not reentrant, to solve this when it will be a 
+  //  problem, implement the reentrant version instead and copy the ISR
+  //  assert from the sbrk solution then suspend all tasks
+  (void)HAL_UART_Transmit(&huart3, (uint8_t*)ptr, len, HAL_MAX_DELAY);
   return len;
 }
 

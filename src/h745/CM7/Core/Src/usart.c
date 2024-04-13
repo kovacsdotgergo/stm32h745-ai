@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file    usart.c
@@ -16,28 +15,13 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
 UART_HandleTypeDef huart3;
-
-/* USART3 init function */
 
 void MX_USART3_UART_Init(void)
 {
-
-  /* USER CODE BEGIN USART3_Init 0 */
-
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
   huart3.Init.BaudRate = 115200;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
@@ -61,14 +45,10 @@ void MX_USART3_UART_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_UARTEx_DisableFifoMode(&huart3) != HAL_OK)
+  if (HAL_UARTEx_EnableFifoMode(&huart3) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
-
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
@@ -78,9 +58,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
   if(uartHandle->Instance==USART3)
   {
-  /* USER CODE BEGIN USART3_MspInit 0 */
-
-  /* USER CODE END USART3_MspInit 0 */
 
   /** Initializes the peripherals clock
   */
@@ -113,10 +90,6 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
     HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /* USER CODE BEGIN USART3_MspInit 1 */
-
-  /* USER CODE END USART3_MspInit 1 */
   }
 }
 
@@ -125,9 +98,6 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 
   if(uartHandle->Instance==USART3)
   {
-  /* USER CODE BEGIN USART3_MspDeInit 0 */
-
-  /* USER CODE END USART3_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_USART3_CLK_DISABLE();
 
@@ -137,12 +107,5 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     */
     HAL_GPIO_DeInit(GPIOD, STLINK_RX_Pin|STLINK_TX_Pin);
 
-  /* USER CODE BEGIN USART3_MspDeInit 1 */
-
-  /* USER CODE END USART3_MspDeInit 1 */
   }
 }
-
-/* USER CODE BEGIN 1 */
-
-/* USER CODE END 1 */

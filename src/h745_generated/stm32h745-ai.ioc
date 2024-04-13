@@ -395,7 +395,8 @@ STMicroelectronics.X-CUBE-AI.8.1.0_M7.outputDirectory-4a892d2af0077776a39481914f
 STMicroelectronics.X-CUBE-AI.8.1.0_M7.useInputAllocation-4a892d2af0077776a39481914f834899cf43efc3fbe043e09325156c6b61b122=true
 STMicroelectronics.X-CUBE-AI.8.1.0_M7.useOutputAllocation-4a892d2af0077776a39481914f834899cf43efc3fbe043e09325156c6b61b122=true
 STMicroelectronics.X-CUBE-AI.8.1.0_M7_SwParameter=XAaCUBEAaAICcArtificialOoIntelligenceJjCore\:true;
-USART3.IPParameters=VirtualMode-Asynchronous
+USART3.FIFOMode=FIFOMODE_ENABLE
+USART3.IPParameters=VirtualMode-Asynchronous,FIFOMode
 USART3.VirtualMode-Asynchronous=VM_ASYNC
 USB_OTG_FS.IPParameters=VirtualMode
 USB_OTG_FS.VirtualMode=Device_Only
@@ -413,5 +414,5 @@ VP_SYS_VS_tim6.Mode=TIM6
 VP_SYS_VS_tim6.Signal=SYS_VS_tim6
 board=NUCLEO-H745ZI-Q
 boardIOC=true
-rtos.0.ip=FREERTOS_M7
-rtos.1.ip=FREERTOS_M4
+rtos.0.ip=FREERTOS_M4
+rtos.1.ip=FREERTOS_M7

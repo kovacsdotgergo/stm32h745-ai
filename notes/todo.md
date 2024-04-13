@@ -16,11 +16,12 @@
   * ~~update hal sys timer~~
   * ~~fix script for deletions~~
   * ~~fix the newlib stuff, syscalls...~~
-  * update to newer version with the help of the demo
-  * printf
-    * add tio serial startup vscode task to check output
-  * remove everything unneccesary (e.g. cmsis os...)
-* update cmsis to the version with the correct cache functions
+  * ~~update to newer version with the help of the demo~~
+  * ~~printf~~
+    * add tio serial startup vscode task to check output - tio config file could help
+  * ~~remove everything unneccesary (e.g. cmsis os...)~~
+* ~~update cmsis to the version with the correct cache functions~~
+  * only moved the cache update
 * finalize vscode setup after running correctly
   * launch
   * tasks (programming)

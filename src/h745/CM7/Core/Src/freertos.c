@@ -23,6 +23,8 @@
 #include "main.h"
 #include "gpio.h"
 
+#include <stdio.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -57,6 +59,7 @@ void vApplicationMallocFailedHook( void ) {
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask,
                                     char *pcTaskName ) {
+  (void)xTask; (void)pcTaskName;
   configASSERT( 0 );
 }
 /*-----------------------------------------------------------*/
@@ -182,6 +185,9 @@ void StartDefaultTask(void *pvParameters)
   {
     HAL_GPIO_TogglePin(LD_GREEN_GPIO, LD_GREEN_GPIO_PIN);
     vTaskDelay( 500 / portTICK_PERIOD_MS );
+    puts("puts");
+    vTaskDelay( 500 / portTICK_PERIOD_MS );
+    printf("printf\r\n");
   }
   /* USER CODE END StartDefaultTask */
 }

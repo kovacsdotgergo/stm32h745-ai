@@ -76,7 +76,6 @@ C_SOURCES =  \
 ../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 ../../CM4/Core/Src/stm32h7xx_hal_timebase_tim.c \
-../../CM4/Core/Src/sysmem.c \
 ../../CM4/Core/Src/syscalls.c \
 ../../Common/Src/heap_useNewlib_ST.c
 # Excluded according to https://nadler.com/embedded/newlibAndFreeRTOS.html

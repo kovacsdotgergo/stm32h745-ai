@@ -23,6 +23,12 @@ args = [
 * introduction article [link](https://hackaday.com/2021/07/19/the-newlib-embedded-c-standard-library-and-how-to-use-it/)
 * documentation about the required functionality [link](https://sourceware.org/newlib/libc.html#Stubs)
 * article about FreeRTOS and reentrancy [**link**](https://nadler.com/embedded/newlibAndFreeRTOS.html)
+  * github link that helps understanding the configuration [link](https://github.com/DRNadler/FreeRTOS_helpers/issues/3)
+* about newlib [link](https://www.embedded.com/embedding-with-gnu-newlib/)
+
+As I understand so far, the reentrant functions are calling the regularly named ones by default. For malloc there are the locks that have to be implemented. To handle errno there is a macro defined. So the versions with _r only have to be used in special cases not covered by these?
+
+If I use UART in write, then it won't be reentrant, so I think I should turn off interrupts inside the _write funciton because for this there are no available locks. Probabily using _write_r would also be OK, but it doesn't provide anithing plus because not usign the reent structure is the problem.
 
 ### Malloc inside ISR
 

@@ -30,9 +30,10 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+#include "usart.h"
+#include <assert.h>
 
 /* Variables */
-extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
 
 
@@ -80,12 +81,8 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
   (void)file;
-  int DataIdx;
-
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    __io_putchar(*ptr++);
-  }
+  // HAL_StatusTypeDef stat = HAL_UART_Transmit(&huart3, (uint8_t*)ptr, len, HAL_MAX_DELAY);
+  // assert(HAL_OK == stat);
   return len;
 }
 

@@ -22,6 +22,8 @@
 #include "task.h"
 #include "main.h"
 
+// #include <stdio.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -57,6 +59,7 @@ void vApplicationMallocFailedHook( void ) {
 
 void vApplicationStackOverflowHook( TaskHandle_t xTask,
                                     char *pcTaskName ) {
+  (void)xTask; (void)pcTaskName;
   configASSERT( 0 );
 }
 /*-----------------------------------------------------------*/
@@ -174,12 +177,14 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *pvParameters)
 {
+  (void)pvParameters;
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for(;;)
   {
     HAL_GPIO_TogglePin(LD_RED_GPIO, LD_RED_GPIO_PIN);
     vTaskDelay( 500 / portTICK_PERIOD_MS );
+    // printf("1");
   }
   /* USER CODE END StartDefaultTask */
 }
