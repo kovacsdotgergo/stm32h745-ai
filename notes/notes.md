@@ -1,5 +1,7 @@
 # Notes to remember
 
+Misc notes about different topics to document understanding.
+
 ## Merging binaries
 
 ``` bash
@@ -12,9 +14,11 @@ args = [
 ]
 ```
 
+* merging two hex files [link arm doc](https://developer.arm.com/documentation/ka004500/latest/) [link doc](https://srecord.sourceforge.net/man/man1/srec_cat.1.html)
+
 ## Profiling stm32
 
-* everything by hand, article: [link](https://interrupt.memfault.com/blog/profiling-firmware-on-cortex-m) 
+* everything by hand, article: [link](https://interrupt.memfault.com/blog/profiling-firmware-on-cortex-m)
   * where I found the link: [link](https://stackoverflow.com/questions/77628950/visualize-profiling-data-from-an-stm32-cortex-m4-cpu)
 * gprof [link](https://mcuoneclipse.com/2015/08/23/tutorial-using-gnu-profiling-gprof-with-arm-cortex-m/)
 
@@ -28,7 +32,7 @@ args = [
 
 As I understand so far, the reentrant functions are calling the regularly named ones by default. For malloc there are the locks that have to be implemented. To handle errno there is a macro defined. So the versions with _r only have to be used in special cases not covered by these?
 
-If I use UART in write, then it won't be reentrant, so I think I should turn off interrupts inside the _write funciton because for this there are no available locks. Probabily using _write_r would also be OK, but it doesn't provide anithing plus because not usign the reent structure is the problem.
+If I use UART in write, then it won't be reentrant, so I think I should turn off interrupts inside the _write funciton because for this there are no available locks. Probabily using_write_r would also be OK, but it doesn't provide anithing plus because not usign the reent structure is the problem.
 
 ### Malloc inside ISR
 

@@ -85,25 +85,14 @@ endif
 # default action: build all
 all:
 	cd	CM4 && $(MAKE)
-	cd	CM7 && $(MAKE)
-
-
-
-
-
-#######################################
-# build the application
-#######################################
-# list of objects
-	
-EXEC	=main
-main=	cd	Secure && $(MAKE)		
+	cd	CM7 && $(MAKE)	
 
 #######################################
 # clean up
 #######################################
 clean:
-	-rm -fR $(EXEC)
+	cd CM4 && $(MAKE) clean
+	cd CM7 && $(MAKE) clean
   
 #######################################
 # dependencies

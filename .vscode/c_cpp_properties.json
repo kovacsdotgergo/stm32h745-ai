@@ -4,11 +4,12 @@
             "name": "cm7",
             "includePath": [
                 "${workspaceRoot}/src/h745/CM7/Core/Inc",
-                "${workspaceRoot}/src/h745/CM7/X-CUBE-AI/App",
-                "${workspaceRoot}/src/h745/Middlewares/ST/AI/Inc",
                 "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
-                "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
+                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
                 "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
+                "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
+                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
                 "/usr/lib/arm-none-eabi/include",
                 "/usr/lib/arm-none-eabi/include/c++/10.3.1",
                 "/usr/lib/arm-none-eabi/include/machine",
@@ -26,17 +27,7 @@
             "cStandard": "c11",
             "cppStandard": "c++17",
             "browse": {
-                "path": [
-                    "${workspaceRoot}/src/h745",
-                    "${workspaceRoot}/src/h745/CM7/Core/Inc",
-                    "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
-                    "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
-                    "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
-                    "/usr/lib/arm-none-eabi/include",
-                    "/usr/lib/arm-none-eabi/include/c++/10.3.1",
-                    "/lib/gcc/arm-none-eabi/10.3.1/include",
-                    "/lib/gcc/arm-none-eabi/10.3.1/include-fixed"
-                ],
+                "path": [],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
             },
@@ -46,6 +37,7 @@
                 "-g3",
                 "-O0",
                 "-Wall",
+                "-Wextra",
                 "-fdata-sections",
                 "-ffunction-sections",
                 "-fstack-usage",
@@ -61,8 +53,11 @@
             "includePath": [
                 "${workspaceRoot}/src/h745/CM4/Core/Inc",
                 "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
+                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
                 "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
                 "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
+                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
                 "/usr/lib/arm-none-eabi/include",
                 "/usr/lib/arm-none-eabi/include/c++/10.3.1",
                 "/usr/lib/arm-none-eabi/include/machine",
@@ -80,17 +75,7 @@
             "cStandard": "c11",
             "cppStandard": "c++17",
             "browse": {
-                "path": [
-                    "${workspaceRoot}/src/h745",
-                    "${workspaceRoot}/src/h745/CM4/Core/Inc",
-                    "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
-                    "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
-                    "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
-                    "/usr/lib/arm-none-eabi/include",
-                    "/usr/lib/arm-none-eabi/include/c++/10.3.1",
-                    "/lib/gcc/arm-none-eabi/10.3.1/include",
-                    "/lib/gcc/arm-none-eabi/10.3.1/include-fixed"
-                ],
+                "path": [],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
             },
@@ -100,6 +85,7 @@
                 "-g3",
                 "-O0",
                 "-Wall",
+                "-Wextra",
                 "-fdata-sections",
                 "-ffunction-sections",
                 "-fstack-usage",

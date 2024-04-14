@@ -5,12 +5,14 @@
 * loadign the application for debug mode
 * use of the cross trigger interface
 * openocd or stlink
-* colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)
+
+* research about isa, nn acceleratos...
+* try compilers
 
 ## Next steps
 
 * ~~compare to prev project~~
-* make a starter project with freertos
+* ~~make a starter project with freertos~~
   * ~~using the generated mx project~~
   * ~~move (update) the drivers as well after running~~
   * ~~update hal sys timer~~
@@ -18,18 +20,14 @@
   * ~~fix the newlib stuff, syscalls...~~
   * ~~update to newer version with the help of the demo~~
   * ~~printf~~
-    * add tio serial startup vscode task to check output - tio config file could help
   * ~~remove everything unneccesary (e.g. cmsis os...)~~
 * ~~update cmsis to the version with the correct cache functions~~
   * only moved the cache update
-* finalize vscode setup after running correctly
-  * launch
-  * tasks (programming)
-  * intellisense from new makefile
+* ~~finalize vscode setup after running correctly~~
+  * ~~launch~~
+  * ~~tasks (programming)~~
+  * ~~itellisense from new makefile~~
 * document the setup until this point, the os, the cmsis, the developement process
-
-* research about isa, nn acceleratos...
-* try compilers
 
 ## Ai compilers
 
@@ -37,7 +35,7 @@
 * tflite
 * nvidia
 
-## Building and utilities
+## Building and utilities with lower prio
 
 * docker
   * dependencies: arm bin, stlink, openocd, st-flash, freertos, ?srec_cat
@@ -47,3 +45,5 @@
 * build task `build current` based on the inellisense configuration instead of build cm4 and cm7
 * restructure and remove the makefile folder -> but then the merge script changes
 * cross trigger interface?
+* tio config file and vscode task
+* colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)

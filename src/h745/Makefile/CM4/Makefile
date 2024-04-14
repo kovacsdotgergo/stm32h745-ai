@@ -148,7 +148,6 @@ C_INCLUDES =  \
 -I../../Drivers/CMSIS/Device/ST/STM32H7xx/Include \
 -I../../Drivers/CMSIS/Include \
 -I../../Middlewares/Third_Party/FreeRTOS/Source/include \
--I../../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2 \
 -I../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 
