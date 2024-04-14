@@ -1,0 +1,79 @@
+// to use the intellisense configuration: https://stackoverflow.com/questions/54495406/how-to-switch-between-build-targets-in-visual-studio-code
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug cm7 openocd",
+            "request": "launch",
+            "type": "cortex-debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
+            "servertype": "openocd",
+            "configFiles": ["st_nucleo_h745zi.cfg"],
+            "device": "STM32H745ZI",
+            "numberOfProcessors": 2,
+            "targetProcessor": 0,
+            "loadFiles": [
+                "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf"
+            ],
+            "preLaunchTask": "build all",
+            "preLaunchCommands": [
+                "monitor init",
+                "monitor reset halt"
+            ],
+            "postLaunchCommands": ["monitor reset run"]    
+        },
+        {
+            "name": "Attach CM4 - openocd",
+            "request": "attach",
+            "type": "cortex-debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
+            "servertype": "external",
+            "gdbTarget": "localhost:50001",
+            "device": "STM32H745ZI",
+            "numberOfProcessors": 2,
+            "targetProcessor": 1,
+        },
+        {
+            "name": "Debug CM7+CM4 - openocd",
+            "cwd": "${workspaceFolder}",
+            "type": "cortex-debug",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
+            "loadFiles": [
+                "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
+            ],
+            "request": "launch",
+            "servertype": "openocd",
+            "device": "STM32H745ZI",
+            "interface": "swd",
+            "numberOfProcessors": 2,
+            "targetProcessor": 0,
+            "configFiles": ["st_nucleo_h745zi.cfg"],
+            "preLaunchTask": "build all",
+            "preLaunchCommands": [
+                "monitor init",
+                "monitor reset halt"
+            ],
+            "postLaunchCommands": ["monitor reset run"],
+            "chainedConfigurations": {
+                "enabled": true,
+                "waitOnEvent": "postInit",
+                "detached": false,
+                "delayMs": 5000,    // Wait 5s, could be optimized
+                "lifecycleManagedByParent": true,   
+                "launches": [ 
+                    {
+                        "name": "Attach CM4 - openocd",
+                        "folder": "${workspaceFolder}"
+                    }
+                ]
+            }       
+        }
+    ]
+}
