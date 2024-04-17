@@ -22,10 +22,10 @@
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
+#include "tim.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
-
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -142,6 +142,7 @@ Error_Handler();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_CRC_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

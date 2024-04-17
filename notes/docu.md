@@ -91,3 +91,11 @@ todo
 ### Neural net accelerators
 
 todo
+
+#### CubeAI
+
+After adding the network in MX, there are different options to generate applications. By default only the header and source files interfacing the library are generated for the imported network. The options to add more functionality by the code generator are: performance measurement application, template application and [todo, validation?].
+
+The performance measurement application is quite complex, it communicates the measurement results via the serial port. The source code is not easily comprehendable.
+
+Easier options are the blog post about cubeai and tflite, but it was written for a previous version of these frameworks, so the code had to be modified. Similar example code is also available in the documentation of the library. The generated template application is only a touch more complex, so it can also be easily modified.
