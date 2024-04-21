@@ -22,6 +22,7 @@
 #include "task.h"
 #include "main.h"
 #include "gpio.h"
+#include "tim.h"
 
 #include <stdio.h>
 
@@ -155,7 +156,7 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   xTaskCreate( StartDefaultTask, 			/* Function that implements the task. */
 				 "DefaultTaskM7Core", 				/* Task name, for debugging only. */
-				 configMINIMAL_STACK_SIZE,  /* Size of stack (in words) to allocate for this task. */
+				 2*configMINIMAL_STACK_SIZE,  /* Size of stack (in words) to allocate for this task. */
 				 NULL, 						/* Task parameter, not used in this case. */
 				 tskIDLE_PRIORITY + 1, 			/* Task priority. */
 				 &defaultTask );				/* Task handle, used to unblock task from interrupt. */
@@ -184,10 +185,10 @@ void StartDefaultTask(void *pvParameters)
   for(;;)
   {
     HAL_GPIO_TogglePin(LD_GREEN_GPIO, LD_GREEN_GPIO_PIN);
+    uint32_t st = __HAL_TIM_GET_COUNTER(&htim2);
     vTaskDelay( 500 / portTICK_PERIOD_MS );
-    puts("puts");
-    vTaskDelay( 500 / portTICK_PERIOD_MS );
-    printf("printf\r\n");
+    uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
+    printf("0.5 s delay: %f\r\n", (float)(end - st) / getTIM2Freq());
   }
   /* USER CODE END StartDefaultTask */
 }

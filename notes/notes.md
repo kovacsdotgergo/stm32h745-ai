@@ -50,3 +50,9 @@ It can be solved if reentry into malloc is not possible, e.g. wrapping malloc in
 ## Deferred interrupt handling in FreeRTOS
 
 Handling the interrupts in a task not in the ISR [link](https://www.freertos.org/deferred_interrupt_processing.html).
+
+## FreeRTOS debug
+
+There is a tab for xRTOS, so probably VSCode can also do RTOS aware debugging.
+
+There is a global pointer to the current TCB where a pointer to the current task. I used this to check the offset of the variables on the stack when it overflowed.

@@ -10,6 +10,12 @@
             "problemMatcher": ["$gcc"]
         },
         {
+            "label": "clean",
+            "type": "shell",
+            "command": "make clean -C src/h745/Makefile/",
+            "problemMatcher": ["$gcc"]
+        },
+        {
             "label": "build m4",
             "type": "shell",
             "command": "make -C src/h745/Makefile/CM4",

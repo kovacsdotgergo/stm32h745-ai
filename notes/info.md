@@ -34,9 +34,23 @@ Updated the OS to 11.0.1.
 
 tio can be used
 
+### On the microcontroller
+
+Printf calls the _write implementation that is not yet reentrant. In the MX config I started the timer right away. Printf support is enabled by the `-u _printf_float` linker flag, the same can be done for sprintf with a similar flag. Nothing is done for printf on the M4 currently.
+
+#### ERROR with serial com:
+
+Printf with float caused a hard fault when only two task was running on the CM7 core. In the AI task the printf worked without problem, inside the default task it failed. One of the differences was the stack size. After increasing the task size of the default task, the problem was solved. Although stack checking is turned in in FreeRTOS, it didn't catch the error this time (it worked before, so this was just a less detectable problem).
+
 ## Systick timer
 
 HAL and FreeRTOS can both be used with systick interrupt, but this may cause problems. Probably stopping the systick also ruins the other. HAL lib may depend on this timer and this can cause problems in the OS. (google search lists the problems probably)
 
 * So the OS uses the systick, for this the systick interrupt is required (see defines at the end of `FreeRTOSConfig.h`).
 * HAL uses different basic timers.
+
+## Choosing a timer to measure time
+
+The high precision timer can be used to generate accurate waverforms and other accurate timing related tasks. It can run from the core1 clock and is only 16 bits wide. The maximum length measured is roughly 100 us. Dividing it defeats the purpose of the high precision.
+
+TIM5 and TIM2 are general purpose timer, these can be 32 bits. The maximum measured time (with max clk) is around 18 seconds. The clock can be 240 MHz max, so the preciosion is still great using general purpose timers.
