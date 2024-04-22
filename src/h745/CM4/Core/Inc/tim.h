@@ -37,6 +37,11 @@ extern TIM_HandleTypeDef htim2;
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
+void setup_TIM2_Handle(void);
+
+static inline uint32_t getTIM2Freq(void) {
+  return HAL_RCC_GetHCLKFreq();
+}
 
 void MX_TIM2_Init(void);
 

@@ -20,7 +20,11 @@
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
 #include "task.h"
+
 #include "main.h"
+#include "tim.h"
+#include "usart.h"
+#include <stdio.h>
 
 // #include <stdio.h>
 
@@ -153,7 +157,7 @@ void MX_FREERTOS_Init(void) {
   /* creation of defaultTask */
   xTaskCreate( StartDefaultTask, 			/* Function that implements the task. */
 				 "DefaultTaskM7Core", 				/* Task name, for debugging only. */
-				 configMINIMAL_STACK_SIZE,  /* Size of stack (in words) to allocate for this task. */
+				 2*configMINIMAL_STACK_SIZE,  /* Size of stack (in words) to allocate for this task. */
 				 NULL, 						/* Task parameter, not used in this case. */
 				 tskIDLE_PRIORITY + 1, 			/* Task priority. */
 				 &defaultTask );				/* Task handle, used to unblock task from interrupt. */
@@ -183,8 +187,10 @@ void StartDefaultTask(void *pvParameters)
   for(;;)
   {
     HAL_GPIO_TogglePin(LD_RED_GPIO, LD_RED_GPIO_PIN);
+    uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
     vTaskDelay( 500 / portTICK_PERIOD_MS );
-    // printf("1");
+    uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
+    printf("cm4: %f\r\n", (float)(end - start) / getTIM2Freq());
   }
   /* USER CODE END StartDefaultTask */
 }

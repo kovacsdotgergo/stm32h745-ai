@@ -50,9 +50,11 @@
 * document the setup until this point, the os, the cmsis, the developement process
 
 * common
-  * add the timer on m4
-  * add printf on m4
-  * synchronize the print
+  * 04.22. ~~add the timer on m4~~
+  * 04.22 ~~add printf on m4~~
+    * ~~first try with bare uart~~
+  * 04.22. ~~add float printf on cm4~~
+  * synchronize the print -> it doesn't even conflict right now, but hsem would be nice
 * cubeai
   * 04.17. ~~timer from prev proj~~
   * 04.17. ~~float printf~~
@@ -61,9 +63,12 @@
   * try the more useful features
   * setup CM4 as well
 * tflite
+  * cpp compilation
   * setup base
   * document more interesting features
   * try the more useful features
   * setup on CM4
 * compare the frameworks
 * try some more and document
+
+* reentrant printf

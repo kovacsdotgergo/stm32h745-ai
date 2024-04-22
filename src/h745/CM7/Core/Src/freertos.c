@@ -19,9 +19,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
+
 #include "task.h"
 #include "main.h"
 #include "gpio.h"
+#include "usart.h"
 #include "tim.h"
 
 #include <stdio.h>
@@ -188,7 +190,7 @@ void StartDefaultTask(void *pvParameters)
     uint32_t st = __HAL_TIM_GET_COUNTER(&htim2);
     vTaskDelay( 500 / portTICK_PERIOD_MS );
     uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
-    printf("0.5 s delay: %f\r\n", (float)(end - st) / getTIM2Freq());
+    printf("cm7: %f\r\n", (float)(end - st) / getTIM2Freq());
   }
   /* USER CODE END StartDefaultTask */
 }

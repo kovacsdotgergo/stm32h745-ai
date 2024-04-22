@@ -181,8 +181,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = stm32h745xx_flash_CM7.ld
 
 # libraries
-LIBS = -lc -lm -lnosys  \
--l:NetworkRuntime810_CM7_GCC.a
+LIBS = -lc -lm -lnosys
 LIBDIR =  \
 -L../../Middlewares/ST/AI/Lib
 LDFLAGS = $(MCU) -specs=nano.specs -u _printf_float -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections

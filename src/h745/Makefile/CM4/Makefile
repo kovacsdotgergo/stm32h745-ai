@@ -76,6 +76,7 @@ C_SOURCES =  \
 ../../Middlewares/Third_Party/FreeRTOS/Source/timers.c \
 ../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 ../../CM4/Core/Src/stm32h7xx_hal_timebase_tim.c \
+../../CM4/Core/Src/tim.c \
 ../../CM4/Core/Src/syscalls.c \
 ../../Common/Src/heap_useNewlib_ST.c
 # Excluded according to https://nadler.com/embedded/newlibAndFreeRTOS.html
@@ -175,7 +176,7 @@ LDSCRIPT = stm32h745xx_flash_CM4.ld
 LIBS = -lc -lm -lnosys
 LIBDIR =  \
 -L../Middlewares/ST/AI/Lib
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -u _printf_float -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin $(BUILD_DIR)/$(TARGET).list

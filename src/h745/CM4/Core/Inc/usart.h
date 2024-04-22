@@ -37,6 +37,7 @@ extern UART_HandleTypeDef huart3;
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
+void setup_USART3_Handle(void);
 
 void MX_USART3_UART_Init(void);
 

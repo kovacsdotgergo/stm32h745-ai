@@ -4,7 +4,9 @@
         "stm32h7xx_hal.h": "c",
         "main.h": "c",
         "stm32h7xx_it.h": "c",
-        "usart.h": "c"
+        "usart.h": "c",
+        "task.h": "c",
+        "tim.h": "c"
     },
     "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb"
 }
