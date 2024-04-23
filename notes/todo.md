@@ -17,6 +17,8 @@
 
 ## Building and utilities with lower prio
 
+* change the source paths in makefile to help vscode locate the errors
+* debug reset
 * tio config file and vscode task
 * colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)
 * clang-format
@@ -48,6 +50,12 @@
   * ~~itellisense from new makefile~~
 * document the setup until this point, the os, the cmsis, the developement process
 
+* common
+  * 04.22. ~~add the timer on m4~~
+  * 04.22 ~~add printf on m4~~
+    * ~~first try with bare uart~~
+  * 04.22. ~~add float printf on cm4~~
+  * synchronize the print -> it doesn't even conflict right now, but hsem would be nice
 * cubeai
   * 04.17. ~~timer from prev proj~~
   * 04.17. ~~float printf~~
@@ -56,9 +64,12 @@
   * try the more useful features
   * setup CM4 as well
 * tflite
+  * cpp compilation
   * setup base
   * document more interesting features
   * try the more useful features
   * setup on CM4
 * compare the frameworks
 * try some more and document
+
+* reentrant printf

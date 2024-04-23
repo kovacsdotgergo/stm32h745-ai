@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "usart.h"
+#include "tim.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -94,6 +96,9 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+  setup_TIM2_Handle();
+  // MX_USART3_UART_Init();
+  setup_USART3_Handle();
 
   /* USER CODE BEGIN Init */
   GPIO_InitTypeDef init = {

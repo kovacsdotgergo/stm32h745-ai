@@ -55,4 +55,12 @@ Handling the interrupts in a task not in the ISR [link](https://www.freertos.org
 
 There is a tab for xRTOS, so probably VSCode can also do RTOS aware debugging.
 
+FreeRTOS guide: [link](https://www.freertos.org/2021/01/using-visual-studio-code-for-freertos-development.html)
+
 There is a global pointer to the current TCB where a pointer to the current task. I used this to check the offset of the variables on the stack when it overflowed.
+
+## Semihosing
+
+Semihosting is implemented by certain asm instructions. These instructions take a code as a parameter. Depending on this parameter the semihosting operation is selected. Operations are the library functions required by the standard library e.g. isatty, write. These instructions are using the debugger to perform these low level operations. [arm semihosing docu](https://developer.arm.com/documentation/dui0471/g/Semihosting)
+
+To make semihosting work, the debugger and the required linker flags have to be set up. [example blog](https://fastbitlab.com/microcontroller-embedded-c-programming-lecture-51-testing-printf-over-openocd-semihosting/)

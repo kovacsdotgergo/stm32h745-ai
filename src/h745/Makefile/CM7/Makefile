@@ -181,7 +181,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 LDSCRIPT = stm32h745xx_flash_CM7.ld
 
 # libraries
-LIBS = -lc -lm -lnosys  \
+LIBS = -lc -lm -lnosys \
 -l:NetworkRuntime810_CM7_GCC.a
 LIBDIR =  \
 -L../../Middlewares/ST/AI/Lib
