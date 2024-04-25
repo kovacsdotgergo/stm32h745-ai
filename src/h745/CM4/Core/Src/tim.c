@@ -49,7 +49,7 @@ void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 1 */
 
   /* USER CODE END TIM2_Init 1 */
-  setup_TIM2_handle();
+  setup_TIM2_Handle();
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     Error_Handler();

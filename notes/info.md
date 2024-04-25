@@ -76,3 +76,15 @@ To sum up, the driver is probably unusable in this multicore setting, I will sea
 ## Debug messages using ITM
 
 One problem is that the default Cortex-Debug SWO config did not work, the other is that the ITM message worked on the CM7 when I checked in CubeProgrammer, but the CM4 messages did not appear. The documentation is brief and doesn't really mention the multicore configuration (ST). The only thing it says is that the ITM tunnel has to be programmed, and only one core can use it.
+
+## Binary sizes
+
+* 04.24. After changing to cpp for tflite
+
+```shell
+    arm-none-eabi-size build/stm32h745-ai_CM7.elf
+    text    data     bss     dec     hex filename
+    59636     500   11256   71392   116e0 build/stm32h745-ai_CM7.elf
+```
+
+* todo before adding frameworks

@@ -55,6 +55,8 @@
     * ~~first try with bare uart~~
   * 04.22. ~~add float printf on cm4~~
   * synchronize the print -> it doesn't even conflict right now, but hsem would be nice
+  * setup the release build
+  * update compiler flags
 * cubeai
   * 04.17. ~~timer from prev proj~~
   * 04.17. ~~float printf~~
