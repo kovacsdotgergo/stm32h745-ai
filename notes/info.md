@@ -88,3 +88,7 @@ One problem is that the default Cortex-Debug SWO config did not work, the other 
 ```
 
 * todo before adding frameworks
+
+## Build
+
+Makefiles are building a project in a flat fashion, all object files are located inside a build directory. The sources are hierarchical, so vpath is used to find the corresponding sources for each object files. If the build directory would also be of the same hierarchy, then `vpath` shouldn't be called.

@@ -112,6 +112,7 @@ AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
 CP = $(GCC_PATH)/$(PREFIX)objcopy
 SZ = $(GCC_PATH)/$(PREFIX)size
 DP = $(GCC_PATH)/$(PREFIX)objdump
+AR = $(GCC_PATH)/$(PREFIX)ar
 else
 CC = $(PREFIX)gcc
 CXX = $(PREFIX)g++
@@ -119,10 +120,14 @@ AS = $(PREFIX)gcc -x assembler-with-cpp
 CP = $(PREFIX)objcopy
 SZ = $(PREFIX)size
 DP = $(PREFIX)objdump
+AR = $(PREFIX)ar
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
  
+# ARFLAGS
+ARFLAGS := -rcs
+
 #######################################
 # CFLAGS
 #######################################
@@ -168,9 +173,14 @@ CXX_INCLUDES = $(C_INCLUDES) \
 -I/usr/lib/arm-none-eabi/include/c++/10.3.1
 
 # compile gcc flags
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+ASFLAGS = $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+# todo remove the parts that are not flags so that it can be customized in dep libs
+CFLAGS += \
+	$(OPT) \
+	-Wall \
+	-fdata-sections \
+	-ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g3 -gdwarf-2
@@ -179,7 +189,17 @@ endif
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
-CXXFLAGS = $(MCU) $(C_DEFS) $(CXX_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
+CXXFLAGS = \
+	$(OPT) \
+	-std=c++11 \
+	-Wall \
+	-fdata-sections \
+	-ffunction-sections \
+	-fno-rtti \
+  	-fno-exceptions \
+  	-fno-threadsafe-statics \
+	-fno-unwind-tables \
+	-fmessage-length=0
 
 ifeq ($(DEBUG), 1)
 CXXFLAGS += -g3 -gdwarf-2
@@ -220,15 +240,15 @@ OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASMM_SOURCES:.S=.o)))
 vpath %.S $(sort $(dir $(ASMM_SOURCES)))
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR) 
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
+	$(CC) -c $(MCU) $(C_DEFS) $(C_INCLUDES) $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.cc Makefile | $(BUILD_DIR) 
-	$(CXX) -c $(CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
+	$(CXX) -c $(MCU) $(C_DEFS) $(CXX_INCLUDES) $(CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
-	$(AS) -c $(CFLAGS) $< -o $@
+	$(AS) -c $(MCU) $(C_DEFS) $(C_INCLUDES) $(CFLAGS) $< -o $@
 $(BUILD_DIR)/%.o: %.S Makefile | $(BUILD_DIR)
-	$(AS) -c $(CFLAGS) $< -o $@
+	$(AS) -c $(MCU) $(C_DEFS) $(C_INCLUDES) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
 	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
@@ -256,5 +276,7 @@ clean:
 # dependencies
 #######################################
 -include $(wildcard $(BUILD_DIR)/*.d)
+
+include tflite.mk
 
 # *** EOF ***

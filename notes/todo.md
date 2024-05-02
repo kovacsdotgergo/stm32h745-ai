@@ -50,27 +50,36 @@
 * document the setup until this point, the os, the cmsis, the developement process
 
 * common
-  * 04.22. ~~add the timer on m4~~
-  * 04.22 ~~add printf on m4~~
+  * ~~add the timer on m4~~
+  * ~~add printf on m4~~
     * ~~first try with bare uart~~
-  * 04.22. ~~add float printf on cm4~~
+  * ~~add float printf on cm4~~
   * synchronize the print -> it doesn't even conflict right now, but hsem would be nice
   * setup the release build
   * update compiler flags
 * cubeai
-  * 04.17. ~~timer from prev proj~~
-  * 04.17. ~~float printf~~
-  * 04.17. ~~run example~~
+  * ~~timer from prev proj~~
+  * ~~float printf~~
+  * ~~run example~~
   * document interesting features
   * try the more useful features
   * setup CM4 as well
-* tflite
+* tflite: first setup the proof of concept, then if it is ok, add the flags to optimize and make then toggleable to check mem consumption
   * cpp compilation
+    * ~~constructors, startup, linker script~~
   * setup base
+  * add flags: rtti, exception, developement
   * document more interesting features
   * try the more useful features
   * setup on CM4
 * compare the frameworks
-* try some more and document
+* try some more frameworks and document
 
 * reentrant printf
+
+## Today
+
+To compose my thoughts.
+
+* cpp bootstrap
+* tflite start

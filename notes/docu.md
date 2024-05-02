@@ -91,3 +91,15 @@ todo
 ### Neural net accelerators
 
 todo
+
+## Neural network runtimes
+
+### tflite
+
+#### Getting started
+
+The documentation on the [main tensorflow site](https://www.tensorflow.org/lite/microcontrollers/get_started_low_level) is not up-to-date, neither is the [article](https://www.digikey.com/en/maker/projects/tinyml-getting-started-with-tensorflow-lite-for-microcontrollers/c0cdd850f5004b098d263400aa294023) I used to get started. Building the examples is now done with a different script and the paths to the headers, source files are also different. The [current documentation](https://github.com/tensorflow/tflite-micro/blob/main/tensorflow/lite/micro/docs/new_platform_support.md) is up-to-date in the migrated repository.
+
+#### Memory consumption
+
+It's important to distinguish, how much change the cpp runtime and how much the framework is.

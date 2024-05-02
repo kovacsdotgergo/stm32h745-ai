@@ -89,6 +89,18 @@ Some bad warnings are cast between incompatible pointers and implicit function d
   * [about the hardness of exceptions](https://devblogs.microsoft.com/oldnewthing/20050114-00/?p=36693)
 * STL
 
+### Cpp embedded startup
+
+The only thing I found for the linker script and the startup code to do are calling the constructor for static objects. The destructor for these should never be called as the program does not exit. The function that performs this according to the comment in the startup code is the `__libc_init_array` function. This calls functions that are set up wiht the proper attribute. It might also call the constructors?
+
+[Gcc documentation of the initialization](https://gcc.gnu.org/onlinedocs/gcc-7.1.0/gccint/Initialization.html).
+
+A problem might also occur due to the order of the static constructors and initializations:
+[about the init arrays used by GCC](https://stackoverflow.com/questions/15265295/understanding-the-libc-init-array)
+ -> it might lead to the [static initialization order problem](https://isocpp.org/wiki/faq/ctors#static-init-order)
+
+I have not yet found anything else required for cpp (no additional sections or startup code).
+
 ### Reading about C++
 
 #### Unwind tables
