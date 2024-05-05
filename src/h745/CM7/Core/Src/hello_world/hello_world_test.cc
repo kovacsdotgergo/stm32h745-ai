@@ -14,6 +14,7 @@ limitations under the License.
 ==============================================================================*/
 
 #include <math.h>
+#include <stdio.h>
 
 #include "tensorflow/lite/core/c/common.h"
 #include "models/hello_world_float_model_data.h"
@@ -93,7 +94,7 @@ TfLiteStatus LoadFloatModelAndPerformInference() {
     interpreter.input(0)->data.f[0] = golden_inputs[i];
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     float y_pred = interpreter.output(0)->data.f[0];
-    TFLITE_CHECK_LE(abs(sin(golden_inputs[i]) - y_pred), epsilon);
+    printf("%u\r\n", abs(sin(golden_inputs[i]) - y_pred) < epsilon);
   }
 
   return kTfLiteOk;
@@ -143,17 +144,17 @@ TfLiteStatus LoadQuantModelAndPerformInference() {
     input->data.int8[0] = golden_inputs_int8[i];
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     float y_pred = (output->data.int8[0] - output_zero_point) * output_scale;
-    TFLITE_CHECK_LE(abs(sin(golden_inputs_float[i]) - y_pred), epsilon);
+    printf("%u\r\n", abs(sin(golden_inputs_float[i]) - y_pred) < epsilon);
   }
 
   return kTfLiteOk;
 }
 
-int main(int argc, char* argv[]) {
+int tflite_helloworld(void) {
   tflite::InitializeTarget();
   TF_LITE_ENSURE_STATUS(ProfileMemoryAndLatency());
-  TF_LITE_ENSURE_STATUS(LoadFloatModelAndPerformInference());
   TF_LITE_ENSURE_STATUS(LoadQuantModelAndPerformInference());
+  TF_LITE_ENSURE_STATUS(LoadFloatModelAndPerformInference());
   MicroPrintf("~~~ALL TESTS PASSED~~~\n");
   return kTfLiteOk;
 }

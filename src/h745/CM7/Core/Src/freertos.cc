@@ -28,6 +28,8 @@
 
 #include <stdio.h>
 
+extern int tflite_helloworld(void);
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -125,10 +127,13 @@ extern "C" {
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void StartTfliteTask(void *argument);
+
 extern "C" {
   void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
   static TaskHandle_t defaultTask = NULL;
+  static TaskHandle_t tfliteTask = NULL;
 
   /**
     * @brief  FreeRTOS initialization
@@ -165,6 +170,12 @@ extern "C" {
           tskIDLE_PRIORITY + 1, 			/* Task priority. */
           &defaultTask );				/* Task handle, used to unblock task from interrupt. */
 
+    xTaskCreate( StartTfliteTask,
+        "TfliteTask",
+        4 * 4096,
+        NULL,
+        tskIDLE_PRIORITY + 2,
+        &tfliteTask);
     /* USER CODE BEGIN RTOS_THREADS */
     /* add threads, ... */
     /* USER CODE END RTOS_THREADS */
@@ -195,6 +206,13 @@ void StartDefaultTask(void *pvParameters)
     printf("cm7: %f\r\n", (float)(end - st) / getTIM2Freq());
   }
   /* USER CODE END StartDefaultTask */
+}
+
+void StartTfliteTask(void *pvParameters) {
+  while(1) {
+    tflite_helloworld();
+    vTaskDelay( 1000 / portTICK_PERIOD_MS );
+  }
 }
 
 /* Private application code --------------------------------------------------*/

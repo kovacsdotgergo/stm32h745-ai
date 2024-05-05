@@ -30,6 +30,8 @@ OPT = -O0
 #######################################
 # Build path
 BUILD_DIR = build
+TFLITE_LIBNAME = libtflm.a
+TFLITE_LIB := $(BUILD_DIR)/$(TFLITE_LIBNAME) # it is placed inside the build
 
 ######################################
 # source
@@ -88,7 +90,10 @@ C_SOURCES =  \
 # ../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 
 CXX_SOURCES = \
-../../CM7/Core/Src/freertos.cc
+../../CM7/Core/Src/freertos.cc \
+../../CM7/Core/Src/hello_world/hello_world_test.cc \
+../../CM7/Core/Src/hello_world/models/hello_world_float_model_data.cc \
+../../CM7/Core/Src/hello_world/models/hello_world_int8_model_data.cc
 
 
 # ASM sources
@@ -170,7 +175,8 @@ C_INCLUDES =  \
 -I../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 CXX_INCLUDES = $(C_INCLUDES) \
--I/usr/lib/arm-none-eabi/include/c++/10.3.1
+-I/usr/lib/arm-none-eabi/include/c++/10.3.1 \
+-I../../CM7/Core/Src/hello_world
 
 # compile gcc flags
 ASFLAGS = $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -191,7 +197,7 @@ CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
 CXXFLAGS = \
 	$(OPT) \
-	-std=c++11 \
+	-std=c++17 \
 	-Wall \
 	-fdata-sections \
 	-ffunction-sections \
@@ -223,6 +229,25 @@ LDFLAGS = $(MCU) -specs=nano.specs -u _printf_float -T$(LDSCRIPT) $(LIBDIR) $(LI
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin $(BUILD_DIR)/$(TARGET).list
 
+#######################################
+# tflite
+#######################################
+# todo own built lib
+LIBS += -l:libtensorflow-microlite.a #-l:$(TFLITE_LIBNAME)
+LIBDIR += -L../../Middlewares/Third_Party/tflite_micro #-L$(BUILD_DIR)
+CXX_INCLUDES += \
+	-I$(TFLITE_SRC_DIR) \
+	-I$(TFLITE_SRC_DIR)/third_party/gemmlowp \
+	-I$(TFLITE_SRC_DIR)/third_party/flatbuffers/include \
+	-I$(TFLITE_SRC_DIR)/third_party/kissfft \
+	-I$(TFLITE_SRC_DIR)/third_party/kissfft/tools \
+	-I$(TFLITE_SRC_DIR)/third_party/ruy
+# cmsis_nn includes
+CXX_INCLUDES += \
+	-I$(TFLITE_SRC_DIR)/third_party/cmsis \
+    -I$(TFLITE_SRC_DIR)/third_party/cmsis_nn \
+    -I$(TFLITE_SRC_DIR)/third_party/cmsis_nn/Include \
+    -I$(TFLITE_SRC_DIR)/third_party/cmsis/CMSIS/Core/Include
 
 #######################################
 # build the application
@@ -250,7 +275,7 @@ $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 $(BUILD_DIR)/%.o: %.S Makefile | $(BUILD_DIR)
 	$(AS) -c $(MCU) $(C_DEFS) $(C_INCLUDES) $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile #todo removed this: $(TFLITE_LIB) Makefile
 	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 

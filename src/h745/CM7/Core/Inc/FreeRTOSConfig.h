@@ -83,6 +83,9 @@
 #define configUSE_TICK_HOOK                      0
 #define configUSE_MALLOC_FAILED_HOOK             1
 #define configCHECK_FOR_STACK_OVERFLOW           2
+/* FreeRTOS recording the maximum stack usage, used for debugging 
+It records the start address of the stack */
+#define configRECORD_STACK_HIGH_ADDRESS 1
 
 /* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
 /* Defaults to size_t for backward compatibility, but can be changed

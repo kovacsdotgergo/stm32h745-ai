@@ -2,15 +2,14 @@
 
 # Expected variables from toplevel makefile
 # AR, ARFLAGS
-# CXX, CXXFLAGS
+# CXX, CXXFLAGS, CC, CFLAGS
 # BUILD_DIR
 # MCU
+# TFLITE_LIB
 
-
-TFLITE_BUILD_DIR := $(BUILD_DIR)/tflite
-TFLITE_SRC_DIR := ../../Middlewares/Third_Party/tflite_micro
-
-TFLITE_LIB := $(TFLITE_BUILD_DIR)/libtflm.a # it is placed inside the build
+ROOT_DIR = ../..
+TFLITE_REL_SRC_DIR := Middlewares/Third_Party/tflite_micro
+TFLITE_SRC_DIR := $(ROOT_DIR)/$(TFLITE_REL_SRC_DIR)
 
 # todo: might need to add the printf library, for that base third_party
 TFLITE_INCLUDES := \
@@ -35,27 +34,28 @@ TFLITE_DEFS = \
 
 # sort also removes duplicates
 # TFLITE_INCLUDES += $(sort $(dir $(shell find $(TFLITE_SRC_DIR) -name *.h)))
-TFLITE_SOURCES = $(shell find $(TFLITE_SRC_DIR) -name *.cc)
+TFLITE_SOURCES = $(shell (cd $(ROOT_DIR) && find $(TFLITE_REL_SRC_DIR) -name *.cc -o -name *.c))
 
-TFLITE_OBJECTS = $(addprefix $(TFLITE_BUILD_DIR)/,$(notdir $(TFLITE_SOURCES:.cc=.o)))
-vpath %.cc $(sort $(dir $(TFLITE_SOURCES)))
-
+TFLITE_OBJECTS = $(addprefix $(BUILD_DIR)/,$(patsubst %.c,%.o,$(patsubst %.cc,%.o,$(TFLITE_SOURCES))))
 
 # Building the generated code of the tflite library
 # todo: could use $(lastword $(MAKEFILE_LIST)) for the name of the current makefile (https://www.gnu.org/software/make/manual/html_node/Special-Variables.html)
-$(TFLITE_LIB): $(TFLITE_OBJECTS) tflite.mk | $(TFLITE_BUILD_DIR)
+$(TFLITE_LIB): $(TFLITE_OBJECTS) tflite.mk
+	@mkdir -p $(dir $@)
 	$(AR) $(ARFLAGS) $@ $(TFLITE_OBJECTS)
 
-$(TFLITE_BUILD_DIR)/%.o: %.cc tflite.mk | $(TFLITE_BUILD_DIR)
-	$(CXX) -c $(MCU) $(CXXFLAGS) $(TFLITE_INCLUDES) $(TFLITE_DEFS) -Wa,-a,-ad,-alms=$(TFLITE_BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
+$(BUILD_DIR)/%.o: $(ROOT_DIR)/%.cc tflite.mk
+	@mkdir -p $(dir $@)
+	$(CXX) -c $(MCU) $(CXXFLAGS) $(TFLITE_INCLUDES) $(TFLITE_DEFS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
 
-$(TFLITE_BUILD_DIR):
-	mkdir $@
+$(BUILD_DIR)/%.o: $(ROOT_DIR)/%.c tflite.mk
+	@mkdir -p $(dir $@)
+	$(CC) -c $(MCU) $(CFLAGS) $(TFLITE_INCLUDES) $(TFLITE_DEFS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 tflite: $(TFLITE_LIB)
 
 debug:
-	@echo $(AR) $(ARFLAGS)
+	@echo $(TFLITE_OBJECTS)
 
 # todo: try out, using the dependencies	
--include $(wildcard $(TFLITE_BUILD_DIR)/*.d)
+-include $(wildcard $(BUILD_DIR)/*.d)

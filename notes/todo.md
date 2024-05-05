@@ -81,5 +81,14 @@
 
 To compose my thoughts.
 
-* cpp bootstrap
 * tflite start
+* does build have to depend on headers and not only sources(trigger rebuild)
+
+* summarize steps so far with tflm
+* commit the buggy state
+
+To search for solution:
+* copy into a cubeide project
+* check if mx has a tflite backend
+* try with tutorial code and not helloworld
+* try with different commit?

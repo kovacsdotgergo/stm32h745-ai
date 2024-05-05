@@ -6,7 +6,13 @@
         {
             "label": "build all",
             "type": "shell",
-            "command": "make -j3 -C src/h745/Makefile/",
+            "command": "make -j4 -C src/h745/Makefile/",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build m7 tflite",
+            "type": "shell",
+            "command": "make tflite -j4 -C src/h745/Makefile/CM7",
             "problemMatcher": ["$gcc"]
         },
         {
@@ -18,13 +24,13 @@
         {
             "label": "build m4",
             "type": "shell",
-            "command": "make -j3 -C src/h745/Makefile/CM4",
+            "command": "make -j4 -C src/h745/Makefile/CM4",
             "problemMatcher": ["$gcc"]
         },
         {
             "label": "build m7",
             "type": "shell",
-            "command": "make -j3 -C src/h745/Makefile/CM7",
+            "command": "make -j4 -C src/h745/Makefile/CM7",
             "problemMatcher": ["$gcc"]
         },
         {

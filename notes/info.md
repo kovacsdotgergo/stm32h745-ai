@@ -30,6 +30,10 @@ When updating the previously problematic cache invalidation function, only repla
 
 Updated the OS to 11.0.1.
 
+## FreeRTOS debug
+
+The option configRECORD_STACK_HIGH_ADDRESS is turned on which is additional 4 bytes for each task, it is used only for debug, it records a pointer to the start address of the stack.
+
 ## Serial communication
 
 tio can be used
@@ -85,6 +89,14 @@ One problem is that the default Cortex-Debug SWO config did not work, the other 
     arm-none-eabi-size build/stm32h745-ai_CM7.elf
     text    data     bss     dec     hex filename
     59636     500   11256   71392   116e0 build/stm32h745-ai_CM7.elf
+```
+
+* 05.03. First O0 build with tflite
+
+```shell
+    arm-none-eabi-size build/stm32h745-ai_CM7.elf
+    text    data     bss     dec     hex filename
+    183128     504   11272  194904   2f958 build/stm32h745-ai_CM7.elf
 ```
 
 * todo before adding frameworks

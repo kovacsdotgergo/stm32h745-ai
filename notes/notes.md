@@ -145,3 +145,7 @@ It limits the scope of the init, it can not be accessed outside the init block. 
 * [talk about embedded cpp](https://www.youtube.com/watch?v=wLq-5lBc7x4)
 
 Extern "C" is required for the FreeRTOS hooks and the init functions that are called in e.g. main.
+
+## Hard fault
+
+S
