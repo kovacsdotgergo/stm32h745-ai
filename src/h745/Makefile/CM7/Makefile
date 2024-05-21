@@ -95,7 +95,6 @@ CXX_SOURCES = \
 ../../CM7/Core/Src/hello_world/models/hello_world_float_model_data.cc \
 ../../CM7/Core/Src/hello_world/models/hello_world_int8_model_data.cc
 
-
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32h745xx_CM7.s
@@ -233,7 +232,7 @@ all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET
 # tflite
 #######################################
 # todo own built lib
-LIBS += -l:libtensorflow-microlite.a #-l:$(TFLITE_LIBNAME)
+LIBS += -l:libtflm.a #-l:libtensorflow-microlite.a #-l:$(TFLITE_LIBNAME)
 LIBDIR += -L../../Middlewares/Third_Party/tflite_micro #-L$(BUILD_DIR)
 CXX_INCLUDES += \
 	-I$(TFLITE_SRC_DIR) \

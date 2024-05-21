@@ -81,6 +81,10 @@ Some bad warnings are cast between incompatible pointers and implicit function d
 
 * [great article](https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags)
 
+The cmake file for building for arm cores are in ethos-u-core-platform/cmake/toolchain/arm-none-eabi-gcc.cmake. This sets several flags. It is inlcuded when building for the core.
+
+The tflite-micro/tensorflow/lite/micro/tools/make/targets/cortex_m_generic_makefile.inc is similar, sets up everything used for the core, also sets a bunch of compiler flags, but it is a Makefile.
+
 ## C++
 
 * RTTI
@@ -148,4 +152,11 @@ Extern "C" is required for the FreeRTOS hooks and the init functions that are ca
 
 ## Hard fault
 
-S
+todo: write about the article and the hard fault analyzer
+
+## Checking task stack
+todo: move this section below anything relevant
+`p pxCurrentTCB->pxTopOfStack` stack pointer
+`p pxCurrentTCB->pxStack` end of stack
+`p pxCurrentTCB->pxEndOfStack` beginning of stack
+`(char*)pxCurrentTCB->pxEndOfStack - <variable>` to check the position of the variable on the stack

@@ -91,4 +91,6 @@ To search for solution:
 * copy into a cubeide project
 * check if mx has a tflite backend
 * try with tutorial code and not helloworld
-* try with different commit?
+
+* try the make generated .a on cm4
+* try with different commit (old version)

@@ -94,7 +94,7 @@ TfLiteStatus LoadFloatModelAndPerformInference() {
     interpreter.input(0)->data.f[0] = golden_inputs[i];
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     float y_pred = interpreter.output(0)->data.f[0];
-    printf("%u\r\n", abs(sin(golden_inputs[i]) - y_pred) < epsilon);
+    printf("float[%d] correct: %u\r\n", i, abs(sin(golden_inputs[i]) - y_pred) < epsilon);
   }
 
   return kTfLiteOk;
@@ -144,7 +144,7 @@ TfLiteStatus LoadQuantModelAndPerformInference() {
     input->data.int8[0] = golden_inputs_int8[i];
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     float y_pred = (output->data.int8[0] - output_zero_point) * output_scale;
-    printf("%u\r\n", abs(sin(golden_inputs_float[i]) - y_pred) < epsilon);
+    printf("Quant[%d] correct: %u\r\n", i, abs(sin(golden_inputs_float[i]) - y_pred) < epsilon);
   }
 
   return kTfLiteOk;

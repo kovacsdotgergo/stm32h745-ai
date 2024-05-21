@@ -24,3 +24,12 @@ As a solution I will be switching to a hierarchical build folder.
 ## Tflite bringup, private variable not initialized
 
 When using a 0 initialized private variable of a class (`private: int num_events_ = 0;`), the variable is not actually intialized, and when using it to index an array, HardFault happens. Currently I need to check how the initialization of these classes should happen.
+
+The variable is outside the stack, because the tflite::MicroProfiler class has 4096 events by default, which results in a class size of 81928. Checking the position of the variable on the stack:
+
+```shell
+p (char*)pxCurrentTCB->pxEndOfStack - (char*)&profiler->num_events_
+$33 = -43960
+```
+
+It is outside the stack, maybe this is why the value was corrupted.
