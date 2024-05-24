@@ -22,7 +22,11 @@ TARGET = stm32h745-ai_CM7
 # debug build?
 DEBUG = 1
 # optimization
+ifeq ($(DEBUG), 1)
 OPT = -O0
+else
+OPT = -O3
+endif
 
 
 #######################################

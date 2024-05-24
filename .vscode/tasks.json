@@ -4,27 +4,45 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build all",
+            "label": "build all debug",
             "type": "shell",
-            "command": "make -C src/h745/Makefile/",
+            "command": "make -C src/h745/Makefile/ DEBUG=1",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build m4 debug",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/CM4 DEBUG=1",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build m7 debug",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/CM7 DEBUG=1",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build all release",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/ DEBUG=0",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build m4 release",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/CM4 DEBUG=0",
+            "problemMatcher": ["$gcc"]
+        },
+        {
+            "label": "build m7 release",
+            "type": "shell",
+            "command": "make -C src/h745/Makefile/CM7 DEBUG=0",
             "problemMatcher": ["$gcc"]
         },
         {
             "label": "clean",
             "type": "shell",
             "command": "make clean -C src/h745/Makefile/",
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "build m4",
-            "type": "shell",
-            "command": "make -C src/h745/Makefile/CM4",
-            "problemMatcher": ["$gcc"]
-        },
-        {
-            "label": "build m7",
-            "type": "shell",
-            "command": "make -C src/h745/Makefile/CM7",
             "problemMatcher": ["$gcc"]
         },
         {

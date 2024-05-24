@@ -20,7 +20,7 @@
                 "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
                 "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf"
             ],
-            "preLaunchTask": "build all",
+            "preLaunchTask": "build all debug",
             "preLaunchCommands": [
                 "monitor init",
                 "monitor reset halt"
@@ -55,7 +55,7 @@
             "numberOfProcessors": 2,
             "targetProcessor": 0,
             "configFiles": ["st_nucleo_h745zi.cfg"],
-            "preLaunchTask": "build all",
+            "preLaunchTask": "build all debug",
             "preLaunchCommands": [
                 "monitor init",
                 "monitor reset halt"
