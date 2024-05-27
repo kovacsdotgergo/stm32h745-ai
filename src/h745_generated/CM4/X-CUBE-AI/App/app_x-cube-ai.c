@@ -54,32 +54,32 @@
 #include "app_x-cube-ai.h"
 #include "main.h"
 #include "ai_datatypes_defines.h"
-#include "sine_model.h"
-#include "sine_model_data.h"
+#include "sine_modelm4.h"
+#include "sine_modelm4_data.h"
 
 /* USER CODE BEGIN includes */
 /* USER CODE END includes */
 
 /* IO buffers ----------------------------------------------------------------*/
 
-#if !defined(AI_SINE_MODEL_INPUTS_IN_ACTIVATIONS)
-AI_ALIGNED(4) ai_i8 data_in_1[AI_SINE_MODEL_IN_1_SIZE_BYTES];
-ai_i8* data_ins[AI_SINE_MODEL_IN_NUM] = {
+#if !defined(AI_SINE_MODELM4_INPUTS_IN_ACTIVATIONS)
+AI_ALIGNED(4) ai_i8 data_in_1[AI_SINE_MODELM4_IN_1_SIZE_BYTES];
+ai_i8* data_ins[AI_SINE_MODELM4_IN_NUM] = {
 data_in_1
 };
 #else
-ai_i8* data_ins[AI_SINE_MODEL_IN_NUM] = {
+ai_i8* data_ins[AI_SINE_MODELM4_IN_NUM] = {
 NULL
 };
 #endif
 
-#if !defined(AI_SINE_MODEL_OUTPUTS_IN_ACTIVATIONS)
-AI_ALIGNED(4) ai_i8 data_out_1[AI_SINE_MODEL_OUT_1_SIZE_BYTES];
-ai_i8* data_outs[AI_SINE_MODEL_OUT_NUM] = {
+#if !defined(AI_SINE_MODELM4_OUTPUTS_IN_ACTIVATIONS)
+AI_ALIGNED(4) ai_i8 data_out_1[AI_SINE_MODELM4_OUT_1_SIZE_BYTES];
+ai_i8* data_outs[AI_SINE_MODELM4_OUT_NUM] = {
 data_out_1
 };
 #else
-ai_i8* data_outs[AI_SINE_MODEL_OUT_NUM] = {
+ai_i8* data_outs[AI_SINE_MODELM4_OUT_NUM] = {
 NULL
 };
 #endif
@@ -87,13 +87,13 @@ NULL
 /* Activations buffers -------------------------------------------------------*/
 
 AI_ALIGNED(32)
-static uint8_t pool0[AI_SINE_MODEL_DATA_ACTIVATION_1_SIZE];
+static uint8_t pool0[AI_SINE_MODELM4_DATA_ACTIVATION_1_SIZE];
 
 ai_handle data_activations0[] = {pool0};
 
 /* AI objects ----------------------------------------------------------------*/
 
-static ai_handle sine_model = AI_HANDLE_NULL;
+static ai_handle sine_modelm4 = AI_HANDLE_NULL;
 
 static ai_buffer* ai_input;
 static ai_buffer* ai_output;
@@ -116,37 +116,37 @@ static int ai_boostrap(ai_handle *act_addr)
   ai_error err;
 
   /* Create and initialize an instance of the model */
-  err = ai_sine_model_create_and_init(&sine_model, act_addr, NULL);
+  err = ai_sine_modelm4_create_and_init(&sine_modelm4, act_addr, NULL);
   if (err.type != AI_ERROR_NONE) {
-    ai_log_err(err, "ai_sine_model_create_and_init");
+    ai_log_err(err, "ai_sine_modelm4_create_and_init");
     return -1;
   }
 
-  ai_input = ai_sine_model_inputs_get(sine_model, NULL);
-  ai_output = ai_sine_model_outputs_get(sine_model, NULL);
+  ai_input = ai_sine_modelm4_inputs_get(sine_modelm4, NULL);
+  ai_output = ai_sine_modelm4_outputs_get(sine_modelm4, NULL);
 
-#if defined(AI_SINE_MODEL_INPUTS_IN_ACTIVATIONS)
+#if defined(AI_SINE_MODELM4_INPUTS_IN_ACTIVATIONS)
   /*  In the case where "--allocate-inputs" option is used, memory buffer can be
    *  used from the activations buffer. This is not mandatory.
    */
-  for (int idx=0; idx < AI_SINE_MODEL_IN_NUM; idx++) {
+  for (int idx=0; idx < AI_SINE_MODELM4_IN_NUM; idx++) {
 	data_ins[idx] = ai_input[idx].data;
   }
 #else
-  for (int idx=0; idx < AI_SINE_MODEL_IN_NUM; idx++) {
+  for (int idx=0; idx < AI_SINE_MODELM4_IN_NUM; idx++) {
 	  ai_input[idx].data = data_ins[idx];
   }
 #endif
 
-#if defined(AI_SINE_MODEL_OUTPUTS_IN_ACTIVATIONS)
+#if defined(AI_SINE_MODELM4_OUTPUTS_IN_ACTIVATIONS)
   /*  In the case where "--allocate-outputs" option is used, memory buffer can be
    *  used from the activations buffer. This is no mandatory.
    */
-  for (int idx=0; idx < AI_SINE_MODEL_OUT_NUM; idx++) {
+  for (int idx=0; idx < AI_SINE_MODELM4_OUT_NUM; idx++) {
 	data_outs[idx] = ai_output[idx].data;
   }
 #else
-  for (int idx=0; idx < AI_SINE_MODEL_OUT_NUM; idx++) {
+  for (int idx=0; idx < AI_SINE_MODELM4_OUT_NUM; idx++) {
 	ai_output[idx].data = data_outs[idx];
   }
 #endif
@@ -158,10 +158,10 @@ static int ai_run(void)
 {
   ai_i32 batch;
 
-  batch = ai_sine_model_run(sine_model, ai_input, ai_output);
+  batch = ai_sine_modelm4_run(sine_modelm4, ai_input, ai_output);
   if (batch != 1) {
-    ai_log_err(ai_sine_model_get_error(sine_model),
-        "ai_sine_model_run");
+    ai_log_err(ai_sine_modelm4_get_error(sine_modelm4),
+        "ai_sine_modelm4_run");
     return -1;
   }
 
@@ -172,7 +172,7 @@ static int ai_run(void)
 int acquire_and_process_data(ai_i8* data[])
 {
   /* fill the inputs of the c-model
-  for (int idx=0; idx < AI_SINE_MODEL_IN_NUM; idx++ )
+  for (int idx=0; idx < AI_SINE_MODELM4_IN_NUM; idx++ )
   {
       data[idx] = ....
   }
@@ -184,7 +184,7 @@ int acquire_and_process_data(ai_i8* data[])
 int post_process(ai_i8* data[])
 {
   /* process the predictions
-  for (int idx=0; idx < AI_SINE_MODEL_OUT_NUM; idx++ )
+  for (int idx=0; idx < AI_SINE_MODELM4_OUT_NUM; idx++ )
   {
       data[idx] = ....
   }
@@ -212,7 +212,7 @@ void MX_X_CUBE_AI_Process(void)
 
   printf("TEMPLATE - run - main loop\r\n");
 
-  if (sine_model) {
+  if (sine_modelm4) {
 
     do {
       /* 1 - acquire and pre-process input data */

@@ -101,17 +101,48 @@ The performance measurement application is quite complex, it communicates the me
 Easier options are the blog post about cubeai and tflite, but it was written for a previous version of these frameworks, so the code had to be modified. Similar example code is also available in the documentation of the library. The generated template application is only a touch more complex, so it can also be easily modified.
 
 Building the application on M7 with cubeai example net:
-
 Release:
-
 ```shell
  text    data     bss     dec     hex filename
-57404    2104   11536   71044   11584 build/stm32h745-ai_CM7.elf
+57228    2104   11528   70860   114cc build/stm32h745-ai_CM7.elf
 ```
+runtime ~ 7.5 us
 
 Debug:
-
 ```shell
  text    data     bss     dec     hex filename
-68976    2184   11536   82696   14308 build/stm32h745-ai_CM7.elf
+68784    2184   11528   82496   14240 build/stm32h745-ai_CM7.elf
+```
+runtime ~ 7.8 us
+
+for m4:
+Release:
+```shell
+ text    data     bss     dec     hex filename
+42564    2104   10280   54948    d6a4 build/stm32h745-ai_CM4.elf
+```
+runtime ~ 30.17 us
+
+Debug:
+```shell
+ text    data     bss     dec     hex filename
+48152    2184   10280   60616    ecc8 build/stm32h745-ai_CM4.elf
+```
+runtime ~ 30.7 us
+
+the base project:
+Debug:
+```shell
+ text    data     bss     dec     hex filename
+55580     500   11256   67336   10708 build/stm32h745-ai_CM7.elf
+ text    data     bss     dec     hex filename
+37160     500    9968   47628    ba0c build/stm32h745-ai_CM4.elf
+```
+
+Release:
+```shell
+ text    data     bss     dec     hex filename
+44620     500   11256   56376    dc38 build/stm32h745-ai_CM7.elf
+ text    data     bss     dec     hex filename
+32488     500    9968   42956    a7cc build/stm32h745-ai_CM4.elf
 ```

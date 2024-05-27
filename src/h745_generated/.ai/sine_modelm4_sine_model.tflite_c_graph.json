@@ -420,7 +420,7 @@
         }
     ],
     "c_activations_count": 1,
-    "date_time": "Sun May 26 18:02:53 2024",
+    "date_time": "Sun May 26 18:02:35 2024",
     "model_name": "sine_model",
     "tool_version": {
         "major": 1,
@@ -441,7 +441,7 @@
         "buffer_crc": 0,
         "pool_size": 1284,
         "buffer_c_type": "u64",
-        "buffer_c_name": "s_sine_model_weights_array_u64",
+        "buffer_c_name": "s_sine_modelm4_weights_array_u64",
         "buffer_offsets": [
             {
                 "lite_tag": null,
@@ -486,7 +486,7 @@
                 "buffer_name": "gemm_2_bias_array"
             }
         ],
-        "buffer_c_name_addr": "s_sine_model_weights_array_u64",
+        "buffer_c_name_addr": "s_sine_modelm4_weights_array_u64",
         "buffer_c_count": 161,
         "pool_id": 0,
         "buffer_c_data": []
@@ -565,6 +565,6 @@
         "pool_id": 0
     }},
     "c_arrays_n": 12,
-    "c_name": "sine_model",
+    "c_name": "sine_modelm4",
     "memory_pools": []
 }

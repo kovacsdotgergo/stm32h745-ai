@@ -34,7 +34,7 @@
             "cwd": "${workspaceRoot}",
             "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
             "servertype": "external",
-            "gdbTarget": "localhost:50001",
+            "gdbTarget": "localhost:50002",
             "device": "STM32H745ZI",
             "numberOfProcessors": 2,
             "targetProcessor": 1,

@@ -19,8 +19,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
-
 #include "task.h"
+
 #include "main.h"
 #include "gpio.h"
 #include "usart.h"
@@ -163,15 +163,17 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* creation of defaultTask */
+  #if 1
   xTaskCreate( StartDefaultTask, 			/* Function that implements the task. */
 				 "DefaultTaskM7Core", 				/* Task name, for debugging only. */
 				 2*configMINIMAL_STACK_SIZE,  /* Size of stack (in words) to allocate for this task. */
 				 NULL, 						/* Task parameter, not used in this case. */
 				 tskIDLE_PRIORITY + 1, 			/* Task priority. */
 				 &defaultTask );				/* Task handle, used to unblock task from interrupt. */
-
+  #else
   xTaskCreate( StartCubeAITask, "CubeAITask", 2*configMINIMAL_STACK_SIZE,
                NULL, tskIDLE_PRIORITY + 2, &cubeAITask);
+  #endif
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -206,10 +208,10 @@ void StartDefaultTask(void *pvParameters)
 
 void StartCubeAITask(void *pvParameters)
 {
+  (void)pvParameters;
   /* USER CODE BEGIN StartDefaultTask */
   ai_error ai_err;
   ai_i32 nbatch;
-  uint32_t timestamp;
   float y_val;
 
   // Chunk of memory used to hold intermediate values for neural network

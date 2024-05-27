@@ -1,7 +1,7 @@
 {
     "_allocate_inputs": 4,
     "_allocate_outputs": 4,
-    "cli_parameters": "generate --name sine_model -m /home/gergo/workspace/stm32h745-ai/src/nn/sine_model.tflite --type tflite --compression none --verbosity 1 --workspace /tmp/mxAI_workspace115193647092844284397790223715718 --output /home/gergo/.stm32cubemx/sine_model_output --allocate-inputs --series stm32h7 --allocate-outputs",
+    "cli_parameters": "generate --name sine_modelm4 -m /home/gergo/workspace/stm32h745-ai/src/nn/sine_model.tflite --type tflite --compression none --verbosity 1 --workspace /tmp/mxAI_workspace1150288202735312786348126048777032 --output /home/gergo/.stm32cubemx/sine_modelm4_output --allocate-inputs --series stm32h7 --allocate-outputs",
     "cli_version": {
         "major": 1,
         "micro": 0,
@@ -13,7 +13,7 @@
         "factor": null,
         "layers": {}
     },
-    "date_time": "Sun May 26 18:02:53 2024",
+    "date_time": "Sun May 26 18:02:35 2024",
     "error": 0,
     "error_str": [],
     "exec_cmd": "generate",
@@ -283,7 +283,7 @@
     "model_name": "sine_model",
     "model_size": 1284,
     "model_type": "tflite",
-    "name": "sine_model",
+    "name": "sine_modelm4",
     "outputs": [
         "gemm_2"
     ],

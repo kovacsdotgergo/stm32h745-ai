@@ -24,8 +24,13 @@
 #include "main.h"
 #include "tim.h"
 #include "usart.h"
+
 #include <stdio.h>
 
+#include "ai_datatypes_defines.h"
+#include "ai_platform.h"
+#include "sine_modelm4.h"
+#include "sine_modelm4_data.h"
 // #include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
@@ -123,10 +128,12 @@ static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
+void StartCubeAITask(void* pvParameters);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 static TaskHandle_t defaultTask = NULL;
+static TaskHandle_t cubeAITask = NULL;
 /**
   * @brief  FreeRTOS initialization
   * @param  None
@@ -155,13 +162,18 @@ void MX_FREERTOS_Init(void) {
 
   /* Create the thread(s) */
   /* creation of defaultTask */
+  // IMPRTANT: also the crc init has to be commendted out in main on the core without the ai task
+  #if 0
   xTaskCreate( StartDefaultTask, 			/* Function that implements the task. */
 				 "DefaultTaskM7Core", 				/* Task name, for debugging only. */
-				 2*configMINIMAL_STACK_SIZE,  /* Size of stack (in words) to allocate for this task. */
+				 2*configMINIMAL_STACK_SIZE,  /* Size of stack (in worsds) to allocate for this task. */
 				 NULL, 						/* Task parameter, not used in this case. */
 				 tskIDLE_PRIORITY + 1, 			/* Task priority. */
 				 &defaultTask );				/* Task handle, used to unblock task from interrupt. */
-
+  #else
+  xTaskCreate( StartCubeAITask, "CubeAITask", 2*configMINIMAL_STACK_SIZE,
+              NULL, tskIDLE_PRIORITY + 2, &cubeAITask);
+  #endif
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -195,6 +207,91 @@ void StartDefaultTask(void *pvParameters)
   /* USER CODE END StartDefaultTask */
 }
 
+void StartCubeAITask(void *pvParameters)
+{
+  (void)pvParameters;
+  /* USER CODE BEGIN StartDefaultTask */
+  ai_error ai_err;
+  ai_i32 nbatch;
+  float y_val;
+
+  // Chunk of memory used to hold intermediate values for neural network
+  AI_ALIGNED(4) static ai_u8 activations[AI_SINE_MODELM4_DATA_ACTIVATIONS_SIZE];
+
+  // Buffers used to store input and output tensors
+  AI_ALIGNED(4) static ai_i8 in_data[AI_SINE_MODELM4_IN_1_SIZE_BYTES];
+  AI_ALIGNED(4) static ai_i8 out_data[AI_SINE_MODELM4_OUT_1_SIZE_BYTES];
+
+  // Pointer to our model
+  ai_handle sine_model = AI_HANDLE_NULL;
+
+  // Initialize wrapper structs that hold pointers to data and info about the
+  // data (tensor height, width, channels)
+  ai_buffer* ai_input = AI_SINE_MODELM4_IN;
+  ai_buffer* ai_output = AI_SINE_MODELM4_OUT;
+
+  // Set pointers wrapper structs to our data buffers
+  //ai_input[0].n_batches = 1;
+  ai_input[0].data = AI_HANDLE_PTR(in_data);
+  //ai_output[0].n_batches = 1;
+  ai_output[0].data = AI_HANDLE_PTR(out_data);
+
+  // Greetings!
+  printf("\r\n\r\nSTM32 X-Cube-AI test\r\n");
+
+  // Create instance of neural network
+  ai_err = ai_sine_modelm4_create(&sine_model, AI_SINE_MODELM4_DATA_CONFIG);
+  if (ai_err.type != AI_ERROR_NONE)
+  {
+    printf("Error: could not create NN instance\r\n");
+    while(1);
+  }
+
+  // Set working memory and get weights/biases from model
+  ai_network_params ai_params = {
+    AI_SINE_MODELM4_DATA_WEIGHTS(ai_sine_modelm4_data_weights_get()),
+    AI_SINE_MODELM4_DATA_ACTIVATIONS(activations)
+  };
+
+  // Initialize neural network
+  if (!ai_sine_modelm4_init(sine_model, &ai_params))
+  {
+    printf("Error: could not initialize NN\r\n");
+    while(1);
+  }
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    // Fill input buffer (use test value)
+    for (uint32_t i = 0; i < AI_SINE_MODELM4_IN_1_SIZE; i++)
+    {
+      ((ai_float *)in_data)[i] = (ai_float)2.0f;
+    }
+
+    // Get current timestamp
+    uint32_t timestamp = __HAL_TIM_GET_COUNTER(&htim2);
+
+    // Perform inference
+    nbatch = ai_sine_modelm4_run(sine_model, &ai_input[0], &ai_output[0]);
+    if (nbatch != 1) {
+      printf("Error: could not run inference\r\n");
+    }
+
+    // Read output (predicted y) of neural network
+    y_val = ((float *)out_data)[0];
+
+    // Print output of neural network along with inference time (microseconds)
+    uint32_t runtime = __HAL_TIM_GET_COUNTER(&htim2) - timestamp;
+    printf("Output: %f | Duration: %f [us]\r\n",
+                      y_val,
+                      1000000.0F * (float)runtime / getTIM2Freq());
+
+    // Wait before doing it again
+    vTaskDelay( 500 / portTICK_PERIOD_MS );
+  }
+}
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
