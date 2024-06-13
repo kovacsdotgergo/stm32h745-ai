@@ -17,6 +17,8 @@
 
 ## Building and utilities with lower prio
 
+* make the openocd startup cleaner (no messages about already halting and change timeout)
+* add correct handling of dependecies to makefiles
 * change the source paths in makefile to help vscode locate the errors
 * tio config file and vscode task
 * colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)
@@ -72,10 +74,18 @@
   * document more interesting features
   * try the more useful features
   * setup on CM4
+  * check if with the project generation macro the time measurement and profiling is correctly implemented
 * compare the frameworks
 * try some more frameworks and document
 
 * reentrant printf
+
+## To finish off the tflite debug
+
+* ~~setup own compilation of lib~~
+* remove static libs and anything added not neccessary durig the debug commits
+* commit
+* to continue: remove the google test net and try all own test models
 
 ## Today
 

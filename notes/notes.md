@@ -85,6 +85,12 @@ The cmake file for building for arm cores are in ethos-u-core-platform/cmake/too
 
 The tflite-micro/tensorflow/lite/micro/tools/make/targets/cortex_m_generic_makefile.inc is similar, sets up everything used for the core, also sets a bunch of compiler flags, but it is a Makefile.
 
+## Objdump
+
+* `-t` is the symbol tables
+* `-h` section headers
+* `-S` and `-d` source and disassembly
+
 ## C++
 
 * RTTI

@@ -10,34 +10,35 @@
 #   2015-07-22 - first version
 # ------------------------------------------------
 
+# default rule only required because the tflite makefile has rules which appear before `all`, so those would be the default target
+.PHONY: default all
+default: all
 ######################################
 # target
 ######################################
-TARGET = stm32h745-ai_CM7
-
+TARGET := stm32h745-ai_CM7
 
 ######################################
 # building variables
 ######################################
 # debug build?
-DEBUG = 1
+DEBUG := 1
 # optimization
-OPT = -O0
+OPT := -O0
 
 
 #######################################
 # paths
 #######################################
 # Build path
-BUILD_DIR = build
-TFLITE_LIBNAME = libtflm.a
+BUILD_DIR := build
+TFLITE_LIBNAME := libtflm.a
 TFLITE_LIB := $(BUILD_DIR)/$(TFLITE_LIBNAME) # it is placed inside the build
 
 ######################################
 # source
 ######################################
-# C sources
-C_SOURCES =  \
+C_SOURCES :=  \
 ../../CM7/X-CUBE-AI/App/sine_model_data.c \
 ../../CM7/X-CUBE-AI/App/sine_model.c \
 ../../CM7/X-CUBE-AI/App/sine_model_data_params.c \
@@ -89,80 +90,66 @@ C_SOURCES =  \
 # Excluded according to https://nadler.com/embedded/newlibAndFreeRTOS.html
 # ../../Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
 
-CXX_SOURCES = \
+CXX_SOURCES := \
 ../../CM7/Core/Src/freertos.cc \
 ../../CM7/Core/Src/hello_world/hello_world_test.cc \
 ../../CM7/Core/Src/hello_world/models/hello_world_float_model_data.cc \
 ../../CM7/Core/Src/hello_world/models/hello_world_int8_model_data.cc
 
-# ASM sources
-ASM_SOURCES =  \
+ASM_SOURCES :=  \
 startup_stm32h745xx_CM7.s
 
-# ASM sources
-ASMM_SOURCES = 
-
+ASMM_SOURCES := 
 
 #######################################
 # binaries
 #######################################
-PREFIX = arm-none-eabi-
+PREFIX := arm-none-eabi-
 # The gcc compiler bin path can be either defined in make command via GCC_PATH variable (> make GCC_PATH=xxx)
 # either it can be added to the PATH environment variable.
 ifdef GCC_PATH
-CC = $(GCC_PATH)/$(PREFIX)gcc
-CXX = $(GCC_PATH)/$(PREFIX)g++
-AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
-CP = $(GCC_PATH)/$(PREFIX)objcopy
-SZ = $(GCC_PATH)/$(PREFIX)size
-DP = $(GCC_PATH)/$(PREFIX)objdump
-AR = $(GCC_PATH)/$(PREFIX)ar
+CC := $(GCC_PATH)/$(PREFIX)gcc
+CXX := $(GCC_PATH)/$(PREFIX)g++
+AS := $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
+CP := $(GCC_PATH)/$(PREFIX)objcopy
+SZ := $(GCC_PATH)/$(PREFIX)size
+DP := $(GCC_PATH)/$(PREFIX)objdump
+AR := $(GCC_PATH)/$(PREFIX)ar
 else
-CC = $(PREFIX)gcc
-CXX = $(PREFIX)g++
-AS = $(PREFIX)gcc -x assembler-with-cpp
-CP = $(PREFIX)objcopy
-SZ = $(PREFIX)size
-DP = $(PREFIX)objdump
-AR = $(PREFIX)ar
+CC := $(PREFIX)gcc
+CXX := $(PREFIX)g++
+AS := $(PREFIX)gcc -x assembler-with-cpp
+CP := $(PREFIX)objcopy
+SZ := $(PREFIX)size
+DP := $(PREFIX)objdump
+AR := $(PREFIX)ar
 endif
-HEX = $(CP) -O ihex
-BIN = $(CP) -O binary -S
+HEX := $(CP) -O ihex
+BIN := $(CP) -O binary -S
  
-# ARFLAGS
 ARFLAGS := -rcs
 
 #######################################
 # CFLAGS
 #######################################
-# cpu
-CPU = -mcpu=cortex-m7
-
-# fpu
-FPU = -mfpu=fpv5-d16
-
-# float-abi
-FLOAT-ABI = -mfloat-abi=hard
-
-# mcu
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
+CPU := -mcpu=cortex-m7
+FPU := -mfpu=fpv5-d16
+FLOAT-ABI := -mfloat-abi=hard
+MCU := $(CPU) -mthumb $(FPU) $(FLOAT-ABI)
 
 # macros for gcc
-# AS defines
-AS_DEFS = 
+AS_DEFS := 
 
-# C defines
-C_DEFS =  \
+C_DEFS :=  \
 -DCORE_CM7 \
 -DUSE_HAL_DRIVER \
 -DSTM32H745xx
 
+CXX_DEFS := $(C_DEFS) 
 
-# AS includes
-AS_INCLUDES = 
+AS_INCLUDES := 
 
-# C includes
-C_INCLUDES =  \
+C_INCLUDES :=  \
 -I../../CM7/Core/Inc \
 -I../../Middlewares/ST/AI/Inc \
 -I../../CM7/X-CUBE-AI/App \
@@ -173,12 +160,12 @@ C_INCLUDES =  \
 -I../../Middlewares/Third_Party/FreeRTOS/Source/include \
 -I../../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
-CXX_INCLUDES = $(C_INCLUDES) \
+CXX_INCLUDES := $(C_INCLUDES) \
 -I/usr/lib/arm-none-eabi/include/c++/10.3.1 \
 -I../../CM7/Core/Src/hello_world
 
 # compile gcc flags
-ASFLAGS = $(OPT) -Wall -fdata-sections -ffunction-sections
+ASFLAGS := $(OPT) -Wall -fdata-sections -ffunction-sections
 
 # todo remove the parts that are not flags so that it can be customized in dep libs
 CFLAGS += \
@@ -214,39 +201,33 @@ endif
 CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
 #######################################
+# tflite
+#######################################
+# todo own built lib
+LIBS := -l:$(TFLITE_LIBNAME) #-l:libtensorflow-microlite.a #-l:$(TFLITE_LIBNAME)
+LIBDIR := -L$(BUILD_DIR) # -L../../Middlewares/Third_Party/tflite_micro
+
+include tflite.mk
+
+CXX_DEFS += $(TFLITE_DEFS)
+CXX_INCLUDES += $(TFLITE_INCLUDES)
+
+#######################################
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = stm32h745xx_flash_CM7.ld
+LDSCRIPT := stm32h745xx_flash_CM7.ld
 
 # libraries
-LIBS = -lc -lm -lnosys
-LIBDIR =  \
+LIBS += -lc -lm -lnosys
+LIBDIR +=  \
 -L../../Middlewares/ST/AI/Lib
-LDFLAGS = $(MCU) -specs=nano.specs -u _printf_float -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS := $(MCU) -specs=nano.specs -u _printf_float -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin $(BUILD_DIR)/$(TARGET).list
 
-#######################################
-# tflite
-#######################################
-# todo own built lib
-LIBS += -l:libtflm.a #-l:libtensorflow-microlite.a #-l:$(TFLITE_LIBNAME)
-LIBDIR += -L../../Middlewares/Third_Party/tflite_micro #-L$(BUILD_DIR)
-CXX_INCLUDES += \
-	-I$(TFLITE_SRC_DIR) \
-	-I$(TFLITE_SRC_DIR)/third_party/gemmlowp \
-	-I$(TFLITE_SRC_DIR)/third_party/flatbuffers/include \
-	-I$(TFLITE_SRC_DIR)/third_party/kissfft \
-	-I$(TFLITE_SRC_DIR)/third_party/kissfft/tools \
-	-I$(TFLITE_SRC_DIR)/third_party/ruy
-# cmsis_nn includes
-CXX_INCLUDES += \
-	-I$(TFLITE_SRC_DIR)/third_party/cmsis \
-    -I$(TFLITE_SRC_DIR)/third_party/cmsis_nn \
-    -I$(TFLITE_SRC_DIR)/third_party/cmsis_nn/Include \
-    -I$(TFLITE_SRC_DIR)/third_party/cmsis/CMSIS/Core/Include
+tflite: $(TFLITE_LIB)
 
 #######################################
 # build the application
@@ -267,14 +248,14 @@ $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	$(CC) -c $(MCU) $(C_DEFS) $(C_INCLUDES) $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.cc Makefile | $(BUILD_DIR) 
-	$(CXX) -c $(MCU) $(C_DEFS) $(CXX_INCLUDES) $(CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
+	$(CXX) -c $(MCU) $(CXX_DEFS) $(CXX_INCLUDES) $(CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(MCU) $(C_DEFS) $(C_INCLUDES) $(CFLAGS) $< -o $@
 $(BUILD_DIR)/%.o: %.S Makefile | $(BUILD_DIR)
 	$(AS) -c $(MCU) $(C_DEFS) $(C_INCLUDES) $(CFLAGS) $< -o $@
 
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile #todo removed this: $(TFLITE_LIB) Makefile
+$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) $(TFLITE_LIB) Makefile #todo removed this: $(TFLITE_LIB) Makefile
 	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
 	$(SZ) $@
 

@@ -115,3 +115,28 @@ One option is the tree generation script. There is also an example makefile that
 There is also a makefile that builds the library directly with the command `make -f tensorflow/lite/micro/tools/make/Makefile TARGET=cortex_m_generic TARGET_ARCH=cortex-m4+fp OPTIMIZED_KERNEL_DIR=cmsis_nn microlite`. To fit in the stack, the profiler has to be adjusted similarly.
 
 CubeMX can also use tflite as a backend when using .tflite networks. This adds a c api for tflite as well. When selecting this, it was not buildable, sources were not inlcuded in the build and absolutely no cpp building process was included for tflite micro.
+
+#### TFLM retrurning wrong outputs after running the net
+
+My first suspition was that the Cpp build system is not correct, so I made a class checking if all static and non static (and const) variables are correctly initialized. All of them are correct, so this should not be a probelm. I also tried with a class where these objects are part of and array after reading about runtime functions required for [threadsafe statics and vector initialization](https://itanium-cxx-abi.github.io/cxx-abi/abi.html#once-ctor). `-fno-threadsafe-statics` controls the thread safety of these varibales, but doesn't turn off the guard variables that are used to check if the static member variable of a class is initialized, this is still required to only have a single init.
+
+I have also checked if there are sections in the cc object files that are not handled (saw .ctros and .dtors sections on forums), but found none. There is one interesting function in the `freertos.o`, a function for static initialization and destruction.
+
+Next is using a single neuron with linear activation to debug. For this I have written a new notebook, in which I used `xxd -i` to produce the binary array.
+
+There are different tools for tflm developement in the repository. For the debug purposes I used two of them:
+
+* The first was `generate_micro_mutable_op_resolver_from_model`. This generates a function that produces the OpResolver class based on a tflite file. It contains the needed layers that are used by the network.
+* The second is the `visualize` script that generates html from a tflite file, similar information can be extracted as when using the Tensorflow Lite interpreter in python.
+
+These were all correct and the quantized model required only the fully connected input and still produced the wrong output. The float model with only one layer and one neuron returned the correct output.
+
+##### Debugging the quantized model
+
+The inputs and outputs are not in the correct format. Both are given with float test values and the quantized int8 values are calculated using the scale and zero_point values. These paramterers are not the correct values and when requesting the input and output of the network, even the type of the tensor is incorrect (float32 instead of int8).
+
+The main reason of the incorrect behaviour is that the tensor (`TfLiteTensor`) structure contained wrong quantization parameter and type values (`params` and `type` field). When debugging I suspected that reading in the Flatbuffer format is incorrect. I debugged this part and the format was correct in the functions inside the library (`interpreter.AllocateTensors()` call). The incorrect values appeared when returning from this call. When checking the layout of this type in the debugger it differed inside the library and inside my code, so the typedef had to be incorrect of coming from different sources.
+
+![image from debugger checking the two different layouts of the `TfLiteTensor` struct](images/tflm_debug.PNG)
+
+The two typedefs of this file in `common.h` are guarded by a `TF_LITE_STATIC_MEMORY` define. I have found one [question](https://github.com/tensorflow/tflite-micro/issues/2528) about the function of this define.
