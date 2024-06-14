@@ -1,23 +1,14 @@
 # Short and long range plans
 
-* merging the hex of bin or elf files
-* loading the application for release mode
-* loadign the application for debug mode
-* use of the cross trigger interface
-* openocd or stlink
-
-* research about isa, nn acceleratos...
-* try compilers
-
-## Ai compilers
-
-* cube ai
-* tflite
-* nvidia
+* finish off the network tests
+* choose a useful net
+* feeding it
+* optimization
 
 ## Building and utilities with lower prio
 
 * make the openocd startup cleaner (no messages about already halting and change timeout)
+* reentrant printf
 * add correct handling of dependecies to makefiles
 * change the source paths in makefile to help vscode locate the errors
 * tio config file and vscode task
@@ -59,48 +50,21 @@
   * synchronize the print -> it doesn't even conflict right now, but hsem would be nice
   * setup the release build
   * update compiler flags
-* cubeai
-  * ~~timer from prev proj~~
-  * ~~float printf~~
-  * ~~run example~~
-  * document interesting features
-  * try the more useful features
-  * setup CM4 as well
-* tflite: first setup the proof of concept, then if it is ok, add the flags to optimize and make then toggleable to check mem consumption
-  * cpp compilation
-    * ~~constructors, startup, linker script~~
-  * setup base
-  * add flags: rtti, exception, developement
-  * document more interesting features
-  * try the more useful features
-  * setup on CM4
-  * check if with the project generation macro the time measurement and profiling is correctly implemented
-* compare the frameworks
-* try some more frameworks and document
 
-* reentrant printf
+* cubeai
+* tflite
+  * compilation
+  * both cores
+  * measurement
+* glow
 
 ## To finish off the tflite debug
 
-* ~~setup own compilation of lib~~
-* remove static libs and anything added not neccessary durig the debug commits
-* commit
-* to continue: remove the google test net and try all own test models
+* ~~to continue: remove the google test net and try all own test models~~
+* cm4 also
+* PROJECT_GENERATION macro implementation
+* cpp compilation
+* measure performance
+* integrate both in one project
 
-## Today
-
-To compose my thoughts.
-
-* tflite start
-* does build have to depend on headers and not only sources(trigger rebuild)
-
-* summarize steps so far with tflm
-* commit the buggy state
-
-To search for solution:
-* copy into a cubeide project
-* check if mx has a tflite backend
-* try with tutorial code and not helloworld
-
-* try the make generated .a on cm4
-* try with different commit (old version)
+* more frameworks

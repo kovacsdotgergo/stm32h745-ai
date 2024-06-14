@@ -15,11 +15,16 @@ limitations under the License.
 
 #include "tensorflow/lite/micro/system_setup.h"
 
+#include <cstdio>
+
+#include "tensorflow/lite/micro/cortex_m_generic/debug_log_callback.h"
+
 namespace tflite {
 
+void debug_log_printf(const char* s) { printf(s); }
 // To add an equivalent function for your own platform, create your own
 // implementation file, and place it in a subfolder named after the target. See
 // tensorflow/lite/micro/debug_log.cc for a similar example.
-void InitializeTarget() {}
+void InitializeTarget() { RegisterDebugLogCallback(debug_log_printf); }
 
 }  // namespace tflite

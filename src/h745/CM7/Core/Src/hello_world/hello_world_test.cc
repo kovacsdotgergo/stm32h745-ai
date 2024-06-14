@@ -14,16 +14,14 @@ limitations under the License.
 ==============================================================================*/
 
 #include <math.h>
-#include <cstdio>
-#include "models/debug_model_fb_quant.h"
-#include "models/debug_model_no_quant.h"
-#include "models/debug_model_dyn_quant.h"
-#include "models/debug_model_full_quant.h"
-#include "tensorflow/lite/micro/cortex_m_generic/debug_log_callback.h"
 
+#include <cstdio>
+
+#include "models/sine_model_dyn_quant.h"
+#include "models/sine_model_fb_quant.h"
+#include "models/sine_model_full_quant.h"
+#include "models/sine_model_no_quant.h"
 #include "tensorflow/lite/core/c/common.h"
-#include "models/hello_world_float_model_data.h"
-#include "models/hello_world_int8_model_data.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
@@ -41,7 +39,7 @@ TfLiteStatus RegisterOps(QuantOpResolver& op_resolver) {
   return kTfLiteOk;
 }
 
-TfLiteStatus RegisterOpsWithQuant(FloatOpResolver& op_resolver) {
+TfLiteStatus RegisterOps(FloatOpResolver& op_resolver) {
   TF_LITE_ENSURE_STATUS(op_resolver.AddFullyConnected());
   TF_LITE_ENSURE_STATUS(op_resolver.AddQuantize());
   TF_LITE_ENSURE_STATUS(op_resolver.AddDequantize());
@@ -49,15 +47,10 @@ TfLiteStatus RegisterOpsWithQuant(FloatOpResolver& op_resolver) {
 }
 }  // namespace
 
-void debug_log_printf(const char* s) {
-  printf(s);
-}
-
 TfLiteStatus ProfileMemoryAndLatency(const void* p_model) {
   tflite::MicroProfiler profiler;
   FloatOpResolver op_resolver;
-  TF_LITE_ENSURE_STATUS(RegisterOpsWithQuant(op_resolver));
-  RegisterDebugLogCallback(debug_log_printf);
+  TF_LITE_ENSURE_STATUS(RegisterOps(op_resolver));
 
   // Arena size just a round number. The exact arena usage can be determined
   // using the RecordingMicroInterpreter.
@@ -86,12 +79,11 @@ TfLiteStatus ProfileMemoryAndLatency(const void* p_model) {
 }
 
 TfLiteStatus LoadFloatModelAndPerformInference(const void* p_model) {
-  const tflite::Model* model =
-      ::tflite::GetModel(p_model);
+  const tflite::Model* model = ::tflite::GetModel(p_model);
   TFLITE_CHECK_EQ(model->version(), TFLITE_SCHEMA_VERSION);
 
   FloatOpResolver op_resolver;
-  TF_LITE_ENSURE_STATUS(RegisterOpsWithQuant(op_resolver));
+  TF_LITE_ENSURE_STATUS(RegisterOps(op_resolver));
 
   // Arena size just a round number. The exact arena usage can be determined
   // using the RecordingMicroInterpreter.
@@ -105,14 +97,15 @@ TfLiteStatus LoadFloatModelAndPerformInference(const void* p_model) {
   // Check if the predicted output is within a small range of the
   // expected output
   float epsilon = 0.05f;
-  float golden_inputs[] = {-5.0F, -3.0F, -1.0F, -0.3F, 0.f, 0.5F, 1.f, 3.f, 5.f};
-  constexpr int kNumTestValues = sizeof(golden_inputs) / sizeof(golden_inputs[0]);
+  float golden_inputs[] = {0.0F, 0.5F, 1.0F, 3.0F, 5.0F};
+  constexpr int kNumTestValues =
+      sizeof(golden_inputs) / sizeof(golden_inputs[0]);
 
   for (int i = 0; i < kNumTestValues; ++i) {
     interpreter.input(0)->data.f[0] = golden_inputs[i];
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     float y_pred = interpreter.output(0)->data.f[0];
-    printf("float[%d] out: %f correct: %f\r\n", i, y_pred, golden_inputs[i]);
+    printf("float[%d] out: %f correct: %f\r\n", i, y_pred, sin(golden_inputs[i]));
   }
 
   return kTfLiteOk;
@@ -121,8 +114,7 @@ TfLiteStatus LoadFloatModelAndPerformInference(const void* p_model) {
 TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
-  const tflite::Model* model =
-      ::tflite::GetModel(p_model);
+  const tflite::Model* model = ::tflite::GetModel(p_model);
   TFLITE_CHECK_EQ(model->version(), TFLITE_SCHEMA_VERSION);
 
   QuantOpResolver op_resolver;
@@ -144,9 +136,6 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
   TfLiteTensor* output = interpreter.output(0);
   TFLITE_CHECK_NE(output, nullptr);
 
-  // todo to check if with the correct type and quantization it is ok
-  // tdoo
-
   float output_scale = output->params.scale;
   int output_zero_point = output->params.zero_point;
 
@@ -161,15 +150,16 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
   // (golden_inputs_float[i] / input->params.scale + input->params.scale)
   int8_t golden_inputs_int8[kNumTestValues];
   for (size_t i = 0; i < kNumTestValues; ++i) {
-    golden_inputs_int8[i] = golden_inputs_float[i] / input->params.scale 
-                          + input->params.zero_point;
+    golden_inputs_int8[i] =
+        golden_inputs_float[i] / input->params.scale + input->params.zero_point;
   }
 
   for (int i = 0; i < kNumTestValues; ++i) {
     input->data.int8[0] = golden_inputs_int8[i];
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     float y_pred = (output->data.int8[0] - output_zero_point) * output_scale;
-    printf("quant[%d] out: %f correct: %f\r\n", i, y_pred, golden_inputs_float[i]);
+    printf("quant[%d] out: %f correct: %f\r\n", i, y_pred,
+           sin(golden_inputs_float[i]));
   }
 
   return kTfLiteOk;
@@ -177,15 +167,19 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
 
 int tflite_helloworld(void) {
   tflite::InitializeTarget();
-  TF_LITE_ENSURE_STATUS(ProfileMemoryAndLatency(debug_model_no_quant_tflite));
-  MicroPrintf("NO quantization\n");
-  TF_LITE_ENSURE_STATUS(LoadFloatModelAndPerformInference(debug_model_no_quant_tflite));
-  MicroPrintf("Fallback quantization\n");
-  TF_LITE_ENSURE_STATUS(LoadFloatModelAndPerformInference(debug_model_fb_quant_tflite));
+  TF_LITE_ENSURE_STATUS(ProfileMemoryAndLatency(sine_model_no_quant_tflite));
+  MicroPrintf("NO quantization");
+  TF_LITE_ENSURE_STATUS(
+      LoadFloatModelAndPerformInference(sine_model_no_quant_tflite));
+  MicroPrintf("Fallback quantization");
+  TF_LITE_ENSURE_STATUS(
+      LoadFloatModelAndPerformInference(sine_model_fb_quant_tflite));
   MicroPrintf("Dynamic quantization");
-  TF_LITE_ENSURE_STATUS(LoadFloatModelAndPerformInference(debug_model_dyn_quant_tflite));
-  MicroPrintf("Full quantization\n");
-  TF_LITE_ENSURE_STATUS(LoadQuantModelAndPerformInference(debug_model_full_quant_tflite));
+  TF_LITE_ENSURE_STATUS(
+      LoadFloatModelAndPerformInference(sine_model_dyn_quant_tflite));
+  MicroPrintf("Full quantization");
+  TF_LITE_ENSURE_STATUS(
+      LoadQuantModelAndPerformInference(sine_model_full_quant_tflite));
   MicroPrintf("~~~END OF HELLO WORLD~~~\n");
   return kTfLiteOk;
 }
