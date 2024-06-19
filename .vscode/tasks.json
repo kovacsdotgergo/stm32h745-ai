@@ -5,8 +5,7 @@
     "tasks": [
         {
             "label": "build all",
-            "type": "shell",
-            "command": "make -j4 -C src/h745/Makefile/",
+            "dependsOn": ["build m7", "build m4"],
             "problemMatcher": ["$gcc"]
         },
         {
@@ -24,20 +23,20 @@
         {
             "label": "build m4",
             "type": "shell",
-            "command": "make -j4 -C src/h745/Makefile/CM4",
+            "command": "make -j4 -C src/h745/Makefile/CM4 |& tee src/h745/Makefile/CM4/build/last_build.log | ./scripts/colorize.sh",
             "problemMatcher": ["$gcc"]
         },
         {
             "label": "build m7",
             "type": "shell",
-            "command": "make -j4 -C src/h745/Makefile/CM7",
+            "command": "make -j4 -C src/h745/Makefile/CM7 |& tee src/h745/Makefile/CM7/build/last_build.log | ./scripts/colorize.sh",
             "problemMatcher": ["$gcc"]
         },
-        {
-            "label": "erase flash",
-            "type": "shell",
-            "command": "/opt/st/stm32cubeclt_1.15.0/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=PowerDown -e all"
-        },
+        // {
+        //     "label": "erase flash",
+        //     "type": "shell",
+        //     "command": "/opt/st/stm32cubeclt_1.15.0/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=PowerDown -e all"
+        // },
         {
             "label": "probe",
             "type": "shell",

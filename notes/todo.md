@@ -9,15 +9,15 @@
 
 * make the openocd startup cleaner (no messages about already halting and change timeout)
 * reentrant printf
-* add correct handling of dependecies to makefiles
-* change the source paths in makefile to help vscode locate the errors
+* ~~add correct handling of dependecies to makefiles~~
+* ~~change the source paths in makefile to help vscode locate the errors~~
 * tio config file and vscode task
-* colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)
-* clang-format
+* ~~colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)[script with sed](https://stackoverflow.com/questions/5732562/improving-g-output)~~
+* ~~clang-format~~
 * docker
   * dependencies: arm bin, stlink, openocd, st-flash, freertos, ?srec_cat
-* read about starting udev in wsl to remove the one minute wait time
-  * for this read about login and interactive shells, maybe only running the start comamnd in a login shell would solve the probelm -> in which startup file run the start command
+* ~~read about starting udev in wsl to remove the one minute wait time~~
+  * ~~for this read about login and interactive shells, maybe only running the start comamnd in a login shell would solve the probelm -> in which startup file run the start command~~
 * build task `build current` based on the inellisense configuration instead of build cm4 and cm7
 * restructure and remove the makefile folder -> but then the merge script changes
 * cross trigger interface?
@@ -61,6 +61,10 @@
 ## To finish off the tflite debug
 
 * ~~to continue: remove the google test net and try all own test models~~
+* makefile:
+  * ~~correct dependency~~
+  * ~~colored make~~
+  * ~~logging~~
 * cm4 also
 * PROJECT_GENERATION macro implementation
 * cpp compilation

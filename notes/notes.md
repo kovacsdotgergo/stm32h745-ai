@@ -166,3 +166,9 @@ todo: move this section below anything relevant
 `p pxCurrentTCB->pxStack` end of stack
 `p pxCurrentTCB->pxEndOfStack` beginning of stack
 `(char*)pxCurrentTCB->pxEndOfStack - <variable>` to check the position of the variable on the stack
+
+## Udev running in WSL2
+
+When the startup command were in .bash_profile, then an interactive shell would start the service. When `udev` detected this, it displayed a warning message and wouldn't start for one minute.
+
+I have found that before running the interactive shell, for starting services, the [`/etc/wsl.conf`](https://learn.microsoft.com/en-us/windows/wsl/wsl-config) can be used. In this I have inserted a script that starts `udev`.
