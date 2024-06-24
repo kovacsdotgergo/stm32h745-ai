@@ -104,3 +104,7 @@ One problem is that the default Cortex-Debug SWO config did not work, the other 
 ## Build
 
 Makefiles are building a project in a flat fashion, all object files are located inside a build directory. The sources are hierarchical, so vpath is used to find the corresponding sources for each object files. If the build directory would also be of the same hierarchy, then `vpath` shouldn't be called.
+
+Changed the whole build process so that all files are built into a hierarchical folder structure. The common elements in the makefiles are used by including more makefiles.
+
+The output of the makefiles are coloured by using a script that inserts color codes into the output utilizing regex.

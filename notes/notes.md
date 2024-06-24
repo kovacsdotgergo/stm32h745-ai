@@ -172,3 +172,18 @@ todo: move this section below anything relevant
 When the startup command were in .bash_profile, then an interactive shell would start the service. When `udev` detected this, it displayed a warning message and wouldn't start for one minute.
 
 I have found that before running the interactive shell, for starting services, the [`/etc/wsl.conf`](https://learn.microsoft.com/en-us/windows/wsl/wsl-config) can be used. In this I have inserted a script that starts `udev`.
+
+## Checking the size of functions
+
+From [link](https://stackoverflow.com/questions/11720340/tool-to-analyze-size-of-elf-sections-and-symbol):
+
+``` shell
+nm --print-size --size-sort --radix=d tst.o
+size -A -d tst.o
+```
+
+To sum the end of the file:
+```shell
+tail -n50 m4_function_sizes_basic_cpp | awk '{su
+m += $2} END {print sum}'
+```

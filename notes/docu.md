@@ -140,3 +140,13 @@ The main reason of the incorrect behaviour is that the tensor (`TfLiteTensor`) s
 ![image from debugger checking the two different layouts of the `TfLiteTensor` struct](images/tflm_debug.PNG)
 
 The two typedefs of this file in `common.h` are guarded by a `TF_LITE_STATIC_MEMORY` define. I have found one [question](https://github.com/tensorflow/tflite-micro/issues/2528) about the function of this define.
+
+#### Binary sizes
+
+Right after C++ build, without even `freertos.cc`.
+
+todo: checkout the previous commit to check the build without cpp
+```shell
+text data bss dec hex filename
+37168 500 9968 47636 ba14 /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf
+```
