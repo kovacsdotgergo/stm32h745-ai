@@ -66,12 +66,12 @@
   * ~~colored make~~
   * ~~logging~~
 * cm4 also
-  * colorization of compilation
-  * build all task
-  * common elements in include makefiles
+  * ~~colorization of compilation~~
+  * ~~build all task~~
+  * ~~common elements in include makefiles~~
 * PROJECT_GENERATION macro implementation
-* cpp compilation
-* measure performance
+* ~~cpp compilation~~
+* ~~measure performance~~
 * integrate both in one project
 
 * more frameworks

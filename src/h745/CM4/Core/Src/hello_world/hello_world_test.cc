@@ -13,6 +13,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+#include "hello_world_test.h"
+
 #include <math.h>
 
 #include <cstdio>
@@ -104,9 +106,11 @@ TfLiteStatus LoadFloatModelAndPerformInference(const void* p_model) {
 
   for (int i = 0; i < kNumTestValues; ++i) {
     interpreter.input(0)->data.f[0] = golden_inputs[i];
+
     uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
+
     float y_pred = interpreter.output(0)->data.f[0];
     printf("float[%d] out: %f correct: %f\truntime: %f\r\n", i, y_pred,
            sin(golden_inputs[i]), (float)(end - start) / getTIM2Freq() * 1e6F);
@@ -164,7 +168,7 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
     TF_LITE_ENSURE_STATUS(interpreter.Invoke());
     uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
     float y_pred = (output->data.int8[0] - output_zero_point) * output_scale;
-    printf("quant[%d] out: %f correct: %f\trumtime: %f\r\n", i, y_pred,
+    printf("quant[%d] out: %f correct: %f\truntime: %f\r\n", i, y_pred,
            sin(golden_inputs_float[i]), (float)(end - start) / getTIM2Freq() * 1e6F);
   }
 

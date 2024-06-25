@@ -106,7 +106,7 @@ LDFLAGS += -T$(ldscript)
 #######################################
 # tflite
 #######################################
-include tflite.mk
+include ../tflite.mk
 
 LDLIBS += -l:$(tflite_libname)
 LDFLAGS += -L$(dir $(tflite_lib))
@@ -118,12 +118,12 @@ c_includes += $(tflite_includes)
 # todo: temporarily don't depend on Makefile to avoid long rebuilds
 $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.c
 	@mkdir -p $(dir $@)
-	$(log) building $(patsubst $(root_dir)/%,%,$@)
+	$(log) compiling $(patsubst $(root_dir)/%,%,$@)
 	$(q)$(CC) -c $(mcu) $(c_defs) $(c_includes) $(CFLAGS) -Wa,-a,-ad,-alms=$(@:.o=.lst) $< -o $@
 
 $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.cc
 	@mkdir -p $(dir $@)
-	$(log) building $(patsubst $(root_dir)/%,%,$@)
+	$(log) compiling $(patsubst $(root_dir)/%,%,$@)
 	$(q)$(CXX) -c $(mcu) $(cxx_defs) $(cxx_includes) $(CXXFLAGS) -Wa,-a,-ad,-alms=$(@:.o=.lst) $< -o $@
 
 #######################################
@@ -131,8 +131,6 @@ $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.cc
 #######################################
 # default action: build all
 all: $(build_dir)/$(target).elf $(build_dir)/$(target).hex $(build_dir)/$(target).bin $(build_dir)/$(target).list
-
-tflite: $(tflite_lib)
 
 # all the flags required in build_rules
 CFLAGS := $(CFLAGS) $(mcu) $(c_defs) $(c_includes)

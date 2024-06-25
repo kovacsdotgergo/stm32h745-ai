@@ -89,6 +89,7 @@ as_includes :=
 
 c_includes := \
 -I$(root_dir)/CM4/Core/Inc \
+-I$(root_dir)/CM4/Core/Src/hello_world \
 -I$(root_dir)/Drivers/STM32H7xx_HAL_Driver/Inc \
 -I$(root_dir)/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -I$(root_dir)/Drivers/CMSIS/Device/ST/STM32H7xx/Include \
@@ -105,6 +106,29 @@ ldscript := stm32h745xx_flash_CM4.ld
 # libraries
 LDLIBS += # note: removed -lm
 LDFLAGS += -T$(ldscript)
+
+#######################################
+# tflite
+#######################################
+include ../tflite.mk
+
+LDLIBS += -l:$(tflite_libname)
+LDFLAGS += -L$(dir $(tflite_lib))
+
+cxx_defs += $(tflite_defs)
+cxx_includes += $(tflite_includes)
+c_includes += $(tflite_includes)
+
+# todo: temporarily don't depend on Makefile to avoid long rebuilds
+$(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.c
+	@mkdir -p $(dir $@)
+	$(log) compiling $(patsubst $(root_dir)/%,%,$@)
+	$(q)$(CC) -c $(mcu) $(c_defs) $(c_includes) $(CFLAGS) -Wa,-a,-ad,-alms=$(@:.o=.lst) $< -o $@
+
+$(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.cc
+	@mkdir -p $(dir $@)
+	$(log) compiling $(patsubst $(root_dir)/%,%,$@)
+	$(q)$(CXX) -c $(mcu) $(cxx_defs) $(cxx_includes) $(CXXFLAGS) -Wa,-a,-ad,-alms=$(@:.o=.lst) $< -o $@
 
 #######################################
 # building the binary

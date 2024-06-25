@@ -113,14 +113,14 @@ static TaskHandle_t cppTask = NULL;
 void MX_FREERTOS_Init(void) {
   /* Create the thread(s) */
   /* creation of defaultTask */
-  xTaskCreate(
-      StartDefaultTask,             /* Function that implements the task. */
-      "DefaultTaskM7Core",          /* Task name, for debugging only. */
-      2 * configMINIMAL_STACK_SIZE, /* Size of stack (in words) to allocate for
-                                       this task. */
-      NULL,                         /* Task parameter, not used in this case. */
-      tskIDLE_PRIORITY + 1,         /* Task priority. */
-      &defaultTask); /* Task handle, used to unblock task from interrupt. */
+  // xTaskCreate(
+  //     StartDefaultTask,             /* Function that implements the task. */
+  //     "DefaultTaskM7Core",          /* Task name, for debugging only. */
+  //     2 * configMINIMAL_STACK_SIZE, /* Size of stack (in words) to allocate for
+  //                                      this task. */
+  //     NULL,                         /* Task parameter, not used in this case. */
+  //     tskIDLE_PRIORITY + 1,         /* Task priority. */
+  //     &defaultTask); /* Task handle, used to unblock task from interrupt. */
 
   xTaskCreate(StartTfliteTask, "TfliteTask", 4 * 4096, NULL,
               tskIDLE_PRIORITY + 2, &tfliteTask);

@@ -187,3 +187,7 @@ To sum the end of the file:
 tail -n50 m4_function_sizes_basic_cpp | awk '{su
 m += $2} END {print sum}'
 ```
+
+## Vim keybinding
+
+* `=`: format document

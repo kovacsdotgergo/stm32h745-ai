@@ -16,6 +16,7 @@ limitations under the License.
 #define TENSORFLOW_LITE_MICRO_MICRO_TIME_H_
 
 #include <cstdint>
+#include "stm32h745xx.h"
 
 namespace tflite {
 

@@ -150,3 +150,17 @@ todo: checkout the previous commit to check the build without cpp
 text data bss dec hex filename
 37168 500 9968 47636 ba14 /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf
 ```
+
+After adding the tflite networks and tflite:
+
+```shell
+text data bss dec hex filename
+172752 12524 9984 195260 2fabc /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf
+```
+
+Runtime [us]:
+
+|| no quant | fallback quant | dynamic quant | full quant |
+|---|---|---|---|---|
+cm4 | 155 | 250 | 155 | 225 |
+cm7 | 50 | 87 | 50 | 77 |

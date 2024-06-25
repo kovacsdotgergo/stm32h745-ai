@@ -12,7 +12,7 @@
 
 # colorizing the output of the non verbose Makefiles
 while read x; do echo $x ; done \
-| sed -e "s/^\(compiling\|linking\)\(.*\)/\x1b[90m&\x1b[0m/" \
+| sed -e "s/^\(compiling\|linking\|archiving\)\(.*\)/\x1b[90m&\x1b[0m/" \
 -e "s/\b\([-a-zA-Z]*\(objcopy\|size\|objdump\)\)/\x1b[38;5;70m&\x1b[0m/" \
 -e "s/make:/\x1b[38;5;209m&\x1b[0m/"
 

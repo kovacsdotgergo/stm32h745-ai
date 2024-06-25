@@ -1,4 +1,5 @@
-ARFLAGS += -rcs
+# overwriting the default rv options for AR
+ARFLAGS := -rcs
 
 ASFLAGS +=
 

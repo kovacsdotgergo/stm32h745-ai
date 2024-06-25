@@ -41,7 +41,7 @@ $(build_dir)/%.o: $(root_dir)/%.S Makefile
 
 $(build_dir)/$(target).elf: $(objects) $(tflite_lib) Makefile
 	@mkdir -p $(dir $@)
-	$(log) linking $@
+	$(log) linking $(patsubst $(root_dir)/%,%,$@)
 	$(q)$(CXX) $(objects) $(LDFLAGS) $(LDLIBS) -o $@
 	$(SZ) $@
 
