@@ -10,17 +10,17 @@
             "request": "launch",
             "type": "cortex-debug",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf",
             "servertype": "openocd",
             "configFiles": ["st_nucleo_h745zi.cfg"],
             "device": "STM32H745ZI",
             "numberOfProcessors": 2,
             "targetProcessor": 0,
             "loadFiles": [
-                "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
-                "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf"
+                "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/stm32h745-ai_CM4.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf"
             ],
-            "preLaunchTask": "build all",
+            "preLaunchTask": "build all debug",
             "preLaunchCommands": [
                 "monitor init",
                 "monitor reset halt"
@@ -32,7 +32,7 @@
             "request": "attach",
             "type": "cortex-debug",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/stm32h745-ai_CM4.elf",
             "servertype": "external",
             "gdbTarget": "localhost:50001",
             "device": "STM32H745ZI",
@@ -43,10 +43,10 @@
             "name": "Debug CM7+CM4 - openocd",
             "cwd": "${workspaceFolder}",
             "type": "cortex-debug",
-            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf",
             "loadFiles": [
-                "${workspaceFolder}/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf",
-                "${workspaceFolder}/src/h745/Makefile/CM7/build/stm32h745-ai_CM7.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/stm32h745-ai_CM4.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf",
             ],
             "request": "launch",
             "servertype": "openocd",
@@ -55,17 +55,15 @@
             "numberOfProcessors": 2,
             "targetProcessor": 0,
             "configFiles": ["st_nucleo_h745zi.cfg"],
-            "preLaunchTask": "build all",
-            "preLaunchCommands": [
-                "monitor init",
-                "monitor reset halt"
+            "preLaunchTask": "build all debug",
+            "postLaunchCommands": [
+                "monitor reset run",
             ],
-            "postLaunchCommands": ["monitor reset run"],
             "chainedConfigurations": {
                 "enabled": true,
                 "waitOnEvent": "postInit",
                 "detached": false,
-                "delayMs": 5000,    // Wait 5s, could be optimized
+                "delayMs": 0,    // Wait 0s, 5s wasn't neccessary
                 "lifecycleManagedByParent": true,   
                 "launches": [ 
                     {

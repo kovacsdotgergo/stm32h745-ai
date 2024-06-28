@@ -3,8 +3,6 @@ ARFLAGS := -rcs
 
 ASFLAGS +=
 
-opt := -O0
-
 CFLAGS += \
 	$(opt) \
 	-Wall \
@@ -15,6 +13,9 @@ CFLAGS += \
 
 ifeq ($(debug), 1)
 CFLAGS += -g3 -gdwarf-2
+opt := -O0
+else
+opt := -Os
 endif
 
 CXXFLAGS += \

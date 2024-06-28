@@ -146,6 +146,6 @@ void StartDefaultTask(void *pvParameters) {
 void StartTfliteTask(void *pvParameters) {
   while (1) {
     tflite_helloworld();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
   }
 }

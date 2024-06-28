@@ -78,7 +78,7 @@ For the multicore communication a newer version would be nice. To ease the use o
 
 ## Research
 
-todo
+These chapters are in the latex documentation.
 
 ## Optimization techniques for NNs
 
@@ -86,15 +86,9 @@ todo: Quantization is somewhat described here in the cubeai documentation under 
 
 ### Microcontrollers
 
-todo
-
 ### Instruction sets
 
-todo
-
 ### Neural net accelerators
-
-todo
 
 ## Neural network runtimes
 
@@ -145,7 +139,6 @@ The two typedefs of this file in `common.h` are guarded by a `TF_LITE_STATIC_MEM
 
 Right after C++ build, without even `freertos.cc`.
 
-todo: checkout the previous commit to check the build without cpp
 ```shell
 text data bss dec hex filename
 37168 500 9968 47636 ba14 /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf
@@ -160,7 +153,32 @@ text data bss dec hex filename
 
 Runtime [us]:
 
-|| no quant | fallback quant | dynamic quant | full quant |
-|---|---|---|---|---|
-cm4 | 155 | 250 | 155 | 225 |
-cm7 | 50 | 87 | 50 | 77 |
+|    | optim | no quant | fallback quant | dynamic quant | full quant |
+| ---|    ---|       ---|             ---|            ---|         ---|
+|cm4 | -O0   | 155      | 250            | 155           | 225        |
+|cm4 | -O3   | 28       | 38             | 28            | 32         |
+|cm4 | -Os   | 34       | 42             | 34            | 35         |
+|cm4 | -Ofast| 29       | 39             | 29            | 32         |
+|cm7 | -O0   | 50       | 87             | 50            | 77         |
+|cm7 | -O3   | 10       | 10             | 10            | 9          |
+|cm7 | -Os   | 13       | 13             | 13            | 11         |
+|cm7 | -Ofast| 10       | 11             | 10            | 9          |
+
+Storage:
+
+|     | optim | text   | data   | bss    | dec    | hex     | note      |
+|  ---|    ---|     ---|     ---|     ---|     ---|      ---|        ---|
+| cm4 | -O0   | 37160  | 500    | 9968   | 47628  | ba0c    | C base*   |
+| cm4 | -O3   | 32488  | 500    | 9968   | 42956  | a7cc    | C base*   |
+| cm4 | -O0   | 37268  | 500    | 9968   | 47636  | ba14    | no tflite |
+| cm4 | -O0   | 172752 | 12524  | 9984   | 195260 | 2fabc   |           |
+| cm4 | -O3   | 88724  | 12520  | 9976   | 111220 | 1b274   |           |
+| cm4 | -Os   | 76460  | 12520  | 9976   | 98956  | 1828c   |           | 
+| cm4 | -Ofast| 88692  | 12520  | 9976   | 111188 | 1b254   |           |
+| cm7 | -O0   | 55580  | 500    | 11256  | 67336  | 10708   | C base*   |
+| cm7 | -O3   | 44620  | 500    | 11256  | 56376  | dc38    | C base*   |
+| cm7 | -O3   | 97808  | 12520  | 11272  | 121600 | 1db00   |           |
+| cm7 | -Os   | 82340  | 12520  | 11264  | 106124 | 19e8c   |           |
+| cm7 | -Ofast| 97688  | 12520  | 11272  | 121480 | 1da88   |           |
+
+(*) C base is from the feat/nn_frameworks branch, the C base code used as the starting point

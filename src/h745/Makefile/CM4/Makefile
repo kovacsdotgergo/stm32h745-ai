@@ -33,7 +33,12 @@ endif
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 # src/h745 directory
 root_dir := $(realpath $(dir $(mkfile_path))../..)
-build_dir := $(dir $(mkfile_path))build
+base_build_dir := $(dir $(mkfile_path))build
+ifeq ($(debug), 1)
+  build_dir := $(base_build_dir)/debug
+else
+  build_dir := $(base_build_dir)/release
+endif
 
 ######################################
 # source
@@ -147,7 +152,7 @@ include ../build_rules.mk
 # clean up
 #######################################
 clean:
-	-rm -fR $(build_dir)
+	-rm -fR $(base_build_dir)
   
 #######################################
 # dependencies

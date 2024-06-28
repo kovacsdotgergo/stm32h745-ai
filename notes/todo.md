@@ -4,23 +4,26 @@
 * choose a useful net
 * feeding it
 * optimization
+* ethernet
 
 ## Building and utilities with lower prio
 
-* make the openocd startup cleaner (no messages about already halting and change timeout)
 * reentrant printf
-* ~~add correct handling of dependecies to makefiles~~
-* ~~change the source paths in makefile to help vscode locate the errors~~
 * tio config file and vscode task
-* ~~colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)[script with sed](https://stackoverflow.com/questions/5732562/improving-g-output)~~
-* ~~clang-format~~
 * docker
   * dependencies: arm bin, stlink, openocd, st-flash, freertos, ?srec_cat
-* ~~read about starting udev in wsl to remove the one minute wait time~~
-  * ~~for this read about login and interactive shells, maybe only running the start comamnd in a login shell would solve the probelm -> in which startup file run the start command~~
 * build task `build current` based on the inellisense configuration instead of build cm4 and cm7
 * restructure and remove the makefile folder -> but then the merge script changes
 * cross trigger interface?
+* ~~make the openocd startup cleaner (no messages about already halting and change timeout)~~
+  * I couldn't solve this, the timeout message is still there when adding the `set remotetimeout` command in the `launch.json` in `preLaunchCommands?`.
+  * I have checked if the command is actually called by using the verbose gdb messages in Cortex Debug
+* ~~add correct handling of dependecies to makefiles~~
+* ~~change the source paths in makefile to help vscode locate the errors~~
+* ~~colored make output [link](https://stackoverflow.com/questions/6436563/how-can-i-highlight-the-warning-and-error-lines-in-the-make-output)[script with sed](https://stackoverflow.com/questions/5732562/improving-g-output)~~
+* ~~clang-format~~
+* ~~read about starting udev in wsl to remove the one minute wait time~~
+  * ~~for this read about login and interactive shells, maybe only running the start comamnd in a login shell would solve the probelm -> in which startup file run the start command~~
 
 ## Next steps
 
@@ -48,7 +51,7 @@
     * ~~first try with bare uart~~
   * ~~add float printf on cm4~~
   * synchronize the print -> it doesn't even conflict right now, but hsem would be nice
-  * setup the release build
+  * ~~setup the release build~~
   * update compiler flags
 
 * cubeai
@@ -57,6 +60,13 @@
   * both cores
   * measurement
 * glow
+
+* selecting a practical network
+* speeding up the network
+  * splitting and using IPC to execute in parallel
+  * feeding the inputs thorough USB
+  * talk about the possibilities, if one core doesn't have time to process, then the other executes the network ...
+* add ethernet for the outputs, signal something depending on the result of the classification
 
 ## To finish off the tflite debug
 
@@ -69,9 +79,12 @@
   * ~~colorization of compilation~~
   * ~~build all task~~
   * ~~common elements in include makefiles~~
-* PROJECT_GENERATION macro implementation
+* ~~PROJECT_GENERATION macro implementation~~
+  * using the core timer is possible, but I still used the hardware timer
 * ~~cpp compilation~~
 * ~~measure performance~~
 * integrate both in one project
 
 * more frameworks
+  * glow
+  * generating cmsis nn code
