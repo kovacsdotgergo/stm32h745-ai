@@ -9,6 +9,7 @@
                 "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
                 "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
                 "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "${workspaceRoot}/src/h745/Middlewares/Third_Party/tflite_micro/**",
                 "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
                 "/usr/lib/arm-none-eabi/include",
                 "/usr/lib/arm-none-eabi/include/c++/10.3.1",
@@ -21,7 +22,11 @@
             "defines": [
                 "USE_HAL_DRIVER",
                 "STM32H745xx",
-                "CORE_CM7"
+                "CORE_CM7",
+                "TF_LITE_STATIC_MEMORY",
+                "TF_LITE_MCU_DEBUG_LOG",
+                "PROJECT_GENERATION",
+                "CMSIS_NN"
             ],
             "intelliSenseMode": "linux-gcc-arm",
             "cStandard": "c11",
@@ -51,13 +56,14 @@
         {
             "name": "cm4",
             "includePath": [
-                "${workspaceRoot}/src/h745/CM4/Core/Inc",
-                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
-                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
-                "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
-                "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
-                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
-                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/CM4/Core/Inc",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/CM4/Core/Src/hello_world",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/Drivers/CMSIS/Include",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
+                "/home/gergo/workspace/stm32h745-ai/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
                 "/usr/lib/arm-none-eabi/include",
                 "/usr/lib/arm-none-eabi/include/c++/10.3.1",
                 "/usr/lib/arm-none-eabi/include/machine",
@@ -94,7 +100,9 @@
                 "-mfloat-abi=hard",
                 "-mthumb"
             ],
-            "compilerPath": "/usr/bin/arm-none-eabi-gcc"
+            "compilerPath": "/usr/bin/arm-none-eabi-gcc",
+            "compilerPathInCppPropertiesJson": "/usr/bin/arm-none-eabi-gcc",
+            "mergeConfigurations": false
         }
     ],
     "version": 4,

@@ -78,16 +78,107 @@ For the multicore communication a newer version would be nice. To ease the use o
 
 ## Research
 
-todo
+These chapters are in the latex documentation.
+
+## Optimization techniques for NNs
+
+todo: Quantization is somewhat described here in the cubeai documentation under 'Quantized models support'. this will be important for the optimization part of my task
 
 ### Microcontrollers
 
-todo
-
 ### Instruction sets
-
-todo
 
 ### Neural net accelerators
 
-todo
+## Neural network runtimes
+
+### tflite
+
+#### Getting started
+
+The documentation on the [main tensorflow site](https://www.tensorflow.org/lite/microcontrollers/get_started_low_level) is not up-to-date, neither is the [article](https://www.digikey.com/en/maker/projects/tinyml-getting-started-with-tensorflow-lite-for-microcontrollers/c0cdd850f5004b098d263400aa294023) I used to get started. Building the examples is now done with a different script and the paths to the headers, source files are also different. The [current documentation](https://github.com/tensorflow/tflite-micro/blob/main/tensorflow/lite/micro/docs/new_platform_support.md) is up-to-date in the migrated repository.
+
+#### Memory consumption
+
+It's important to distinguish, how much change the cpp runtime and how much the framework is.
+
+#### Building tflite
+
+One option is the tree generation script. There is also an example makefile that helps setting up the required flags and sources. When building into a library with my own makefile based on this, or using the example directly, I had to decrease the MicroProfilers array size to fit into the stack. Even after this, the output of the network is not correct either way. The command to create the tree is: `python3 tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py -e hello_world --makefile_options="TARGET=cortex_m_generic OPTIMIZED_KERNEL_DIR=cmsis_nn TARGET_ARCH=cortex-m7+fp" /tmp/tflm-tree`. After this the example makefile within the same folder as this script is copied over. Then some more files are required for the arm register definitions (`tensorflow/lite/micro/tools/make/downloads/cmsis/Device/ARM/ARMCM7/Include/system_ARMCM7.h` and `tensorflow/lite/micro/tools/make/downloads/cmsis/Device/ARM/ARMCM7/Include/ARMCM7_DP.h` inside `tflite-micro`).
+
+There is also a makefile that builds the library directly with the command `make -f tensorflow/lite/micro/tools/make/Makefile TARGET=cortex_m_generic TARGET_ARCH=cortex-m4+fp OPTIMIZED_KERNEL_DIR=cmsis_nn microlite`. To fit in the stack, the profiler has to be adjusted similarly.
+
+CubeMX can also use tflite as a backend when using .tflite networks. This adds a c api for tflite as well. When selecting this, it was not buildable, sources were not inlcuded in the build and absolutely no cpp building process was included for tflite micro.
+
+#### TFLM retrurning wrong outputs after running the net
+
+My first suspition was that the Cpp build system is not correct, so I made a class checking if all static and non static (and const) variables are correctly initialized. All of them are correct, so this should not be a probelm. I also tried with a class where these objects are part of and array after reading about runtime functions required for [threadsafe statics and vector initialization](https://itanium-cxx-abi.github.io/cxx-abi/abi.html#once-ctor). `-fno-threadsafe-statics` controls the thread safety of these varibales, but doesn't turn off the guard variables that are used to check if the static member variable of a class is initialized, this is still required to only have a single init.
+
+I have also checked if there are sections in the cc object files that are not handled (saw .ctros and .dtors sections on forums), but found none. There is one interesting function in the `freertos.o`, a function for static initialization and destruction.
+
+Next is using a single neuron with linear activation to debug. For this I have written a new notebook, in which I used `xxd -i` to produce the binary array.
+
+There are different tools for tflm developement in the repository. For the debug purposes I used two of them:
+
+* The first was `generate_micro_mutable_op_resolver_from_model`. This generates a function that produces the OpResolver class based on a tflite file. It contains the needed layers that are used by the network.
+* The second is the `visualize` script that generates html from a tflite file, similar information can be extracted as when using the Tensorflow Lite interpreter in python.
+
+These were all correct and the quantized model required only the fully connected input and still produced the wrong output. The float model with only one layer and one neuron returned the correct output.
+
+##### Debugging the quantized model
+
+The inputs and outputs are not in the correct format. Both are given with float test values and the quantized int8 values are calculated using the scale and zero_point values. These paramterers are not the correct values and when requesting the input and output of the network, even the type of the tensor is incorrect (float32 instead of int8).
+
+The main reason of the incorrect behaviour is that the tensor (`TfLiteTensor`) structure contained wrong quantization parameter and type values (`params` and `type` field). When debugging I suspected that reading in the Flatbuffer format is incorrect. I debugged this part and the format was correct in the functions inside the library (`interpreter.AllocateTensors()` call). The incorrect values appeared when returning from this call. When checking the layout of this type in the debugger it differed inside the library and inside my code, so the typedef had to be incorrect of coming from different sources.
+
+![image from debugger checking the two different layouts of the `TfLiteTensor` struct](images/tflm_debug.PNG)
+
+The two typedefs of this file in `common.h` are guarded by a `TF_LITE_STATIC_MEMORY` define. I have found one [question](https://github.com/tensorflow/tflite-micro/issues/2528) about the function of this define.
+
+#### Binary sizes
+
+Right after C++ build, without even `freertos.cc`.
+
+```shell
+text data bss dec hex filename
+37168 500 9968 47636 ba14 /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf
+```
+
+After adding the tflite networks and tflite:
+
+```shell
+text data bss dec hex filename
+172752 12524 9984 195260 2fabc /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM4/build/stm32h745-ai_CM4.elf
+```
+
+Runtime [us]:
+
+|    | optim | no quant | fallback quant | dynamic quant | full quant |
+| ---|    ---|       ---|             ---|            ---|         ---|
+|cm4 | -O0   | 155      | 250            | 155           | 225        |
+|cm4 | -O3   | 28       | 38             | 28            | 32         |
+|cm4 | -Os   | 34       | 42             | 34            | 35         |
+|cm4 | -Ofast| 29       | 39             | 29            | 32         |
+|cm7 | -O0   | 50       | 87             | 50            | 77         |
+|cm7 | -O3   | 10       | 10             | 10            | 9          |
+|cm7 | -Os   | 13       | 13             | 13            | 11         |
+|cm7 | -Ofast| 10       | 11             | 10            | 9          |
+
+Storage:
+
+|     | optim | text   | data   | bss    | dec    | hex     | note      |
+|  ---|    ---|     ---|     ---|     ---|     ---|      ---|        ---|
+| cm4 | -O0   | 37160  | 500    | 9968   | 47628  | ba0c    | C base*   |
+| cm4 | -O3   | 32488  | 500    | 9968   | 42956  | a7cc    | C base*   |
+| cm4 | -O0   | 37268  | 500    | 9968   | 47636  | ba14    | no tflite |
+| cm4 | -O0   | 172752 | 12524  | 9984   | 195260 | 2fabc   |           |
+| cm4 | -O3   | 88724  | 12520  | 9976   | 111220 | 1b274   |           |
+| cm4 | -Os   | 76460  | 12520  | 9976   | 98956  | 1828c   |           | 
+| cm4 | -Ofast| 88692  | 12520  | 9976   | 111188 | 1b254   |           |
+| cm7 | -O0   | 55580  | 500    | 11256  | 67336  | 10708   | C base*   |
+| cm7 | -O3   | 44620  | 500    | 11256  | 56376  | dc38    | C base*   |
+| cm7 | -O3   | 97808  | 12520  | 11272  | 121600 | 1db00   |           |
+| cm7 | -Os   | 82340  | 12520  | 11264  | 106124 | 19e8c   |           |
+| cm7 | -Ofast| 97688  | 12520  | 11272  | 121480 | 1da88   |           |
+
+(*) C base is from the feat/nn_frameworks branch, the C base code used as the starting point

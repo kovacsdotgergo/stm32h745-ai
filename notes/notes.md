@@ -50,3 +50,144 @@ It can be solved if reentry into malloc is not possible, e.g. wrapping malloc in
 ## Deferred interrupt handling in FreeRTOS
 
 Handling the interrupts in a task not in the ISR [link](https://www.freertos.org/deferred_interrupt_processing.html).
+
+## FreeRTOS debug
+
+There is a tab for xRTOS, so probably VSCode can also do RTOS aware debugging.
+
+FreeRTOS guide: [link](https://www.freertos.org/2021/01/using-visual-studio-code-for-freertos-development.html)
+
+There is a global pointer to the current TCB where a pointer to the current task. I used this to check the offset of the variables on the stack when it overflowed.
+
+## Semihosing
+
+Semihosting is implemented by certain asm instructions. These instructions take a code as a parameter. Depending on this parameter the semihosting operation is selected. Operations are the library functions required by the standard library e.g. isatty, write. These instructions are using the debugger to perform these low level operations. [arm semihosing docu](https://developer.arm.com/documentation/dui0471/g/Semihosting)
+
+To make semihosting work, the debugger and the required linker flags have to be set up. [example blog](https://fastbitlab.com/microcontroller-embedded-c-programming-lecture-51-testing-printf-over-openocd-semihosting/)
+
+## SWO and ITM
+
+* [SWO related commands in openocd](https://openocd.org/doc/html/Architecture-and-Core-Commands.html)
+* [SWO and ITM setup on some blog](https://embedthreads.com/how-to-use-printf-on-stm32-using-itmswo-line/)
+* [another SWO stup](https://fastbitlab.com/microcontroller-embedded-c-programming-lecture-48-embedded-hello-world/)
+* ARM CoreSight SoC-400 - technical reference about some debug infrastructure, including TPIU
+* [solution in CubeIDE](https://lowlevelcode.com/stm32-debugging-with-printf-by-using-swv-or-openocd/)
+
+## Compiler
+
+Some bad warnings are cast between incompatible pointers and implicit function declarations, these should be turned to errors.
+
+### Flags for embedded projects
+
+* [great article](https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags)
+
+The cmake file for building for arm cores are in ethos-u-core-platform/cmake/toolchain/arm-none-eabi-gcc.cmake. This sets several flags. It is inlcuded when building for the core.
+
+The tflite-micro/tensorflow/lite/micro/tools/make/targets/cortex_m_generic_makefile.inc is similar, sets up everything used for the core, also sets a bunch of compiler flags, but it is a Makefile.
+
+## Objdump
+
+* `-t` is the symbol tables
+* `-h` section headers
+* `-S` and `-d` source and disassembly
+
+## C++
+
+* RTTI
+  * [dynamic cast and RTTI](https://pvs-studio.com/en/blog/posts/cpp/0998/)
+* exceptions
+  * [about the hardness of exceptions](https://devblogs.microsoft.com/oldnewthing/20050114-00/?p=36693)
+* STL
+
+### Cpp embedded startup
+
+The only thing I found for the linker script and the startup code to do are calling the constructor for static objects. The destructor for these should never be called as the program does not exit. The function that performs this according to the comment in the startup code is the `__libc_init_array` function. This calls functions that are set up wiht the proper attribute. It might also call the constructors?
+
+[Gcc documentation of the initialization](https://gcc.gnu.org/onlinedocs/gcc-7.1.0/gccint/Initialization.html).
+
+A problem might also occur due to the order of the static constructors and initializations:
+[about the init arrays used by GCC](https://stackoverflow.com/questions/15265295/understanding-the-libc-init-array)
+ -> it might lead to the [static initialization order problem](https://isocpp.org/wiki/faq/ctors#static-init-order)
+
+I have not yet found anything else required for cpp (no additional sections or startup code).
+
+### Reading about C++
+
+#### Unwind tables
+
+[Stackoverflow question about the flag](https://stackoverflow.com/questions/53102185/what-exactly-happens-when-compiling-with-funwind-tables)
+
+There is a flag to enable (usually it is on) generating these unwind tables. It is used to hold information to be able to unwind the stack at any point where exception can be thrown inside the function. Usually in C there are only normal control flow points where the stack has to be unwinded. Here we might have to do it anywhere at exception. Also we might have to unwind more calls until the first catch block.
+
+The tables is stored in a seperate section. Each function with exceptions has its own unwind table, so it can only propagate back through functions with unwind tables (logical noexcept requirement). There is a callback function implemented in the compiler that is able to unwind form any point.
+
+In assembly to be compatible functions have to follow the exeption handling abi (e.g. [ARM](https://developer.arm.com/documentation/dui0473/m/writing-arm-assembly-language/exception-tables-and-unwind-tables))
+
+#### CRTP (Curiously Recurring Template Pattern)
+
+Can be used to implement static polimorphism.
+
+#### Variable templates (cpp14)
+
+The type of the variable is the template. [cppreference](https://en.cppreference.com/w/cpp/language/variable_template)
+
+#### If stattement with initializer
+
+```cpp
+if (init, condition) {
+  // init availabe
+}
+// init out of scope
+
+// instead of
+init
+if (condition) {
+  // init available
+}
+// init still available
+```
+
+It limits the scope of the init, it can not be accessed outside the init block. [brief summary](https://www.tutorialspoint.com/cplusplus17-if-statement-with-initializer)
+
+### Mixing C and C++
+
+* [gist about adding cpp sources to makefile](https://gist.github.com/SteelPh0enix/7d2670537be6ad65e190bb1e91e87444)
+* [talk about embedded cpp](https://www.youtube.com/watch?v=wLq-5lBc7x4)
+
+Extern "C" is required for the FreeRTOS hooks and the init functions that are called in e.g. main.
+
+## Hard fault
+
+todo: write about the article and the hard fault analyzer
+
+## Checking task stack
+todo: move this section below anything relevant
+`p pxCurrentTCB->pxTopOfStack` stack pointer
+`p pxCurrentTCB->pxStack` end of stack
+`p pxCurrentTCB->pxEndOfStack` beginning of stack
+`(char*)pxCurrentTCB->pxEndOfStack - <variable>` to check the position of the variable on the stack
+
+## Udev running in WSL2
+
+When the startup command were in .bash_profile, then an interactive shell would start the service. When `udev` detected this, it displayed a warning message and wouldn't start for one minute.
+
+I have found that before running the interactive shell, for starting services, the [`/etc/wsl.conf`](https://learn.microsoft.com/en-us/windows/wsl/wsl-config) can be used. In this I have inserted a script that starts `udev`.
+
+## Checking the size of functions
+
+From [link](https://stackoverflow.com/questions/11720340/tool-to-analyze-size-of-elf-sections-and-symbol):
+
+``` shell
+nm --print-size --size-sort --radix=d tst.o
+size -A -d tst.o
+```
+
+To sum the end of the file:
+```shell
+tail -n50 m4_function_sizes_basic_cpp | awk '{su
+m += $2} END {print sum}'
+```
+
+## Vim keybinding
+
+* `=`: format document

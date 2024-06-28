@@ -30,9 +30,31 @@ When updating the previously problematic cache invalidation function, only repla
 
 Updated the OS to 11.0.1.
 
+## FreeRTOS debug
+
+The option configRECORD_STACK_HIGH_ADDRESS is turned on which is additional 4 bytes for each task, it is used only for debug, it records a pointer to the start address of the stack.
+
 ## Serial communication
 
 tio can be used
+
+### On the microcontroller
+
+Printf calls the _write implementation that is not yet reentrant. In the MX config I started the timer right away. Printf support is enabled by the `-u _printf_float` linker flag, the same can be done for sprintf with a similar flag.
+
+Both cores are set up the same way, workaround for the debug output messages via UART is setting up the instance fields and the gState variable, which isn't mapped on an actual register and the driver blocked on it. It works currently with float printf as well, but only for this simple usecase. I set up the handle with only `HAL_UART_Transmit` in mind.
+
+__IMPORTANT__: if other usecase is neccessary for the serial port, then change the CM4 initialization or use it only on one core
+
+#### Multicore and reentrant use
+
+For protection against concorrent access between the cores a hsem can be used.
+
+__todo__: For reentrant use my untested idea is to use a lock like in the sbrk implementation. Other possibility is to protect it with a semaphore. Special attention is needed to check the order of rtos sem and hsem and to check if the rtos protection is OK in ISR, and for several printfing tasks.
+
+#### __ERROR__ with serial com
+
+Printf with float caused a hard fault when only two task was running on the CM7 core. In the AI task the printf worked without problem, inside the default task it failed. One of the differences was the stack size. After increasing the task size of the default task, the problem was solved. Although stack checking is turned in in FreeRTOS, it didn't catch the error this time (it worked before, so this was just a less detectable problem).
 
 ## Systick timer
 
@@ -40,3 +62,49 @@ HAL and FreeRTOS can both be used with systick interrupt, but this may cause pro
 
 * So the OS uses the systick, for this the systick interrupt is required (see defines at the end of `FreeRTOSConfig.h`).
 * HAL uses different basic timers.
+
+## Choosing a timer to measure time
+
+The high precision timer can be used to generate accurate waverforms and other accurate timing related tasks. It can run from the core1 clock and is only 16 bits wide. The maximum length measured is roughly 100 us. Dividing it defeats the purpose of the high precision.
+
+TIM5 and TIM2 are general purpose timer, these can be 32 bits. The maximum measured time (with max clk) is around 18 seconds. The clock can be 240 MHz max, so the preciosion is still great using general purpose timers.
+
+## Shared USART
+
+My findings in half an hour checking why using the same uart from both cores is not working (sening one char from M4 after init on M7 and setup of huart instance on M4):
+
+It seems like, that the peripherals can be allocated by both processors. More complicated drivers than the timer, e.g. USART don't work well on two cores. The usart handle holds some non memory mapped variables that are not updated by the actual peripheral. So for transmission the drivers checks the state, but this state is not read from the peripheral, but only from the huart structure. Without runnnig the initialization functions (because they run on the other core) this variable is not set as READY, so the driver always returns BUSY.
+
+To sum up, the driver is probably unusable in this multicore setting, I will search for other ways of printing debug info.
+
+## Debug messages using ITM
+
+One problem is that the default Cortex-Debug SWO config did not work, the other is that the ITM message worked on the CM7 when I checked in CubeProgrammer, but the CM4 messages did not appear. The documentation is brief and doesn't really mention the multicore configuration (ST). The only thing it says is that the ITM tunnel has to be programmed, and only one core can use it.
+
+## Binary sizes
+
+* 04.24. After changing to cpp for tflite
+
+```shell
+    arm-none-eabi-size build/stm32h745-ai_CM7.elf
+    text    data     bss     dec     hex filename
+    59636     500   11256   71392   116e0 build/stm32h745-ai_CM7.elf
+```
+
+* 05.03. First O0 build with tflite
+
+```shell
+    arm-none-eabi-size build/stm32h745-ai_CM7.elf
+    text    data     bss     dec     hex filename
+    183128     504   11272  194904   2f958 build/stm32h745-ai_CM7.elf
+```
+
+* todo before adding frameworks
+
+## Build
+
+Makefiles are building a project in a flattened fashion, all object files are located inside a build directory. The sources are hierarchical, so vpath is used to find the corresponding sources for each object files. If the build directory would also be of the same hierarchy, then `vpath` shouldn't be called.
+
+Changed the whole build process so that all files are built into a hierarchical folder structure. The common elements in the makefiles are used by including more makefiles.
+
+The output of the makefiles are coloured by using a script that inserts color codes into the output utilizing regex.

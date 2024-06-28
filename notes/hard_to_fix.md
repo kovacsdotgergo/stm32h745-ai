@@ -14,3 +14,22 @@
 ## Cache maintanence
 
 If cleaning the cache will be neccessary, the CMSIS version should be checked because of this [issue](https://github.com/ARM-software/CMSIS_5/issues/620). I am not sure if everything in CMSIS can be updated, because the ST Hal could break.
+
+## Objectfiles overwriting
+
+The ST makefile I used as a base uses a flat hierarchy inside the build folder, the tensorflow library does not. There are multiple files with the same name inside tensorflow, so when copiling into the object files with the same name, some of them were lost. Files with the same name do not cause a problem when including headers, because everything is included with the full relative path in tensorflow (e.g `tensorflow/lite/kernels/op_macros.h`).
+
+As a solution I will be switching to a hierarchical build folder.
+
+## Tflite bringup, private variable not initialized
+
+When using a 0 initialized private variable of a class (`private: int num_events_ = 0;`), the variable is not actually intialized, and when using it to index an array, HardFault happens. Currently I need to check how the initialization of these classes should happen.
+
+The variable is outside the stack, because the tflite::MicroProfiler class has 4096 events by default, which results in a class size of 81928. Checking the position of the variable on the stack:
+
+```shell
+p (char*)pxCurrentTCB->pxEndOfStack - (char*)&profiler->num_events_
+$33 = -43960
+```
+
+It is outside the stack, maybe this is why the value was corrupted.

@@ -80,9 +80,11 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
 {
-  (void)file; (void)ptr;
-  // HAL_StatusTypeDef stat = HAL_UART_Transmit(&huart3, (uint8_t*)ptr, len, HAL_MAX_DELAY);
-  // assert(HAL_OK == stat);
+  (void)file;
+  // todo: this solution is not reentrant, to solve this when it will be a 
+  //  problem, implement the reentrant version instead and copy the ISR
+  //  assert from the sbrk solution then suspend all tasks
+  (void)HAL_UART_Transmit(&huart3, (uint8_t*)ptr, len, HAL_MAX_DELAY);
   return len;
 }
 

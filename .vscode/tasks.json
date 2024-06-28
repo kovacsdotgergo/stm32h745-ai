@@ -4,40 +4,81 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build all",
+            "label": "build m7 tflite",
             "type": "shell",
-            "command": "make -C src/h745/Makefile/",
-            "problemMatcher": ["$gcc"]
+            "command": "make tflite -j4 -C src/h745/Makefile/CM7",
+            "problemMatcher": [ "$gcc" ]
         },
         {
-            "label": "build m4",
+            "label": "clean",
             "type": "shell",
-            "command": "make -C src/h745/Makefile/CM4",
-            "problemMatcher": ["$gcc"]
+            "command": "make clean -C src/h745/Makefile/",
+            "problemMatcher": [ "$gcc" ]
         },
         {
-            "label": "build m7",
-            "type": "shell",
-            "command": "make -C src/h745/Makefile/CM7",
-            "problemMatcher": ["$gcc"]
+            "label": "build all release",
+            "dependsOn": [
+                "build m7 release",
+                "build m4 release"
+            ],
+            "problemMatcher": [ "$gcc" ]
         },
         {
-            "label": "erase flash",
+            "label": "build m4 release",
             "type": "shell",
-            "command": "/opt/st/stm32cubeclt_1.15.0/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=PowerDown -e all"
+            "command": "make -j4 -C src/h745/Makefile/CM4 debug=0 |& tee src/h745/Makefile/CM4/build/last_build.log | ./scripts/colorize.sh",
+            "problemMatcher": [ "$gcc" ]
         },
+        {
+            "label": "build m7 release",
+            "type": "shell",
+            "command": "make -j4 -C src/h745/Makefile/CM7 debug=0 |& tee src/h745/Makefile/CM7/build/last_build.log | ./scripts/colorize.sh",
+            "problemMatcher": [ "$gcc" ]
+        },
+        {
+            "label": "build all debug",
+            "dependsOn": [
+                "build m7 debug",
+                "build m4 debug"
+            ],
+            "problemMatcher": [ "$gcc" ]
+        },
+        {
+            "label": "build m4 debug",
+            "type": "shell",
+            "command": "make -j4 -C src/h745/Makefile/CM4 debug=1 |& tee src/h745/Makefile/CM4/build/last_build.log | ./scripts/colorize.sh",
+            "problemMatcher": [ "$gcc" ]
+        },
+        {
+            "label": "build m7 debug",
+            "type": "shell",
+            "command": "make -j4 -C src/h745/Makefile/CM7 debug=1 |& tee src/h745/Makefile/CM7/build/last_build.log | ./scripts/colorize.sh",
+            "problemMatcher": [ "$gcc" ]
+        },
+        // {
+        //     "label": "erase flash",
+        //     "type": "shell",
+        //     "command": "/opt/st/stm32cubeclt_1.15.0/STM32CubeProgrammer/bin/STM32_Programmer_CLI -c port=SWD mode=PowerDown -e all"
+        // },
         {
             "label": "probe",
             "type": "shell",
             "command": "st-info --probe"
         },
+        // {
+        //     "label": "program both cores",
+        //     "type": "shell",
+        //     "dependsOn": "build all",
+        //     "command": [
+        //         "st-flash --format=ihex write src/h745/Makefile/CM4/build/stm32h745-ai_CM4.hex && st-flash --format=ihex --connect-under-reset write src/h745/Makefile/CM7/build/stm32h745-ai_CM7.hex"
+        //     ]
+        // },
         {
             "label": "program both cores",
             "type": "shell",
-            "dependsOn": "build all",
-            "command": [
-                "st-flash --format=ihex write src/h745/Makefile/CM4/build/stm32h745-ai_CM4.hex && st-flash --format=ihex --connect-under-reset write src/h745/Makefile/CM7/build/stm32h745-ai_CM7.hex"
-            ]
+            "dependsOn": "build all release",
+            "command": "./scripts/program_both_cores.sh",
+            "problemMatcher": []
         }
     ]
 }
