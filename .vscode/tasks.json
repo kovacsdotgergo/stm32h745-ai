@@ -4,57 +4,45 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build m7 tflite",
-            "type": "shell",
-            "command": "make tflite -j4 -C src/h745/Makefile/CM7",
-            "problemMatcher": [ "$gcc" ]
-        },
-        {
             "label": "clean",
             "type": "shell",
             "command": "make clean -C src/h745/Makefile/",
-            "problemMatcher": [ "$gcc" ]
+            "problemMatcher": [
+                "$gcc"
+            ]
         },
         {
-            "label": "build all release",
+            "label": "build all",
             "dependsOn": [
-                "build m7 release",
-                "build m4 release"
+                "build m7 single",
+                "build m4 single"
             ],
-            "problemMatcher": [ "$gcc" ]
+            "problemMatcher": [
+                "$gcc"
+            ]
         },
         {
-            "label": "build m4 release",
+            "label": "build m7 single",
             "type": "shell",
-            "command": "make -j4 -C src/h745/Makefile/CM4 debug=0 |& tee src/h745/Makefile/CM4/build/last_build.log | ./scripts/colorize.sh",
-            "problemMatcher": [ "$gcc" ]
+            "command": "./scripts/build_single_core.sh cm7 ${input:debug} ${input:nn_framework}",
+            "problemMatcher": [
+                "$gcc"
+            ]
         },
         {
-            "label": "build m7 release",
+            "label": "build m4 single",
             "type": "shell",
-            "command": "make -j4 -C src/h745/Makefile/CM7 debug=0 |& tee src/h745/Makefile/CM7/build/last_build.log | ./scripts/colorize.sh",
-            "problemMatcher": [ "$gcc" ]
+            "command": "./scripts/build_single_core.sh cm4 ${input:debug} ${input:nn_framework}",
+            "problemMatcher": [
+                "$gcc"
+            ]
         },
         {
-            "label": "build all debug",
-            "dependsOn": [
-                "build m7 debug",
-                "build m4 debug"
-            ],
-            "problemMatcher": [ "$gcc" ]
-        },
-        {
-            "label": "build m4 debug",
+            "label": "touch makefiles",
             "type": "shell",
-            "command": "make -j4 -C src/h745/Makefile/CM4 debug=1 |& tee src/h745/Makefile/CM4/build/last_build.log | ./scripts/colorize.sh",
-            "problemMatcher": [ "$gcc" ]
-        },
-        {
-            "label": "build m7 debug",
-            "type": "shell",
-            "command": "make -j4 -C src/h745/Makefile/CM7 debug=1 |& tee src/h745/Makefile/CM7/build/last_build.log | ./scripts/colorize.sh",
-            "problemMatcher": [ "$gcc" ]
-        },
+            "command": "touch $(./scripts/project_paths.sh makefile_dir cm4)/Makefile && touch $(./scripts/project_paths.sh makefile_dir cm7)/Makefile",
+            "problemMatcher": []
+        }
         // {
         //     "label": "erase flash",
         //     "type": "shell",
@@ -76,9 +64,40 @@
         {
             "label": "program both cores",
             "type": "shell",
-            "dependsOn": "build all release",
-            "command": "./scripts/program_both_cores.sh",
+            "dependsOn": "build all",
+            "command": "./scripts/program_both_cores.sh ${input:debug} ${input:nn_framework}",
             "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "nn_framework",
+            "description": "the ai framework used",
+            "type": "pickString",
+            "default": "tflm",
+            "options": [
+                "tflm",
+                "X-CUBE-AI"
+            ],
+        },
+        {
+            "id": "debug",
+            "description": "type of build",
+            "type": "pickString",
+            "default": "0",
+            "options": [
+                "release",
+                "debug"
+            ]
+        },
+        {
+            "id": "core",
+            "description": "processor core for tasks operating only on one of them",
+            "type": "pickString",
+            "options": [
+                "cm4",
+                "cm7"
+            ]
         }
     ]
 }

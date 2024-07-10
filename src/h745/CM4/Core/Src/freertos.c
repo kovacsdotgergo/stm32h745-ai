@@ -22,13 +22,11 @@
 
 #include <stdio.h>
 
-#include "hello_world_test.h"
 #include "main.h"
+#include "nn_framework.h"
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
-
-// #include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -122,12 +120,12 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *pvParamters);
-void StartTfliteTask(void *pvParamters);
+void StartAiTask(void *pvParamters);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 static TaskHandle_t defaultTask = NULL;
-static TaskHandle_t tfliteTask = NULL;
+static TaskHandle_t aiTask = NULL;
 /**
  * @brief  FreeRTOS initialization
  * @param  None
@@ -143,8 +141,8 @@ void MX_FREERTOS_Init(void) {
   //     tskIDLE_PRIORITY + 1,         /* Task priority. */
   //     &defaultTask); /* Task handle, used to unblock task from interrupt. */
 
-  xTaskCreate(StartTfliteTask, "TfliteTask", 4 * 4096, NULL,
-              tskIDLE_PRIORITY + 2, &tfliteTask);
+  xTaskCreate(StartAiTask, "AiTask", 4 * 4096, NULL,
+              tskIDLE_PRIORITY + 2, &aiTask);
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -168,15 +166,18 @@ void StartDefaultTask(void *pvParameters) {
   /* USER CODE END StartDefaultTask */
 }
 
+void StartAiTask(void *pvParameters)
+{
+  ai_model_init();
+  while (1)
+  {
+    // Wait before doing it again
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    ai_model_run();
+    vTaskDelay(9000 / portTICK_PERIOD_MS);
+  }
+}
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 
 /* USER CODE END Application */
-
-void StartTfliteTask(void *pvParameters) {
-  while (1) {
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    tflite_helloworld();
-    vTaskDelay(9000 / portTICK_PERIOD_MS);
-  }
-}

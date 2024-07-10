@@ -10,17 +10,17 @@
             "request": "launch",
             "type": "cortex-debug",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/${input:nn_framework}/stm32h745-ai_CM7.elf",
             "servertype": "openocd",
             "configFiles": ["st_nucleo_h745zi.cfg"],
             "device": "STM32H745ZI",
             "numberOfProcessors": 2,
             "targetProcessor": 0,
             "loadFiles": [
-                "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/stm32h745-ai_CM4.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/${input:nn_framework}/stm32h745-ai_CM4.elf",
                 "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf"
             ],
-            "preLaunchTask": "build all debug",
+            "preLaunchTask": "build all",
             "preLaunchCommands": [
                 "monitor init",
                 "monitor reset halt"
@@ -32,7 +32,7 @@
             "request": "attach",
             "type": "cortex-debug",
             "cwd": "${workspaceRoot}",
-            "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/stm32h745-ai_CM4.elf",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/${input:nn_framework}/stm32h745-ai_CM4.elf",
             "servertype": "external",
             "gdbTarget": "localhost:50001",
             "device": "STM32H745ZI",
@@ -43,10 +43,10 @@
             "name": "Debug CM7+CM4 - openocd",
             "cwd": "${workspaceFolder}",
             "type": "cortex-debug",
-            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf",
+            "executable": "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/${input:nn_framework}/stm32h745-ai_CM7.elf",
             "loadFiles": [
-                "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/stm32h745-ai_CM4.elf",
-                "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/stm32h745-ai_CM7.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM4/build/debug/${input:nn_framework}/stm32h745-ai_CM4.elf",
+                "${workspaceFolder}/src/h745/Makefile/CM7/build/debug/${input:nn_framework}/stm32h745-ai_CM7.elf",
             ],
             "request": "launch",
             "servertype": "openocd",
@@ -55,7 +55,7 @@
             "numberOfProcessors": 2,
             "targetProcessor": 0,
             "configFiles": ["st_nucleo_h745zi.cfg"],
-            "preLaunchTask": "build all debug",
+            "preLaunchTask": "build all",
             "postLaunchCommands": [
                 "monitor reset run",
             ],
@@ -72,6 +72,18 @@
                     }
                 ]
             }       
+        }
+    ],
+    "inputs": [
+        {
+            "id": "nn_framework",
+            "description": "the ai framework used",
+            "type": "pickString",
+            "default": "tflm",
+            "options": [
+                "tflm",
+                "X-CUBE-AI"
+            ],
         }
     ]
 }

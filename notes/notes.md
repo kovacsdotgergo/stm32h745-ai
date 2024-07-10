@@ -14,6 +14,22 @@ args = [
 ]
 ```
 
+## Project hieararchy figure
+
+ 🗀 src
+ ├── 🗀 h745
+ │   ├── 🗀 CM4
+ │   ├── 🗀 CM7
+ │   ├── 🗀 Makefile
+ │   └── 🗀 etc...
+ └── 🗀 h745_generated
+     ├── 🗀 CM4
+     ├── 🗀 CM7
+     ├── 🗀 Makefile
+     ├── 🗋 stm32h745-ai.ioc
+     └── 🗀 etc...
+
+
 * merging two hex files [link arm doc](https://developer.arm.com/documentation/ka004500/latest/) [link doc](https://srecord.sourceforge.net/man/man1/srec_cat.1.html)
 
 ## Profiling stm32
@@ -191,3 +207,4 @@ m += $2} END {print sum}'
 ## Vim keybinding
 
 * `=`: format document
+* `<line num>G`: go to line

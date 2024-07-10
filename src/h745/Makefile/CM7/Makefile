@@ -7,13 +7,16 @@ default: all
 target := stm32h745-ai_CM7
 
 ######################################
-# building variables
+# build variables
 ######################################
 # debug build?
 debug ?= 1
+#todo: rename tflite to tflm
+# alternatively X-CUBE-AI
+nn_framework ?= tflm
 
 #######################################
-#logging
+# logging
 #######################################
 verbose ?= 0
 ifeq ($(verbose), 1)
@@ -37,6 +40,7 @@ ifeq ($(debug), 1)
 else
   build_dir := $(base_build_dir)/release
 endif
+build_dir := $(build_dir)/$(nn_framework)
 
 ######################################
 # source
@@ -48,7 +52,7 @@ $(root_dir)/CM7/Core/Src \
 $(root_dir)/Common/Src
 c_sources := $(shell (cd $(root_dir) && find $(c_src_dirs) -name *.c))
 
-c_sources +=  \
+c_sources += \
 $(root_dir)/Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
 $(root_dir)/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
 $(root_dir)/Middlewares/Third_Party/FreeRTOS/Source/list.c \
@@ -85,9 +89,9 @@ c_defs :=  \
 -DUSE_HAL_DRIVER \
 -DSTM32H745xx
 
-cxx_defs := $(c_defs) 
+cxx_defs := $(c_defs)
 
-as_includes := 
+as_includes :=
 
 c_includes :=  \
 -I$(root_dir)/CM7/Core/Inc \
@@ -98,8 +102,7 @@ c_includes :=  \
 -I$(root_dir)/Middlewares/Third_Party/FreeRTOS/Source/include \
 -I$(root_dir)/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
-cxx_includes := $(c_includes) \
--I$(root_dir)/CM7/Core/Src/hello_world
+cxx_includes := $(c_includes)
 
 # linker options
 # linker script
@@ -108,6 +111,23 @@ ldscript := stm32h745xx_flash_CM7.ld
 LDLIBS += # note: removed -lm
 LDFLAGS += -T$(ldscript)
 
+ifeq ($(nn_framework),X-CUBE-AI)
+
+#######################################
+# X-CUBE-AI
+#######################################
+c_includes += \
+-I$(root_dir)/Middlewares/ST/AI/Inc \
+-I$(root_dir)/CM7/nn_framework \
+-I$(root_dir)/CM7/nn_framework/X-CUBE-AI
+# -I../../CM7/X-CUBE-AI only the empty constants header
+c_sources += \
+$(shell (cd $(root_dir) && find $(root_dir)/CM7/nn_framework/X-CUBE-AI -name *.c))
+
+LDLIBS += -l:NetworkRuntime810_CM7_GCC.a
+LDFLAGS += -L$(root_dir)/Middlewares/ST/AI/Lib
+
+else ifeq ($(nn_framework),tflm)
 #######################################
 # tflite
 #######################################
@@ -120,6 +140,15 @@ cxx_defs += $(tflite_defs)
 cxx_includes += $(tflite_includes)
 c_includes += $(tflite_includes)
 
+# tflm subfolder for app code
+c_includes += \
+-I$(root_dir)/CM7/nn_framework/tflm \
+-I$(root_dir)/CM7/nn_framework
+cxx_includes += \
+-I$(root_dir)/CM7/nn_framework/tflm \
+-I$(root_dir)/CM7/nn_framework
+cxx_sources += $(shell (cd $(root_dir) && find $(root_dir)/CM7/nn_framework/tflm -name *.cc))
+
 # todo: temporarily don't depend on Makefile to avoid long rebuilds
 $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.c
 	@mkdir -p $(dir $@)
@@ -131,6 +160,9 @@ $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.cc
 	$(log) compiling $(patsubst $(root_dir)/%,%,$@)
 	$(q)$(CXX) -c $(mcu) $(cxx_defs) $(cxx_includes) $(CXXFLAGS) -Wa,-a,-ad,-alms=$(@:.o=.lst) $< -o $@
 
+else
+$(error Wrong value of nn_framework: $(nn_framework))
+endif
 #######################################
 # building the binary
 #######################################

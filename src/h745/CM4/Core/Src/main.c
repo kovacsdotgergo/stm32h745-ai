@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "crc.h"
 #include "usart.h"
 #include "tim.h"
 
@@ -72,7 +73,6 @@ void MX_FREERTOS_Init(void);
 int main(void)
 {
 
-
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -99,6 +99,8 @@ int main(void)
   setup_TIM2_Handle();
   // MX_USART3_UART_Init();
   setup_USART3_Handle();
+  // todo: only when measuring m4, for shared semaphore and callbacks
+  MX_CRC_Init();
 
   /* USER CODE BEGIN Init */
   GPIO_InitTypeDef init = {
@@ -110,6 +112,7 @@ int main(void)
 
   HAL_GPIO_WritePin(LD_RED_GPIO, LD_RED_GPIO_PIN, GPIO_PIN_RESET);
   HAL_GPIO_Init(LD_RED_GPIO, &init);
+
   /* USER CODE END Init */
 
   /* USER CODE BEGIN SysInit */

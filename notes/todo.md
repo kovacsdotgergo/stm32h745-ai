@@ -6,10 +6,18 @@
 * optimization
 * ethernet
 
+## Editor
+
+* suggest
+* paramter hints
+* all hover navigation
+* [this video might help](https://www.youtube.com/watch?v=2KcX_SdtHz0)
+
 ## Building and utilities with lower prio
 
 * reentrant printf
 * tio config file and vscode task
+* move the `paths.sh` functionality into makefile, because it is aware or the paths. Programming and everything else should be done by a target in the makefile, then the paths script wouldn't even be needed
 * docker
   * dependencies: arm bin, stlink, openocd, st-flash, freertos, ?srec_cat
 * build task `build current` based on the inellisense configuration instead of build cm4 and cm7

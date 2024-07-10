@@ -6,12 +6,14 @@ default: all
 ######################################
 target := stm32h745-ai_CM4
 
-
 ######################################
-# building variables
+# build variables
 ######################################
 # debug build?
 debug ?= 1
+# todo: rename tflite to tflm everywhere
+# alternatively X-CUBE-AI
+nn_framework ?= tflm
 
 #######################################
 # logging
@@ -29,7 +31,6 @@ endif
 # paths
 #######################################
 # Build path
-# todo rename to lower case
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 # src/h745 directory
 root_dir := $(realpath $(dir $(mkfile_path))../..)
@@ -39,6 +40,7 @@ ifeq ($(debug), 1)
 else
   build_dir := $(base_build_dir)/release
 endif
+build_dir := $(build_dir)/$(nn_framework)
 
 ######################################
 # source
@@ -70,7 +72,7 @@ $(root_dir)/Makefile/CM4/startup_stm32h745xx_CM4.s
 
 asmm_sources := 
 
-include ../binaries.mk 
+include ../binaries.mk
 
 #######################################
 # CFLAGS
@@ -94,7 +96,6 @@ as_includes :=
 
 c_includes := \
 -I$(root_dir)/CM4/Core/Inc \
--I$(root_dir)/CM4/Core/Src/hello_world \
 -I$(root_dir)/Drivers/STM32H7xx_HAL_Driver/Inc \
 -I$(root_dir)/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -I$(root_dir)/Drivers/CMSIS/Device/ST/STM32H7xx/Include \
@@ -102,16 +103,32 @@ c_includes := \
 -I$(root_dir)/Middlewares/Third_Party/FreeRTOS/Source/include \
 -I$(root_dir)/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
-cxx_includes := $(c_includes) \
--I$(root_dir)/CM4/Core/Src/hello_world
+cxx_includes := $(c_includes)
 
 # linker options
-# link script
+# linker script
 ldscript := stm32h745xx_flash_CM4.ld
 # libraries
 LDLIBS += # note: removed -lm
 LDFLAGS += -T$(ldscript)
 
+ifeq ($(nn_framework),X-CUBE-AI)
+
+#######################################
+# X-CUBE-AI
+#######################################
+c_includes += \
+-I$(root_dir)/Middlewares/ST/AI/Inc \
+-I$(root_dir)/CM4/nn_framework \
+-I$(root_dir)/CM4/nn_framework/X-CUBE-AI
+# -I../../CM4/X-CUBE-AI only the empty constants header
+c_sources += \
+$(shell (cd $(root_dir) && find $(root_dir)/CM4/nn_framework/X-CUBE-AI -name *.c))
+
+LDLIBS += -l:NetworkRuntime810_CM4_GCC.a
+LDFLAGS += -L$(root_dir)/Middlewares/ST/AI/Lib
+
+else ifeq ($(nn_framework),tflm)
 #######################################
 # tflite
 #######################################
@@ -124,6 +141,15 @@ cxx_defs += $(tflite_defs)
 cxx_includes += $(tflite_includes)
 c_includes += $(tflite_includes)
 
+# tflm subfolder for app code
+c_includes += \
+-I$(root_dir)/CM4/nn_framework/tflm \
+-I$(root_dir)/CM4/nn_framework
+cxx_includes += \
+-I$(root_dir)/CM4/nn_framework/tflm \
+-I$(root_dir)/CM4/nn_framework
+cxx_sources += $(shell (cd $(root_dir) && find $(root_dir)/CM4/nn_framework/tflm -name *.cc))
+
 # todo: temporarily don't depend on Makefile to avoid long rebuilds
 $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.c
 	@mkdir -p $(dir $@)
@@ -135,6 +161,9 @@ $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.cc
 	$(log) compiling $(patsubst $(root_dir)/%,%,$@)
 	$(q)$(CXX) -c $(mcu) $(cxx_defs) $(cxx_includes) $(CXXFLAGS) -Wa,-a,-ad,-alms=$(@:.o=.lst) $< -o $@
 
+else
+$(error Wrong value of nn_framework: $(nn_framework))
+endif
 #######################################
 # building the binary
 #######################################

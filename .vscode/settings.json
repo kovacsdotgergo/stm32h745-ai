@@ -9,7 +9,9 @@
         "tim.h": "c",
         "freertos.h": "c",
         "stdio.h": "c",
-        "cstdio": "cpp"
+        "cstdio": "cpp",
+        "ai_datatypes_defines.h": "c",
+        "ai_platform.h": "c"
     },
     "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb"
 }

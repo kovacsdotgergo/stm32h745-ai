@@ -6098,7 +6098,7 @@ static void prvCheckTasksWaitingTermination( void )
                     {
                         /* MISRA Ref 11.5.3 [Void pointer assignment] */
                         /* More details at: https://github.com/FreeRTOS/FreeRTOS-Kernel/blob/main/MISRA.md#rule-115 */
-                        /* coverity[misra_c_2012_rule_11_5_violation] */
+                        /* coverity[misra_c_201d2_rule_11_5_violation] */
                         pxTCB = listGET_OWNER_OF_HEAD_ENTRY( ( &xTasksWaitingTermination ) );
                         ( void ) uxListRemove( &( pxTCB->xStateListItem ) );
                         --uxCurrentNumberOfTasks;

@@ -22,15 +22,40 @@
 
 #include <stdio.h>
 
+#include "nn_framework.h"
 #include "gpio.h"
 #include "main.h"
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
 
-extern int tflite_helloworld(void);
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
 
-extern "C" {
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN Variables */
+
+/* USER CODE END Variables */
+
+/* Private function prototypes -----------------------------------------------*/
+/* USER CODE BEGIN FunctionPrototypes */
 void vApplicationMallocFailedHook(void) { configASSERT(0); }
 /*-----------------------------------------------------------*/
 
@@ -92,18 +117,16 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
   configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
   *puxTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
-}
 
-void StartDefaultTask(void *argument);
-void StartTfliteTask(void *argument);
-void StartCppTestTask(void *argument);
+/* USER CODE END FunctionPrototypes */
 
-extern "C" {
+void StartDefaultTask(void *pvParameters);
+void StartAiTask(void *pvParameters);
+
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 static TaskHandle_t defaultTask = NULL;
-static TaskHandle_t tfliteTask = NULL;
-static TaskHandle_t cppTask = NULL;
+static TaskHandle_t aiTask = NULL;
 
 /**
  * @brief  FreeRTOS initialization
@@ -111,8 +134,6 @@ static TaskHandle_t cppTask = NULL;
  * @retval None
  */
 void MX_FREERTOS_Init(void) {
-  /* Create the thread(s) */
-  /* creation of defaultTask */
   // xTaskCreate(
   //     StartDefaultTask,             /* Function that implements the task. */
   //     "DefaultTaskM7Core",          /* Task name, for debugging only. */
@@ -121,18 +142,20 @@ void MX_FREERTOS_Init(void) {
   //     NULL,                         /* Task parameter, not used in this case. */
   //     tskIDLE_PRIORITY + 1,         /* Task priority. */
   //     &defaultTask); /* Task handle, used to unblock task from interrupt. */
-
-  xTaskCreate(StartTfliteTask, "TfliteTask", 4 * 4096, NULL,
-              tskIDLE_PRIORITY + 2, &tfliteTask);
-}
+  xTaskCreate(StartAiTask, "AiTask", 2 * 4096, NULL,
+              tskIDLE_PRIORITY + 2, &aiTask);
 }
 
+/* USER CODE BEGIN Header_StartDefaultTask */
 /**
  * @brief  Function implementing the defaultTask thread.
  * @param  pvParameters: Not used
  * @retval None
  */
+/* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void *pvParameters) {
+  (void)pvParameters;
+  /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for (;;) {
     HAL_GPIO_TogglePin(LD_GREEN_GPIO, LD_GREEN_GPIO_PIN);
@@ -141,11 +164,19 @@ void StartDefaultTask(void *pvParameters) {
     uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
     printf("cm7: %f\r\n", (float)(end - st) / getTIM2Freq());
   }
+  /* USER CODE END StartDefaultTask */
 }
 
-void StartTfliteTask(void *pvParameters) {
-  while (1) {
-    tflite_helloworld();
+void StartAiTask(void *pvParameters) {
+  ai_model_init();
+  while (1)
+  {
+    // Wait before doing it again
+    ai_model_run();
     vTaskDelay(10000 / portTICK_PERIOD_MS);
   }
 }
+/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Application */
+
+/* USER CODE END Application */

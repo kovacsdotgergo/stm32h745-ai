@@ -40,7 +40,7 @@ VSCode is by default only a text editor but it support debugging with help of co
 
 Code completions, highlighting, errors are provided by VSCode if the include paths, defines, build options are set up and provided in a config file. For a multicore project or for debug and release builds different configurations can be used. Text editing is faster and more intelligent than in eclipse.
 
-Task can be set up to provide shourtcuts to launching programs or run scripts. I set up tasks for building, probing the board, and flashing. More options can be added to launch a program monitoring serial communication.
+Tasks can be set up to provide shourtcuts to launching programs or run scripts. I set up tasks for building, probing the board, and flashing. More options can be added to launch a program monitoring serial communication.
 
 To debug embedded applications via a debugger there is an extension which provides a graphical interface for gdb. The usual debug operations can be performed. For a multicore project VSCode is capable to manage simultaneously more debug sessions.
 
@@ -182,3 +182,59 @@ Storage:
 | cm7 | -Ofast| 97688  | 12520  | 11272  | 121480 | 1da88   |           |
 
 (*) C base is from the feat/nn_frameworks branch, the C base code used as the starting point
+todo
+
+#### CubeAI
+
+After adding the network in MX, there are different options to generate applications. By default only the header and source files interfacing the library are generated for the imported network. The options to add more functionality by the code generator are: performance measurement application, template application and [todo, validation?].
+
+The performance measurement application is quite complex, it communicates the measurement results via the serial port. The source code is not easily comprehendable.
+
+Easier options are the blog post about cubeai and tflite, but it was written for a previous version of these frameworks, so the code had to be modified. Similar example code is also available in the documentation of the library. The generated template application is only a touch more complex, so it can also be easily modified.
+
+Building the application on M7 with cubeai example net:
+Release:
+```shell
+ text    data     bss     dec     hex filename
+57228    2104   11528   70860   114cc build/stm32h745-ai_CM7.elf
+```
+runtime ~ 7.5 us
+
+Debug:
+```shell
+ text    data     bss     dec     hex filename
+68784    2184   11528   82496   14240 build/stm32h745-ai_CM7.elf
+```
+runtime ~ 7.8 us
+
+for m4:
+Release:
+```shell
+ text    data     bss     dec     hex filename
+42564    2104   10280   54948    d6a4 build/stm32h745-ai_CM4.elf
+```
+runtime ~ 30.17 us
+
+Debug:
+```shell
+ text    data     bss     dec     hex filename
+48152    2184   10280   60616    ecc8 build/stm32h745-ai_CM4.elf
+```
+runtime ~ 30.7 us
+
+the base project:
+Debug:
+```shell
+ text    data     bss     dec     hex filename
+55580     500   11256   67336   10708 build/stm32h745-ai_CM7.elf
+ text    data     bss     dec     hex filename
+37160     500    9968   47628    ba0c build/stm32h745-ai_CM4.elf
+```
+
+Release:
+```shell
+ text    data     bss     dec     hex filename
+44620     500   11256   56376    dc38 build/stm32h745-ai_CM7.elf
+ text    data     bss     dec     hex filename
+32488     500    9968   42956    a7cc build/stm32h745-ai_CM4.elf
+```
