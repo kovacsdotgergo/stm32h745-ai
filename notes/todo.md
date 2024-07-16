@@ -70,6 +70,9 @@
 * glow
 
 * selecting a practical network
+  * start off by using the nets used in the benchmarks
+  * research the quantization aware training
+  * use the kws streaming paper for selecting optianlly better nets and to use streaming for optimization
 * speeding up the network
   * splitting and using IPC to execute in parallel
   * feeding the inputs thorough USB
@@ -91,7 +94,7 @@
   * using the core timer is possible, but I still used the hardware timer
 * ~~cpp compilation~~
 * ~~measure performance~~
-* integrate both in one project
+* ~~integrate both in one project~~
 
 * more frameworks
   * glow

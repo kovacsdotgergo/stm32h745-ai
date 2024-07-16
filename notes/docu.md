@@ -238,3 +238,87 @@ Release:
  text    data     bss     dec     hex filename
 32488     500    9968   42956    a7cc build/stm32h745-ai_CM4.elf
 ```
+
+### Merging the two frameworks
+
+todo
+
+## Searching a nerual network
+
+The two options are object detection in image processing, and keyword spotting/detection (or maybe this can be called object detection on audio signals as well). The memory on both cores is 1M, so the final net has to be tiny to fit.
+
+For image processing some yolo micro or yolo-lite is an option, but these are larger models, the smallest has around 2-3M parameters.
+
+Mlperf tiny nets have to be adequate.
+
+### openWakeWord
+
+In the [github repository](https://github.com/dscripka/openWakeWord) they mention, that it is probably not suitable for embedded devices. There is a [modified repo](https://github.com/kahrendt/microWakeWord) that can run on microcontrollers.
+
+### Apples article about their earlier detection net
+
+[The article](https://machinelearning.apple.com/research/hey-siri) described the network and algorithm used.
+
+### Porcupine
+
+[Porcupine](https://picovoice.ai/platform/porcupine/) is a commercial wakeword detection engine. It can run on M7 and M4. New keywords can be set in text and the trained model can be downloaded. It is free for use without support and with a limited number of customers. On a raspberry pi it supposedly only required a few percent of the CPU runtime.
+
+### Fluent.ai
+
+Another commercial ready-made [solution](https://fluent.ai/contact/), that offers the detection for constrained devices. There is no documentation, and can only be used after contacting the company.
+
+### EfficientWord-net
+
+Open source project ([article](https://medium.com/ant-brain/efficientword-net-an-open-source-hotword-detector-50058d68149f), [repo and documentation with paper link](https://github.com/Ant-Brain/EfficientWord-Net)). Currently they promise an 88MB model, that runs on rasperry pi.
+
+### Tiny ML wakeword detection
+
+Open [source project](https://www.hackster.io/team-wakeup/tiny-ml-wake-word-detection-964278), that uses a tensroflow example training script. It runs on arduino. This might just be the plain TFLM example project.
+
+### Snowboy
+
+Engine, but raspberry pi is at [least required](https://github.com/Kitt-AI/snowboy).
+
+### OpenAi whisper models
+
+Transformer based speech translation model. There are different [models](https://huggingface.co/openai/whisper-tiny.en), unfortunately the tiny is 88MB large.
+
+### Pyannote speaker segmentation
+
+The [paper](https://arxiv.org/abs/2104.04045) mentions that their net has 1.5M parameters. The source [code](https://huggingface.co/pyannote/segmentation) is available as a part of the reproducible experiment. There is a seperate [model?](https://huggingface.co/pyannote/voice-activity-detection) for speaker activity detection.
+
+### WaveNet
+
+Dilated convolutional nns started for 1D with WaveNet. There is a [blog post](https://medium.com/@kion.kim/wavenet-a-network-good-to-know-7caaae735435) about the details of implementation. Otherwise PixelCNN might be the first net applying these ideas. These are unfortunately generative networks, so can't be directly applied here.
+
+### The MLPerf Tiny benchmark nets
+
+[The rules in the repo are about the implementation of the benchmarks](https://github.com/mlcommons/tiny/blob/master/benchmark/MLPerfTiny_Rules.adoc)([original page of the benchmark](https://mlcommons.org/benchmarks/inference-tiny/)). They use the voice commands dataset. The python files for the model and the dataset are avalable in the repo. The model is a DS-CNN.
+
+#### Silabs
+
+Silabs have their own [solution](https://github.com/SiliconLabs/mltk/blob/master/mltk/models/tinyml/keyword_spotting.py) based on the MlPerf code. On their [webpage](https://siliconlabs.github.io/mltk/docs/python_api/models/index.html) several models for microcontorllers are listed.
+
+#### ARM
+
+This led me the an ARM [repo](https://github.com/ARM-software/ML-KWS-for-MCU) for KWS. The models are specifically made for MCUs and come in different sizes.
+
+The KWS nets are nicely summarized in [Hello Edge: Keyword Spotting on Microcontrollers](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/arm_hello_edge.pdf). [For deployment](https://github.com/ARM-software/ML-KWS-for-MCU/blob/master/train.py) they used the CMSIS-NN library directly.
+
+#### Google
+
+The google KWS [repo](https://github.com/google-research/google-research/blob/master/kws_streaming/README.md) contains some more models, including the previous [paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/streaming_keyword_spotting.pdf). The citations can be useful for the better performing options.
+
+### Tiny CRNN
+
+[Paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/tiny-crnn.pdf) about a convolutional GRU with additional attention. It also mentions the streaming implementation of the recurrent part. The models contain from 50K to 2M parameters.
+
+## Optimization
+
+todo:
+* fusing layers, e.g. fusing batch norm is possbile in torch, as mentioned in [here](https://community.arm.com/arm-community-blogs/b/ai-and-ml-blog/posts/pytorch-to-tensorflow-lite-for-deploying-on-arm-ethos-u55-and-u65)
+* using a streaming model can be really efficient for convolutions
+* using another model from the sources previously mentioned in the searching part
+* cores
+* kernel optimization
+* quantization, quantization aware training
