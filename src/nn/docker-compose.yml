@@ -1,0 +1,17 @@
+services:
+  dev_container:
+    image: stm32h745-ai-nndev
+    container_name: stm32h745-ai-nndev
+    runtime: nvidia  # For GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+    volumes:
+      - /home/gergo/workspace/stm32h745-ai/src/nn:/workspace
+    build:
+      args:
+        USERNAME: $USERNAME
+        UID: $UID
+        GID: $GID

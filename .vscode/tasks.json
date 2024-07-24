@@ -42,7 +42,7 @@
             "type": "shell",
             "command": "touch $(./scripts/project_paths.sh makefile_dir cm4)/Makefile && touch $(./scripts/project_paths.sh makefile_dir cm7)/Makefile",
             "problemMatcher": []
-        }
+        },
         // {
         //     "label": "erase flash",
         //     "type": "shell",

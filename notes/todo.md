@@ -20,6 +20,9 @@
 * move the `paths.sh` functionality into makefile, because it is aware or the paths. Programming and everything else should be done by a target in the makefile, then the paths script wouldn't even be needed
 * docker
   * dependencies: arm bin, stlink, openocd, st-flash, freertos, ?srec_cat
+  * decide how the container should be used, probably not as a devcontainer, it would be enough to build inside
+  * ~~rights inside the nn container, should not run as root~~
+* move the debug config into h745
 * build task `build current` based on the inellisense configuration instead of build cm4 and cm7
 * restructure and remove the makefile folder -> but then the merge script changes
 * cross trigger interface?
