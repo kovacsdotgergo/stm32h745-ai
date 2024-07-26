@@ -313,6 +313,24 @@ The google KWS [repo](https://github.com/google-research/google-research/blob/ma
 
 [Paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/tiny-crnn.pdf) about a convolutional GRU with additional attention. It also mentions the streaming implementation of the recurrent part. The models contain from 50K to 2M parameters.
 
+## Setting up the environment for NN
+
+__Benchmark__ files: the keyword spotting tiny benchmarks source code.
+
+I had to update the GPU driver to have access to the recent solutions for running ai workloads. Docker and alternatives now [support](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) the GPUs pretty well. After following this tutorial to set up the gpu, I have added the start command for the docker daemon (service) in wsl.
+
+The tensorflow containers have most of the required packages already installed. The most recent version did not work for me, luckily I found an older version, that does.
+
+I set up a devcontainer to run the ai scripts inside. The source code is bind mounted and the kws dataset from the tiny benchmark is also downloaded here.
+
+The speech_commands dataset has input samples as a waveform. The benchmark files pad them probably to 16k samples, which is 1s with the 16kHz sampling rate. There is a [paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/speech_commands.pdf) about the dataset. The paper states, that some of the files can be shorter than one second, this is why the padding was needed.
+
+### Input preprocessing
+
+The samples can be retrieved in the benchmark code as waves or as preprocessed inputs. Because the models use a spectrogram input, this has to implemented on the device as well.
+
+The `quantization` script performes simple tflite quantization and model export. The preprocessing for test data can be performed using the `make_bin_files` script. It exports the selected inputs to binary after preprocesisng them (the `README` describes these in detail).
+
 ## Optimization
 
 todo:

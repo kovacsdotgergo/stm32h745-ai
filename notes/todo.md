@@ -74,6 +74,8 @@
 
 * selecting a practical network
   * start off by using the nets used in the benchmarks
+    * start off by using the nets in the repo, use the inputs already exported by including in the code
+    * send the inputs via usb or uart
   * research the quantization aware training
   * use the kws streaming paper for selecting optianlly better nets and to use streaming for optimization
 * speeding up the network

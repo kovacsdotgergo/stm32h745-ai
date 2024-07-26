@@ -11,7 +11,7 @@
 	"dockerComposeFile": "../../src/nn/docker-compose.yml",
 	"service": "dev_container",
 	"shutdownAction": "stopCompose",
-	"workspaceFolder": "/workspace",
+	"workspaceFolder": "/home/gergo/workspace",
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},

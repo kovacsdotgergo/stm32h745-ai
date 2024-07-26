@@ -9,9 +9,12 @@ services:
           devices:
             - capabilities: [gpu]
     volumes:
-      - /home/gergo/workspace/stm32h745-ai/src/nn:/workspace
+      - /home/gergo/workspace/stm32h745-ai/src/nn:/home/$USERNAME/workspace
     build:
       args:
         USERNAME: $USERNAME
         UID: $UID
         GID: $GID
+    # tmp for debug
+    stdin_open: true
+    tty: true
