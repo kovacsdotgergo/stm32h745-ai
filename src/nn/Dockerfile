@@ -18,9 +18,9 @@ RUN groupadd --gid $USER_GID $USERNAME \
 # ********************************************************
 # * Anything else you want to do like clean up goes here *
 # ********************************************************
-RUN pip install tensorflow_datasets pydub \
+RUN pip install tensorflow_datasets pydub mako \
     && apt-get -y update \
-    && apt-get install -y ffmpeg libavcodec-extra
+    && apt-get install -y ffmpeg libavcodec-extra xxd
 
 # [Optional] Set the default user. Omit if you want to keep the default as root.
 USER $USERNAME

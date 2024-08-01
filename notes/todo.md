@@ -15,6 +15,7 @@
 
 ## Building and utilities with lower prio
 
+* there is something wrong with the colorization script, the color code was printed before a note
 * reentrant printf
 * tio config file and vscode task
 * move the `paths.sh` functionality into makefile, because it is aware or the paths. Programming and everything else should be done by a target in the makefile, then the paths script wouldn't even be needed

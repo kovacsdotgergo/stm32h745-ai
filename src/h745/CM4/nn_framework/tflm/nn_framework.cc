@@ -180,18 +180,19 @@ void ai_model_init() {}
 
 void ai_model_run(void) {
   tflite::InitializeTarget();
-  assert(kTfLiteOk == ProfileMemoryAndLatency(sine_model_no_quant_tflite));
-  MicroPrintf("NO quantization");
-  assert(kTfLiteOk ==
-         LoadFloatModelAndPerformInference(sine_model_no_quant_tflite));
-  MicroPrintf("Fallback quantization");
-  assert(kTfLiteOk ==
-         LoadFloatModelAndPerformInference(sine_model_fb_quant_tflite));
-  MicroPrintf("Dynamic quantization");
-  assert(kTfLiteOk ==
-         LoadFloatModelAndPerformInference(sine_model_dyn_quant_tflite));
-  MicroPrintf("Full quantization");
-  assert(kTfLiteOk ==
-         LoadQuantModelAndPerformInference(sine_model_full_quant_tflite));
-  MicroPrintf("~~~END OF HELLO WORLD~~~\n");
+  // assert(kTfLiteOk == ProfileMemoryAndLatency(sine_model_no_quant_tflite));
+  // MicroPrintf("NO quantization");
+  // assert(kTfLiteOk ==
+  //        LoadFloatModelAndPerformInference(sine_model_no_quant_tflite));
+  // MicroPrintf("Fallback quantization");
+  // assert(kTfLiteOk ==
+  //        LoadFloatModelAndPerformInference(sine_model_fb_quant_tflite));
+  // MicroPrintf("Dynamic quantization");
+  // assert(kTfLiteOk ==
+  //        LoadFloatModelAndPerformInference(sine_model_dyn_quant_tflite));
+  // MicroPrintf("Full quantization");
+  // assert(kTfLiteOk ==
+  //        LoadQuantModelAndPerformInference(sine_model_full_quant_tflite));
+  // MicroPrintf("~~~END OF HELLO WORLD~~~\n");
+  MicroPrintf("M4 core does nothing...");
 }

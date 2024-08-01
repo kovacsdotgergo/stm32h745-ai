@@ -175,6 +175,8 @@ Extern "C" is required for the FreeRTOS hooks and the init functions that are ca
 ## Hard fault
 
 todo: write about the article and the hard fault analyzer
+[The page I've found first](https://interrupt.memfault.com/blog/cortex-m-hardfault-debug#cortex-m3-m4-debug-trick).
+[Similar content](https://www.freertos.org/Debugging-Hard-Faults-On-Cortex-M-Microcontrollers.html) on the freertos webpage.
 
 ## Checking task stack
 todo: move this section below anything relevant
@@ -208,3 +210,12 @@ m += $2} END {print sum}'
 
 * `=`: format document
 * `<line num>G`: go to line
+
+## Naked asm functions
+
+[Related stackoverflow question](https://stackoverflow.com/questions/2716884/using-the-naked-attribute-for-functions-in-gcc)
+[Some of the related GCC documentation](https://gcc.gnu.org/onlinedocs/gcc-3.0.4/gcc/Function-Entry.html)
+[Interrupt handling, that references the ARM ABI](https://www.embedded.com/programming-embedded-systems-how-interrupts-work-in-arm-cortex-m/)
+The parts appended to the function by the compiler are called prologue and epilogue.
+The ARM ABI specifies some of the instructions required.
+Register window: when the registers can be aliased for several procedures, this eliminates the need for some stack operations on function call

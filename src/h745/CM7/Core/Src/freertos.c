@@ -142,7 +142,7 @@ void MX_FREERTOS_Init(void) {
   //     NULL,                         /* Task parameter, not used in this case. */
   //     tskIDLE_PRIORITY + 1,         /* Task priority. */
   //     &defaultTask); /* Task handle, used to unblock task from interrupt. */
-  xTaskCreate(StartAiTask, "AiTask", 2 * 4096, NULL,
+  xTaskCreate(StartAiTask, "AiTask", 8096, NULL, // mallocks the required amount in words (stack_type_t? is 4 bytes)
               tskIDLE_PRIORITY + 2, &aiTask);
 }
 
@@ -172,8 +172,12 @@ void StartAiTask(void *pvParameters) {
   while (1)
   {
     // Wait before doing it again
+    printf("\r\nTask watermark: %lu\r\n", uxTaskGetStackHighWaterMark(NULL));
     ai_model_run();
-    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    printf("\r\nTask watermark: %lu\r\n", uxTaskGetStackHighWaterMark(NULL));
+
+    // vTaskDelay(10000 / portTICK_PERIOD_MS);
+    while (1);
   }
 }
 /* Private application code --------------------------------------------------*/

@@ -340,3 +340,66 @@ todo:
 * cores
 * kernel optimization
 * quantization, quantization aware training
+
+## KWS benchmark net
+
+The float net had some operations that are not supported in TFLM (different types for the conv2d kernel(int8) and inputs(float32)).
+
+The benchmark net can run with sufficient task stack space. The output of the TFLM profiling for debug:
+
+```text
+"Unique Tag","Total ticks across all events with that tag."
+CONV_2D, 108195201
+DEPTHWISE_CONV_2D, 25946035
+AVERAGE_POOL_2D, 277088
+RESHAPE, 1384
+FULLY_CONNECTED, 56098
+SOFTMAX, 32287
+"total number of ticks", 134508093
+
+[RecordingMicroAllocator] Arena allocation total 23412 bytes
+[RecordingMicroAllocator] Arena allocation head 16004 bytes
+[RecordingMicroAllocator] Arena allocation tail 7408 bytes
+[RecordingMicroAllocator] 'TfLiteEvalTensor data' used 420 bytes with alignment overhead (requested 420 bytes for 35 allocations)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor data' used 64 bytes with alignment overhead (requested 64 bytes for 2 tensors)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor quantization data' used 40 bytes with alignment overhead (requested 40 bytes for 4 allocations)
+[RecordingMicroAllocator] 'Persistent buffer data' used 5884 bytes with alignment overhead (requested 5812 bytes for 34 allocations)
+[RecordingMicroAllocator] 'NodeAndRegistration struct' used 416 bytes with alignment overhead (requested 416 bytes for 13 NodeAndRegistration structs)
+```
+
+```shell
+arm-none-eabi-size /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM7/build/debug/tflm/stm32h745-ai_CM7.elf
+text data bss dec hex filename
+491384 504 11232 503120 7ad50
+```
+
+And for release:
+
+```text
+"Unique Tag","Total ticks across all events with that tag."
+CONV_2D, 4457435
+DEPTHWISE_CONV_2D, 2051249
+AVERAGE_POOL_2D, 109619
+RESHAPE, 544
+FULLY_CONNECTED, 4301
+SOFTMAX, 3718
+"total number of ticks", 6626866
+
+[RecordingMicroAllocator] Arena allocation total 23412 bytes
+[RecordingMicroAllocator] Arena allocation head 16008 bytes
+[RecordingMicroAllocator] Arena allocation tail 7404 bytes
+[RecordingMicroAllocator] 'TfLiteEvalTensor data' used 420 bytes with alignment overhead (requested 420 bytes for 35 allocations)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor data' used 64 bytes with alignment overhead (requested 64 bytes for 2 tensors)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor quantization data' used 40 bytes with alignment overhead (requested 40 bytes for 4 allocations)
+[RecordingMicroAllocator] 'Persistent buffer data' used 5880 bytes with alignment overhead (requested 5812 bytes for 34 allocations)
+[RecordingMicroAllocator] 'NodeAndRegistration struct' used 416 bytes with alignment overhead (requested 416 bytes for 13 NodeAndRegistration structs)
+```
+
+```shell
+arm-none-eabi-size /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM7/build/release/tflm/stm32h745-ai_CM7.elf
+text data bss dec hex filename
+181636 500 11232 193368 2f358
+```
+
+This runtime for the optimized run is 13.8 ms, which is 72 times per second. The input is 16kHz, from which we produce the MFCC.
+Todo: check how much data is required for one frame (if there is any subsampling step for example for the mel scale), if the net can run at all. (After a quick calculation even without compression, the processing power should be enough).
