@@ -18,7 +18,9 @@ limitations under the License.
 #include <math.h>
 
 #include <cstdio>
+#include <cstring>
 
+#include "kws_test_file3.h"
 #include "models/kws_model_quant.h"
 // #include "models/sine_model_dyn_quant.h"
 // #include "models/sine_model_fb_quant.h"
@@ -33,6 +35,10 @@ limitations under the License.
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tim.h"
+
+const uint8_t* test_file_arr = src_nn_kws_bin_files_mfcc_tst_000103_On_5_bin;
+const unsigned int test_file_len =
+    src_nn_kws_bin_files_mfcc_tst_000103_On_5_bin_len;
 
 namespace {
 // the same resolver works for the float and quantized models
@@ -155,30 +161,48 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
   float output_scale = output->params.scale;
   int output_zero_point = output->params.zero_point;
 
-  constexpr int8_t golden_input = 1;
-
-  tflite::GetTensorData<int8_t>(input)[0] = golden_input;
+  // filling the inputs with the test data
+  assert(input->bytes == test_file_len);
+  auto* inputs = tflite::GetTensorData<int8_t>(input);
+  std::memcpy(inputs, test_file_arr, test_file_len);
+  // tflite::GetTensorData<int8_t>(input)[0] = golden_input;
   // input->data.int8[0] = golden_input;
+  MicroPrintf("Inputs:");
+
+  size_t dimsize = interpreter.input(0)->dims->size;
+  for (size_t i = 0; i < dimsize; ++i) {
+    size_t dim = interpreter.input(0)->dims->data[i];
+    std::printf("dim [%d]: %d, ", i, dim);
+  }
+  MicroPrintf("");
+
+  for (size_t i = 0; i < input->bytes; ++i) {
+    std::printf("0x%2x ", input->data.uint8[i]);
+    constexpr size_t line_len = 16;
+    if (line_len - 1 == i % line_len) MicroPrintf("");
+  }
+  MicroPrintf("");
+
   uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
   TF_LITE_ENSURE_STATUS(interpreter.Invoke());
   uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
 
-  const size_t dimsize = interpreter.output(0)->dims->size;
-  MicroPrintf("dim len: %d", dimsize);
+  MicroPrintf("\r\nOutputs:");
 
+  dimsize = interpreter.output(0)->dims->size;
   size_t output_length =  1;
   for (size_t i = 0; i < dimsize; ++i) {
     size_t dim = interpreter.output(0)->dims->data[i];
-    MicroPrintf("dim [%d]: %d", i, dim);
+    std::printf("dim [%d]: %d, ", i, dim);
     output_length *= dim;
   }
 
-  MicroPrintf("Outputs:");
+  MicroPrintf("");
   for (size_t i = 0; i < output_length; ++i) {
     float y_pred = (output->data.int8[i] - output_zero_point) * output_scale;
-    MicroPrintf("%f", y_pred);
+    std::printf("%.2f ", y_pred);
   }
-  MicroPrintf("\r\nRuntime: %f [us]",
+  MicroPrintf("\r\n\r\nRuntime: %.2f [us]",
               (float)(end - start) / getTIM2Freq() * 1e6F);
 
   return kTfLiteOk;
@@ -188,6 +212,8 @@ void ai_model_init() {}
 
 void ai_model_run(void) {
   tflite::InitializeTarget();
+  printf("STARTING TEST\r\n");
   // assert(kTfLiteOk == ProfileMemoryAndLatency(g_kws_model_quant_data));
   assert(kTfLiteOk == LoadQuantModelAndPerformInference(g_kws_model_quant_data));
+  printf("END OF TEST");
 }

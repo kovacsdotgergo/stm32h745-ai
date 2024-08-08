@@ -172,9 +172,9 @@ void StartAiTask(void *pvParameters) {
   while (1)
   {
     // Wait before doing it again
-    printf("\r\nTask watermark: %lu\r\n", uxTaskGetStackHighWaterMark(NULL));
+    printf("\r\nTask watermark: %lu (words left)\r\n", uxTaskGetStackHighWaterMark(NULL));
     ai_model_run();
-    printf("\r\nTask watermark: %lu\r\n", uxTaskGetStackHighWaterMark(NULL));
+    printf("\r\nTask watermark: %lu (words left)\r\n", uxTaskGetStackHighWaterMark(NULL));
 
     // vTaskDelay(10000 / portTICK_PERIOD_MS);
     while (1);

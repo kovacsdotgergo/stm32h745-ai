@@ -87,7 +87,7 @@ if __name__ == '__main__':
   # set true to run the TFL model on each input before writing it to files.
   # This will also generate a file tflm_labels.csv (similar to y_labels.csv)
   # recording what the model predicted for each input
-  test_tfl_on_bin_files = False
+  test_tfl_on_bin_files = True
 
   all_dat   = np.zeros(input_shape, dtype='float32')
   all_dat_q   = np.zeros(input_shape, dtype=output_type)

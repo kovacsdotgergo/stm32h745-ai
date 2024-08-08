@@ -1,3 +1,4 @@
 **/build
 src/nn/dataset
+src/nn/kws_bin_files
 .vscode/browse*

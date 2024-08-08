@@ -12,7 +12,8 @@
         "cstdio": "cpp",
         "ai_datatypes_defines.h": "c",
         "ai_platform.h": "c",
-        "reent.h": "c"
+        "reent.h": "c",
+        "cstring": "cpp"
     },
     "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb"
 }

@@ -307,7 +307,7 @@ The KWS nets are nicely summarized in [Hello Edge: Keyword Spotting on Microcont
 
 #### Google
 
-The google KWS [repo](https://github.com/google-research/google-research/blob/master/kws_streaming/README.md) contains some more models, including the previous [paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/streaming_keyword_spotting.pdf). The citations can be useful for the better performing options.
+The google KWS [repo](https://github.com/google-research/google-research/blob/master/kws_streaming/README.md) contains some more models, including the previous [paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/streaming_keyword_spotting.pdf). The citations can be useful for the better performing options. Also a TFLM [question](https://groups.google.com/a/tensorflow.org/g/micro/c/EidfTbxqk3o?pli=1) about the streaming model leads to this article.
 
 ### Tiny CRNN
 
@@ -401,5 +401,26 @@ text data bss dec hex filename
 181636 500 11232 193368 2f358
 ```
 
-This runtime for the optimized run is 13.8 ms, which is 72 times per second. The input is 16kHz, from which we produce the MFCC.
-Todo: check how much data is required for one frame (if there is any subsampling step for example for the mel scale), if the net can run at all. (After a quick calculation even without compression, the processing power should be enough).
+This runtime for the optimized run is 13.8 ms, which is 72 times per second. The input is 16kHz, from which we produce the MFCC. After testing with a few binary samples form the test set, the network produced correct outputs.
+
+__todo__: check how much data is required for one frame (if there is any subsampling step for example for the mel scale), if the net can run at all. (After a quick calculation even without compression, the processing power should be enough).
+
+### Preprocessing
+
+The preprocessing inside `get_dataset.py` in the benchmark repository:
+The MFCC implementation in tflite: [link](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/mfcc.cc).
+
+* it only transforms the data, not the labels
+* cast to float32
+* reduce max, max scaling
+* (pad the back to be `desired_samples` long (1s))
+* (scales if the previously specified 1 is not ok (reduce max results in max of 1))
+* (shifting the start of the sample, but as I understand, the current setup pads with 2 0's from front and back, then slices starting from the second value, so nothing happens in the end)
+* (for training background data is added)
+
+After this the MFCC transformation:
+
+* stft: `tf.signal.stft` with the config variables from the command line
+* absolute value of spectrogram
+* frequency scale conversion to mel using the default values from [here](https://www.tensorflow.org/api_docs/python/tf/raw_ops/Mfcc)
+* log of the apmlitudes to result in logarithmic mel spectrogram
