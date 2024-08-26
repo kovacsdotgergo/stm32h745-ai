@@ -424,3 +424,32 @@ After this the MFCC transformation:
 * absolute value of spectrogram
 * frequency scale conversion to mel using the default values from [here](https://www.tensorflow.org/api_docs/python/tf/raw_ops/Mfcc)
 * log of the apmlitudes to result in logarithmic mel spectrogram
+
+#### CMSIS
+
+The python wrapper of the DSP library calls the C functions. I have first assembled a small python code to test the float implementation. After this other datatypes have to be checked, and the quantization of the inputs in the `make_bin_files` script.
+
+There was a differnece between the calculated MFCC's using CMSIS and the tensorflow preprocessing function. Because in tensorflow the implementation uses STFT, the whole input window is handled at once. The normalization also happens on this 1s segment. Using the cmsis implementation in a loop, there is no normalization (if there was, it would be calculated on one window of the stft, which results in a different max for each window). This caused the difference.
+
+With this normalization the preprocessing can not easily converted to streaming, as for the overlapping parts the normalization is different, so the previous mfcc can not be utilized.
+
+Results from the first check, after running the quantized net on the test sets preprocessed with the different functions.
+Accuracy = 0.917 (4482/4890) (original)
+Accuracy = 0.918 (4490/4890) (f32 cmsis)
+Accuracy = 0.906 (4428/4890) (i32 cmsis)
+Accuracy = 0.911 (4453/4890) (i16 cmsis)
+
+There is no significant difference, checking some samples manually, for the higher order mfcc coefficients there is a detectable difference, but for the main components it is really small. The cause of this is still unknown for me.
+
+Also there is a possibility of saturation when using quantized preprocessing. If this happens, and how serious the effect can be, has to be explored. It can probably be assumed that the input is normalized, because the mfcc in only used with the neural net (this might simplify the exploration of the saturation).
+
+##### Difference between the mfcc results
+
+There is a small difference between the mfccs calculated with cmsis, or tensorflow. I have checked the mel scale transformation and the window functions. Both are identical. The intermediate results can be checked by writing a python wrapper around a custom C debug code. This seemed more complicated that I have time for. The other possibility could be to only use the C library and serialize the intermediate results. Then all the stages can be checked. This can also be done on the mcu, because the preprocessing has to be implemented. Then the intermediate results can be saved by using the debugger.
+
+#### Implementation on the MCU
+
+First the build rules have to be written, then the neccessary files should be listed and copied in this main project. When the C implementation of the preprocessing is done on the device, add log statements for the intermediate results, then compare with the intermediater results of the tensorflow python results. TODO before
+
+__TODO__ couninue: Next I am checking the cause of the smaller differences and the possible datatypes. After that accuracy has to be measured with the different types of preprocessing (and comparison with the export script).
+I should also find out if the integer preprocessing can saturate with certain inputs (all Qs are 1 max). Then merge the quantization of the net input instead of converting to float and quantizing after that (if it is a good idea).

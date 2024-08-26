@@ -10,6 +10,7 @@ services:
             - capabilities: [gpu]
     volumes:
       - /home/gergo/workspace/stm32h745-ai/src/nn:/home/$USERNAME/workspace
+      - dev_container_bash_history:/commandhistory
     build:
       args:
         USERNAME: $USERNAME
@@ -18,3 +19,5 @@ services:
     # tmp for debug
     stdin_open: true
     tty: true
+volumes:
+  dev_container_bash_history:

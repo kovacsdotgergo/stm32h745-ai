@@ -105,3 +105,23 @@
 * more frameworks
   * glow
   * generating cmsis nn code
+
+## tmp
+
+* ~~the cast and pad is a good idea, because i am not sure how the transfrom happens on an invalidly shaped input~~
+* ~~transform using the cmsis python lib~~
+* ~~somehow get the reference for the same inputs~~
+* ~~compare them~~
+* on the hardware implement the same transformation
+* compare with the reference inputs
+* make streaming inference
+
+* ~~check the benchmark (was measurement before) code~~
+* ~~run on all sets (train, val, test)~~
+* implement on the hardware
+* dump intermediate results
+* check the cause of the difference
+* run with wave inputs on the hardware
+* measure all types of preprocessing
+* merge the output transformation of the preprocessing and the input quantizaton of the net
+* might be __IMPORTANT__: check if in theory the integer versions could saturate
