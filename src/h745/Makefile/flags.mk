@@ -7,9 +7,22 @@ CFLAGS += \
 	$(opt) \
 	-Wall \
 	-Wextra \
+	-Wdouble-promotion \
 	-Wno-unused-parameter \
 	-fdata-sections \
 	-ffunction-sections
+# todo:
+#  -Wsign-compare \
+#  -Wdouble-promotion \
+#  -Ofast -ffast-math \
+#  -DNDEBUG \
+#  -Wall -Wextra  -Werror \
+#  -fshort-enums -fshort-wchar \
+# -fshort-enums: uses shorter data type for enums instead of int if possible
+# -ffast-math: non ieee745 compliant, e.g. doesn't use nans, but is the fastest. It enables a set of flags, some of which can be used most of the time, others affect the result of computations.
+# -fshort-wchar: forces wchar to be represented by short unsigned int
+# -Wsign-compare: enabled by Wextra, warns when when a comparison between signed and unsigned values could produce an incorrect result when the signed value is converted to unsigned
+# -Wdouble-promotion: warns when float is implicitly promoted to double
 
 ifeq ($(debug), 1)
 CFLAGS += -g3 -gdwarf-2

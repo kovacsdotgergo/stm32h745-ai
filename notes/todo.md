@@ -119,9 +119,12 @@
 * ~~check the benchmark (was measurement before) code~~
 * ~~run on all sets (train, val, test)~~
 * implement on the hardware
+  * finalize the dependency generation script
 * dump intermediate results
 * check the cause of the difference
 * run with wave inputs on the hardware
 * measure all types of preprocessing
 * merge the output transformation of the preprocessing and the input quantizaton of the net
 * might be __IMPORTANT__: check if in theory the integer versions could saturate
+
+* there are two cmsis directories, one in drivers, that st generated, the other in tflite third party. unite them, use the more recent if it builds and use it for all teh purposes (inside all the source code and to build the tflite lib)
