@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Prints a list of the required dependencies from the project if the used files are listed
+# The CMSIS-DSP library is written in a way that the few main files include all other source files, so discovering all dependencies recursively wouldn't be neccessary, but this solution could be useful later, when not applying for this problem
 
 import os, subprocess
 
@@ -42,6 +44,7 @@ def get_all_dependencies(input_file: str, dependencies: set[str]):
     if input_file not in dependencies:
         dependencies.add(input_file)
         # discovering the deps of headers is redundant
+        # TODO: but for each header we have to find a source file, and if present, discover its dependencies as well (get_source_for_header getter, and if it exists, then in the other branch of this condition get_all_deps for the source file)
         _, ext = os.path.splitext(input_file)
         if ext != ".h":
             deps = find_dependencies(input_file)
@@ -72,4 +75,5 @@ def main():
             raise ValueError("Unknown value of goal")
 
 
-main()
+if __name__ == '__main__':
+    main()

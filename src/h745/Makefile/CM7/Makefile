@@ -133,8 +133,10 @@ else ifeq ($(nn_framework),tflm)
 #######################################
 include ../tflite.mk
 
+# TODO: because `libs` is required for the elf to depend on, the other two lines could be generated from that
 LDLIBS += -l:$(tflite_libname)
 LDFLAGS += -L$(dir $(tflite_lib))
+libs += $(tflite_lib)
 
 cxx_defs += $(tflite_defs)
 cxx_includes += $(tflite_includes)
@@ -163,6 +165,21 @@ $(build_dir)/$(tflite_rel_src_dir)/%.o: $(root_dir)/$(tflite_rel_src_dir)/%.cc
 else
 $(error Wrong value of nn_framework: $(nn_framework))
 endif
+
+#######################################
+# CMSIS-DSP
+#######################################
+include ../cmsis_dsp.mk
+
+LDLIBS += -l:$(dsp_libname)
+LDFLAGS += -L$(dir $(dsp_lib))
+libs += $(dsp_lib)
+
+c_includes += $(dsp_includes) # TODO: this is mentioned in todo.md, maybe some of the includes (private ones) can be avoided
+
+debug_target:
+	$(log) dsp lib: $(LDLIBS), $(LDFLAGS)
+	$(log) dsp rule: $(dsp_lib)
 #######################################
 # building the binary
 #######################################

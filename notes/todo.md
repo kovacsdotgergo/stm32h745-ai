@@ -17,6 +17,8 @@
 
 * there is something wrong with the colorization script, the color code was printed before a note
 * reentrant printf
+* in the `.a` lib makefiles seperate build rules could be used for those objects, so that all of the inlcude paths are not used for other files. Of couse some of them are needed for the interface of the library, but if a part is unnecessary, then the build time could be imporved
+* could generate `LDLIBS` and `LDFLAGS` from the libs list
 * tio config file and vscode task
 * move the `paths.sh` functionality into makefile, because it is aware or the paths. Programming and everything else should be done by a target in the makefile, then the paths script wouldn't even be needed
 * docker

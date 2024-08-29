@@ -451,5 +451,7 @@ There is a small difference between the mfccs calculated with cmsis, or tensorfl
 
 First the build rules have to be written, then the neccessary files should be listed and copied in this main project. When the C implementation of the preprocessing is done on the device, add log statements for the intermediate results, then compare with the intermediater results of the tensorflow python results. TODO before
 
+To build the CMSIS-DSP library, the required sources are listed using a script. This script uses the compilers feature to discover dependencies automatically. If more functions are needed from the library, it can be quickly collected. The size of this repository is smaller this way.
+
 __TODO__ couninue: Next I am checking the cause of the smaller differences and the possible datatypes. After that accuracy has to be measured with the different types of preprocessing (and comparison with the export script).
 I should also find out if the integer preprocessing can saturate with certain inputs (all Qs are 1 max). Then merge the quantization of the net input instead of converting to float and quantizing after that (if it is a good idea).

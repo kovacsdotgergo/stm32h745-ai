@@ -1,55 +1,24 @@
+dsp_makefile := $(lastword $(MAKEFILE_LIST))
 
-# Compilation tools
-CC := arm-none-eabi-gcc
-ARMAR :=  arm-none-eabi-ar
+dsp_libname := libCMSISDSP.a
+dsp_lib := $(build_dir)/$(dsp_libname)
+cmsis_rel_dir := Drivers/CMSIS
+cmsis_src_dir := $(root_dir)/cmsis_rel_dir
+cmsis_dsp_rel_dir := Drivers/CMSIS-DSP
+cmsis_dsp_src_dir := $(root_dir)/$(cmsis_dsp_rel_dir)
 
-cpu := -mcpu=cortex-m7
-fpu := -mfpu=fpv5-d16
-float-abi := -mfloat-abi=hard
-mcu := $(cpu) -mthumb $(fpu) $(float-abi)
-CFLAGS += $(mcu) -g3 -gdwarf-2 -O0 \
-	-Wall \
-	-Wextra \
-	-Wno-unused-parameter \
-	-fdata-sections \
-	-ffunction-sections
-# todo for opt -DNDEBUG
+dsp_includes := \
+	-I$(cmsis_5_src_dir)/Include \
+	-I$(cmsis_dsp_src_dir)/Include \
+	-I$(cmsis_dsp_src_dir)/PrivateInclude # might not even be present if not used
 
-# Path to CMSIS_5
-CMSIS_5 := /home/gergo/workspace/stm32h745-ai/src/h745/Drivers/CMSIS
+# special rules for building this library, these files listed here include all other needed source files, so only these have to be built
+dsp_sources := $(cmsis_dsp_src_dir)/Source/TransformFunctions/TransformFunctions.c
 
-# Path to CMSIS_DSP
-CMSIS_DSP := /home/gergo/workspace/stm32h745-ai/src/h745/Drivers/CMSIS-DSP
+dsp_objects  := $(patsubst $(root_dir)%,$(build_dir)%,$(dsp_sources:.c=.o))
 
-# Path to CMSIS Core includes for Cortex-M
-# For low end Cortex-A, use Core_A
-# For high end Cortex-A (aarch64), don't use CMSIS 
-# Core Includes (Refer to the CMSIS-DSP README to 
-# know how to build in that case)
-CMSIS_CORE_INCLUDES := $(CMSIS_5)/Include 
-
-# Sources
-SRCS := $(CMSIS_DSP)/Source/TransformFunctions/TransformFunctions.c
-
-# Includes
-DSP_INCLUDES := $(CMSIS_DSP)/Include \
-  $(CMSIS_DSP)/PrivateInclude 
-
-# Compilation flags for include folders
-INC_FLAGS := $(addprefix -I,$(DSP_INCLUDES))
-INC_FLAGS += $(addprefix -I,$(CMSIS_CORE_INCLUDES))
-CFLAGS += $(INC_FLAGS)
-
-# Output folder for build products
-BUILDDIR := ./tmp
-
-OBJECTS := $(SRCS:%=$(BUILDDIR)/%.o)
-
-# Build rules
-$(BUILDDIR)/libCMSISDSP.a: $(OBJECTS)
-	$(ARMAR) -rc $@ $(OBJECTS)
-	
-
-$(BUILDDIR)/%.c.o: %.c
-	mkdir -p $(dir $@)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+# objects are built like all others if the lib is used
+$(dsp_lib): $(dsp_objects) $(dsp_makefile)
+	@mkdir -p $(dir $@)
+	$(log) archiving $(patsubst $(root_dir)/%,%,$@)
+	$(q)$(AR) $(ARFLAGS) $@ $(dsp_objects)

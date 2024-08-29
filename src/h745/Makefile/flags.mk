@@ -29,6 +29,7 @@ CFLAGS += -g3 -gdwarf-2
 opt := -O0
 else
 opt := -Os
+# TODO: CFLAGS += -DNDEBUG for assert
 endif
 
 CXXFLAGS += \
