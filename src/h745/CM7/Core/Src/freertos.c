@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 
+#include "preprocess_mfcc.h"
 #include "nn_framework.h"
 #include "gpio.h"
 #include "main.h"
@@ -169,10 +170,17 @@ void StartDefaultTask(void *pvParameters) {
 
 void StartAiTask(void *pvParameters) {
   ai_model_init();
+  preprocess_init();
+  // todo: these are static to save stack space
+  static int16_t waveform[] = {
+    #include "example_wave.h"
+  };
+  static float32_t mfcc[MFCC_NUM_DCT_OUTPUTS * MFCC_TIMESTEPS];
   while (1)
   {
     // Wait before doing it again
     printf("\r\nTask watermark: %lu (words left)\r\n", uxTaskGetStackHighWaterMark(NULL));
+    preprocess_calculate(waveform, mfcc);
     ai_model_run();
     printf("\r\nTask watermark: %lu (words left)\r\n", uxTaskGetStackHighWaterMark(NULL));
 

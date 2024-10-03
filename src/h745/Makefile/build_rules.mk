@@ -51,5 +51,7 @@ $(build_dir)/%.hex: $(build_dir)/%.elf
 $(build_dir)/%.bin: $(build_dir)/%.elf
 	$(BIN) $< $@	
 
+# -h: include section headers
+# -S: intermix the source code with disassebly
 $(build_dir)/%.list: $(build_dir)/%.elf
 	$(DP) -h -S $< > $@

@@ -73,7 +73,9 @@
   * compilation
   * both cores
   * measurement
-* glow
+* more frameworks
+  * glow
+  * generating cmsis nn code
 
 * selecting a practical network
   * start off by using the nets used in the benchmarks
@@ -85,48 +87,21 @@
   * splitting and using IPC to execute in parallel
   * feeding the inputs thorough USB
   * talk about the possibilities, if one core doesn't have time to process, then the other executes the network ...
+  * possible optimization is to use the DTCM for the data to be optimized, it was the default in this projcet, but after overflows i have moved to D1 (in theory, DTCM is the fastest)
 * add ethernet for the outputs, signal something depending on the result of the classification
-
-## To finish off the tflite debug
-
-* ~~to continue: remove the google test net and try all own test models~~
-* makefile:
-  * ~~correct dependency~~
-  * ~~colored make~~
-  * ~~logging~~
-* cm4 also
-  * ~~colorization of compilation~~
-  * ~~build all task~~
-  * ~~common elements in include makefiles~~
-* ~~PROJECT_GENERATION macro implementation~~
-  * using the core timer is possible, but I still used the hardware timer
-* ~~cpp compilation~~
-* ~~measure performance~~
-* ~~integrate both in one project~~
-
-* more frameworks
-  * glow
-  * generating cmsis nn code
-
-## tmp
-
-* ~~the cast and pad is a good idea, because i am not sure how the transfrom happens on an invalidly shaped input~~
-* ~~transform using the cmsis python lib~~
-* ~~somehow get the reference for the same inputs~~
-* ~~compare them~~
-* on the hardware implement the same transformation
-* compare with the reference inputs
-* make streaming inference
 
 * ~~check the benchmark (was measurement before) code~~
 * ~~run on all sets (train, val, test)~~
 * implement on the hardware
-  * finalize the dependency generation script
+  * ~~finalize the dependency generation script~~
 * dump intermediate results
 * check the cause of the difference
 * run with wave inputs on the hardware
 * measure all types of preprocessing
 * merge the output transformation of the preprocessing and the input quantizaton of the net
 * might be __IMPORTANT__: check if in theory the integer versions could saturate
+* make streaming inference
 
 * there are two cmsis directories, one in drivers, that st generated, the other in tflite third party. unite them, use the more recent if it builds and use it for all teh purposes (inside all the source code and to build the tflite lib)
+* could use the dep discovery script for tflm, to remove files and only use them to compile
+

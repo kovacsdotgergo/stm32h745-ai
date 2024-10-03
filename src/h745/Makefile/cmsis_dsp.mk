@@ -13,7 +13,14 @@ dsp_includes := \
 	-I$(cmsis_dsp_src_dir)/PrivateInclude # might not even be present if not used
 
 # special rules for building this library, these files listed here include all other needed source files, so only these have to be built
-dsp_sources := $(cmsis_dsp_src_dir)/Source/TransformFunctions/TransformFunctions.c
+dsp_sources := \
+	$(cmsis_dsp_src_dir)/Source/TransformFunctions/TransformFunctions.c \
+	$(cmsis_dsp_src_dir)/Source/CommonTables/CommonTables.c \
+	$(cmsis_dsp_src_dir)/Source/FastMathFunctions/FastMathFunctions.c \
+	$(cmsis_dsp_src_dir)/Source/ComplexMathFunctions/ComplexMathFunctions.c \
+	$(cmsis_dsp_src_dir)/Source/BasicMathFunctions/BasicMathFunctions.c \
+	$(cmsis_dsp_src_dir)/Source/MatrixFunctions/MatrixFunctions.c \
+	$(cmsis_dsp_src_dir)/Source/StatisticsFunctions/StatisticsFunctions.c
 
 dsp_objects  := $(patsubst $(root_dir)%,$(build_dir)%,$(dsp_sources:.c=.o))
 

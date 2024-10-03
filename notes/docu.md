@@ -449,9 +449,16 @@ There is a small difference between the mfccs calculated with cmsis, or tensorfl
 
 #### Implementation on the MCU
 
-First the build rules have to be written, then the neccessary files should be listed and copied in this main project. When the C implementation of the preprocessing is done on the device, add log statements for the intermediate results, then compare with the intermediater results of the tensorflow python results. TODO before
+First the build rules have to be written, then the neccessary files should be listed and copied in this main project. When the C implementation of the preprocessing is done on the device, add log statements for the intermediate results, then compare with the intermediate results of the tensorflow python results.
 
 To build the CMSIS-DSP library, the required sources are listed using a script. This script uses the compilers feature to discover dependencies automatically. If more functions are needed from the library, it can be quickly collected. The size of this repository is smaller this way.
 
-__TODO__ couninue: Next I am checking the cause of the smaller differences and the possible datatypes. After that accuracy has to be measured with the different types of preprocessing (and comparison with the export script).
-I should also find out if the integer preprocessing can saturate with certain inputs (all Qs are 1 max). Then merge the quantization of the net input instead of converting to float and quantizing after that (if it is a good idea).
+After adding in the preprocessing, malloc failed. There was not enough space, because the current default linker script uses DTCM, which is only 128k. When I increased the required size of the stack and heap in the linker script, it wouldn't fit (at least in debug mode for sure). Other mems should be tested an the speed of the memories compared. Currently with some bigger heap size it still fails, before the scheduler is running, the `sbrk()` function tries to reserve past the current stack pointer. The largest is the D1 RAM on the CM7, I have selected this instead of the DTCM. Later as an optimization step, the DTCM can be used as the fastest mem.
+
+#### Debugging MFCC
+
+After the stack setup seemed right, I encountered a hard fault while calculating the MFCC result. The hard fault is precise (bus fault), an address outside of the valid memory range is used. It happened because the values inside bss are corrupted. The exact error is inside the task switch, when the current TCB is checked, which pointer value is altered. When debugging inside MFCC, a watchpoint was on this TCB pointer variable. The scaling function uses source and dest pointers, which pointed there. After this the exact root cause when these pointers are corrupted has to be found.
+
+todo continue: put a watchpoint on the pointers, if they run out of the scratchpad rnage, then break
+
+__TODO__: I should also find out if the integer preprocessing can saturate with certain inputs (all Qs are 1 max). Then merge the quantization of the net input instead of converting to float and quantizing after that (if it is a good idea).

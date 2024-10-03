@@ -19,9 +19,12 @@ bold_orange="\x1b[1;38;5;202m"
 bold_yellow="x1b[1;38;5;184m"
 bold_light_orange="\x1b[1;38;5;173m"
 light_green="\x1b[38;5;70m"
+light_yellow="\x1b[38;5;178m"
 # colorizing the output of the non verbose Makefiles
+# TODO: the numbers part might have to removed
 while read x; do echo $x ; done \
-| sed -e "s/^\(compiling\|linking\|archiving\)\(.*\)/${dark_grey}&${none}/" \
+| sed -e "s/\b[0-9a-fA-F]*[0-9][0-9a-fA-F]*\b/${light_yellow}&${none}/g" \
+    -e "s/^\(compiling\|linking\|archiving\)\(.*\)/${dark_grey}&${none}/" \
     -e "s/\b\([-a-zA-Z]*\(objcopy\|size\|objdump\)\)/${light_green}&${none}/" \
     -e "s/make:/${red}&${none}/" \
     -e "s/.*error:.*/${bold_light_orange}&${none}/" \
@@ -32,6 +35,3 @@ while read x; do echo $x ; done \
 | sed -e "s/error:/${bold_dark_red}&${bold_light_orange}/" \
     -e "s/warning:/${bold_orange}&${bold_light_orange}/" \
     -e "s/note:/${bold_yellow}&${none}/"
-
-# attempt for the numbers
-# -e "s/\s[0-9a-fA-F]*[0-9][0-9a-fA-F]*\s/\x1b[38;5;178m&\x1b[0m/"

@@ -13,7 +13,11 @@
         "ai_datatypes_defines.h": "c",
         "ai_platform.h": "c",
         "reent.h": "c",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "preprocess_mfcc.h": "c",
+        "nn_framework.h": "c",
+        "example_wave.h": "c"
     },
-    "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb"
+    "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb",
+    "cortex-debug.variableUseNaturalFormat": false
 }
