@@ -20,7 +20,8 @@ dsp_sources := \
 	$(cmsis_dsp_src_dir)/Source/ComplexMathFunctions/ComplexMathFunctions.c \
 	$(cmsis_dsp_src_dir)/Source/BasicMathFunctions/BasicMathFunctions.c \
 	$(cmsis_dsp_src_dir)/Source/MatrixFunctions/MatrixFunctions.c \
-	$(cmsis_dsp_src_dir)/Source/StatisticsFunctions/StatisticsFunctions.c
+	$(cmsis_dsp_src_dir)/Source/StatisticsFunctions/StatisticsFunctions.c \
+	$(cmsis_dsp_src_dir)/Source/SupportFunctions/SupportFunctions.c
 
 dsp_objects  := $(patsubst $(root_dir)%,$(build_dir)%,$(dsp_sources:.c=.o))
 

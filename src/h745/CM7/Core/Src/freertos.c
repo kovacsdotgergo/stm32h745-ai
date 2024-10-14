@@ -22,10 +22,10 @@
 
 #include <stdio.h>
 
-#include "preprocess_mfcc.h"
-#include "nn_framework.h"
 #include "gpio.h"
 #include "main.h"
+#include "nn_framework.h"
+#include "preprocess_mfcc.h"
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
@@ -126,7 +126,7 @@ void StartAiTask(void *pvParameters);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
-static TaskHandle_t defaultTask = NULL;
+// static TaskHandle_t defaultTask = NULL;
 static TaskHandle_t aiTask = NULL;
 
 /**
@@ -138,13 +138,17 @@ void MX_FREERTOS_Init(void) {
   // xTaskCreate(
   //     StartDefaultTask,             /* Function that implements the task. */
   //     "DefaultTaskM7Core",          /* Task name, for debugging only. */
-  //     2 * configMINIMAL_STACK_SIZE, /* Size of stack (in words) to allocate for
+  //     2 * configMINIMAL_STACK_SIZE, /* Size of stack (in words) to allocate
+  //     for
   //                                      this task. */
-  //     NULL,                         /* Task parameter, not used in this case. */
-  //     tskIDLE_PRIORITY + 1,         /* Task priority. */
-  //     &defaultTask); /* Task handle, used to unblock task from interrupt. */
-  xTaskCreate(StartAiTask, "AiTask", 8096, NULL, // mallocks the required amount in words (stack_type_t? is 4 bytes)
-              tskIDLE_PRIORITY + 2, &aiTask);
+  //     NULL,                         /* Task parameter, not used in this case.
+  //     */ tskIDLE_PRIORITY + 1,         /* Task priority. */ &defaultTask); /*
+  //     Task handle, used to unblock task from interrupt. */
+  size_t stack_size_words = 8096 + 4096;
+  xTaskCreate(
+      StartAiTask, "AiTask", stack_size_words,
+      NULL,  // mallocks the required amount in words (stack_type_t? is 4 bytes)
+      tskIDLE_PRIORITY + 2, &aiTask);
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -170,22 +174,34 @@ void StartDefaultTask(void *pvParameters) {
 
 void StartAiTask(void *pvParameters) {
   ai_model_init();
-  preprocess_init();
+  preprocess_init_f32();
+  preprocess_init_q31();
+  preprocess_init_q15();
   // todo: these are static to save stack space
   static int16_t waveform[] = {
-    #include "example_wave.h"
+#include "example_wave.h"
   };
-  static float32_t mfcc[MFCC_NUM_DCT_OUTPUTS * MFCC_TIMESTEPS];
-  while (1)
-  {
+  static float32_t mfcc_f32[MFCC_TOTAL_LENGTH];
+  static q31_t mfcc_q31[MFCC_TOTAL_LENGTH];
+  static q15_t mfcc_q15[MFCC_TOTAL_LENGTH];
+  static int8_t mfcc[MFCC_TOTAL_LENGTH];
+  while (1) {
     // Wait before doing it again
-    printf("\r\nTask watermark: %lu (words left)\r\n", uxTaskGetStackHighWaterMark(NULL));
-    preprocess_calculate(waveform, mfcc);
+    printf("\r\nTask watermark: %lu (words left)\r\n",
+           uxTaskGetStackHighWaterMark(NULL));
+    preprocess_calculate_f32(waveform, mfcc_f32);
+    preprocess_calculate_q31(waveform, mfcc_q31);
+    preprocess_calculate_q15(waveform, mfcc_q15);
+    static float32_t copy[MFCC_TOTAL_LENGTH];
+    memcpy(copy, mfcc_f32, sizeof(copy));
+    preprocess_quantize_mfcc_f32(mfcc_f32, mfcc, 83, 0.5847029089);
+    preprocess_quantize_mfcc_f32_naive(copy, mfcc, 83, 0.5847029089);
     ai_model_run();
-    printf("\r\nTask watermark: %lu (words left)\r\n", uxTaskGetStackHighWaterMark(NULL));
+    printf("\r\nTask watermark: %lu (words left)\r\n",
+           uxTaskGetStackHighWaterMark(NULL));
 
-    // vTaskDelay(10000 / portTICK_PERIOD_MS);
-    while (1);
+    vTaskDelay(10000 / portTICK_PERIOD_MS);
+    // while (1);
   }
 }
 /* Private application code --------------------------------------------------*/

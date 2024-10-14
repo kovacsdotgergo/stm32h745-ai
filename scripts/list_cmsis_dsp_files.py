@@ -8,7 +8,11 @@ project_root_path = os.path.normpath(os.path.dirname(os.path.dirname(__file__)))
 
 # TODO: set these to be arguments with these default values and somehow solve that they are global
 goal = "print"  # TODO: maybe rename to 'action'
-input_files = ["Source/TransformFunctions/TransformFunctions.c", "Source/CommonTables/CommonTables.c"]
+input_files = [
+    "Source/TransformFunctions/TransformFunctions.c",
+    "Source/CommonTables/CommonTables.c",
+    "Source/SupportFunctions/SupportFunctions.c",
+]
 CMSIS_DSP_PATH = os.path.join(
     project_root_path, os.pardir, os.pardir, "lib", "CMSIS-DSP"
 )
@@ -61,7 +65,7 @@ def get_related_sources(input_file: str):
         return []
 
     def snake_to_camel(snake_str):
-        words = snake_str.split('_')
+        words = snake_str.split("_")
         return "".join([x.capitalize() for x in words])
 
     source_candidates = [filename + ".c", snake_to_camel(filename + ".c")]

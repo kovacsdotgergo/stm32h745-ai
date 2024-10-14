@@ -173,7 +173,7 @@ Storage:
 | cm4 | -O0   | 37268  | 500    | 9968   | 47636  | ba14    | no tflite |
 | cm4 | -O0   | 172752 | 12524  | 9984   | 195260 | 2fabc   |           |
 | cm4 | -O3   | 88724  | 12520  | 9976   | 111220 | 1b274   |           |
-| cm4 | -Os   | 76460  | 12520  | 9976   | 98956  | 1828c   |           | 
+| cm4 | -Os   | 76460  | 12520  | 9976   | 98956  | 1828c   |           |
 | cm4 | -Ofast| 88692  | 12520  | 9976   | 111188 | 1b254   |           |
 | cm7 | -O0   | 55580  | 500    | 11256  | 67336  | 10708   | C base*   |
 | cm7 | -O3   | 44620  | 500    | 11256  | 56376  | dc38    | C base*   |
@@ -447,6 +447,7 @@ Also there is a possibility of saturation when using quantized preprocessing. If
 
 There is a small difference between the mfccs calculated with cmsis, or tensorflow. I have checked the mel scale transformation and the window functions. Both are identical. The intermediate results can be checked by writing a python wrapper around a custom C debug code. This seemed more complicated that I have time for. The other possibility could be to only use the C library and serialize the intermediate results. Then all the stages can be checked. This can also be done on the mcu, because the preprocessing has to be implemented. Then the intermediate results can be saved by using the debugger.
 
+The mfcc may saturate, I checked the max sum of the mel filters, and it can be compared with the mfcc code. It uses several magic numbers and is not well commented, so I couldn't decide if saturation may occur for my configuration.
 #### Implementation on the MCU
 
 First the build rules have to be written, then the neccessary files should be listed and copied in this main project. When the C implementation of the preprocessing is done on the device, add log statements for the intermediate results, then compare with the intermediate results of the tensorflow python results.
@@ -455,10 +456,21 @@ To build the CMSIS-DSP library, the required sources are listed using a script. 
 
 After adding in the preprocessing, malloc failed. There was not enough space, because the current default linker script uses DTCM, which is only 128k. When I increased the required size of the stack and heap in the linker script, it wouldn't fit (at least in debug mode for sure). Other mems should be tested an the speed of the memories compared. Currently with some bigger heap size it still fails, before the scheduler is running, the `sbrk()` function tries to reserve past the current stack pointer. The largest is the D1 RAM on the CM7, I have selected this instead of the DTCM. Later as an optimization step, the DTCM can be used as the fastest mem.
 
+The implementation using max, hereby saturating shows similar results as the the implementation with absmax. The original implementation uses the max solution, but I suspect that in real a real world application in extreme cases the absmax can be more beneficial. Also the absmax seemed to perform slightly better. Results of the evaluation:
+
+|            | test               | val                | train               |
+|------------|--------------------|--------------------|---------------------|
+| original   | 0.917 (4482/4890)  | 0.956 (9655/10102) | 0.968 (82778/85511) |
+| f32        | 0.918 (4490/4890)  | 0.957 (9664/10102) | 0.964 (964/1000)    |
+| i32        | 0.906 (4428/4890)  | 0.945 (9550/10102) | 0.951 (951/1000)    |
+| i16        | 0.911 (4453/4890)  | 0.948 (9577/10102) | 0.950 (950/1000)    |
+| i32_absmax | 0.908 (4438/4890)  | 0.947 (9568/10102) | 0.956 (956/1000)    |
+| i16_absmax | 0.915 (4473/4890)  | 0.951 (9603/10102) | 0.956 (956/1000)    |
+
+Due to these resutls I decided to implement the absmax soulution on the device. Also immediately applied all the cmsis fucntions for conversion, scaling, max calculation, etc. (conversion is difficult to implement right without these, also these perform similarly to the naive implementation (for loop)).
+
 #### Debugging MFCC
 
-After the stack setup seemed right, I encountered a hard fault while calculating the MFCC result. The hard fault is precise (bus fault), an address outside of the valid memory range is used. It happened because the values inside bss are corrupted. The exact error is inside the task switch, when the current TCB is checked, which pointer value is altered. When debugging inside MFCC, a watchpoint was on this TCB pointer variable. The scaling function uses source and dest pointers, which pointed there. After this the exact root cause when these pointers are corrupted has to be found.
+After the stack setup seemed right, I encountered a hard fault while calculating the MFCC result. The hard fault is precise (bus fault), an address outside of the valid memory range is used. It happened because the values inside bss are corrupted. The exact error is inside the task switch, when the current TCB is checked, which pointer value is altered. When debugging inside MFCC, a watchpoint was on this TCB pointer variable. The scaling function uses source and dest pointers, which pointed there. After this the exact root cause when these pointers are corrupted has to be found. The problem was an input buffer with not sufficient size as the input to the mfcc transformation funciton. The overflow currupted the mentioned variables.
 
-todo continue: put a watchpoint on the pointers, if they run out of the scratchpad rnage, then break
-
-__TODO__: I should also find out if the integer preprocessing can saturate with certain inputs (all Qs are 1 max). Then merge the quantization of the net input instead of converting to float and quantizing after that (if it is a good idea).
+Currently I didn't start to check the root cause of the difference between the mfccs. The net performs similarly on these inputs as well.
