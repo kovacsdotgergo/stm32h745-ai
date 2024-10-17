@@ -469,6 +469,27 @@ The implementation using max, hereby saturating shows similar results as the the
 
 Due to these resutls I decided to implement the absmax soulution on the device. Also immediately applied all the cmsis fucntions for conversion, scaling, max calculation, etc. (conversion is difficult to implement right without these, also these perform similarly to the naive implementation (for loop)).
 
+M7 release results [ms]:
+
+```shell
+Calculate:
+f32: 8.027917
+q31: 10.955775
+q15: 7.854500
+Quantize:
+using dsp: 0.014533
+naive: 0.028433
+Run:
+load model: 1.304908
+setup: 0.869517
+junk prints and variables: 224.254135
+invoke: 13.580501
+junk post print: 11.086708
+Full runmodel call: 251.095779
+M4 core does nothing...
+MAX possible measruement: 17895.697266
+```
+
 #### Debugging MFCC
 
 After the stack setup seemed right, I encountered a hard fault while calculating the MFCC result. The hard fault is precise (bus fault), an address outside of the valid memory range is used. It happened because the values inside bss are corrupted. The exact error is inside the task switch, when the current TCB is checked, which pointer value is altered. When debugging inside MFCC, a watchpoint was on this TCB pointer variable. The scaling function uses source and dest pointers, which pointed there. After this the exact root cause when these pointers are corrupted has to be found. The problem was an input buffer with not sufficient size as the input to the mfcc transformation funciton. The overflow currupted the mentioned variables.

@@ -5,8 +5,10 @@
 extern "C" {
 #endif // __cplusplus
 
+#include "stdint.h"
+
 void ai_model_init();
-void ai_model_run();
+void ai_model_run(const int8_t* wave);
 
 #ifdef __cplusplus
 }  // extern "C"

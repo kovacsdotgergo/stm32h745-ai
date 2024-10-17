@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 
+#include "benchmark.h"
 #include "gpio.h"
 #include "main.h"
 #include "nn_framework.h"
@@ -187,19 +188,63 @@ void StartAiTask(void *pvParameters) {
   static int8_t mfcc[MFCC_TOTAL_LENGTH];
   while (1) {
     // Wait before doing it again
-    printf("\r\nTask watermark: %lu (words left)\r\n",
-           uxTaskGetStackHighWaterMark(NULL));
-    preprocess_calculate_f32(waveform, mfcc_f32);
-    preprocess_calculate_q31(waveform, mfcc_q31);
-    preprocess_calculate_q15(waveform, mfcc_q15);
-    static float32_t copy[MFCC_TOTAL_LENGTH];
-    memcpy(copy, mfcc_f32, sizeof(copy));
-    preprocess_quantize_mfcc_f32(mfcc_f32, mfcc, 83, 0.5847029089);
-    preprocess_quantize_mfcc_f32_naive(copy, mfcc, 83, 0.5847029089);
-    ai_model_run();
+    printf("START OF TASK ==============================================");
     printf("\r\nTask watermark: %lu (words left)\r\n",
            uxTaskGetStackHighWaterMark(NULL));
 
+    benchmark_set_point(BEGIN_PREPOC);
+    preprocess_calculate_f32(waveform, mfcc_f32);
+    benchmark_set_point(PREPROC_F32);
+    preprocess_calculate_q31(waveform, mfcc_q31);
+    benchmark_set_point(PREPROC_Q31);
+    preprocess_calculate_q15(waveform, mfcc_q15);
+    benchmark_set_point(PREPROC_Q15);
+
+    static float32_t copy[MFCC_TOTAL_LENGTH];
+    memcpy(copy, mfcc_f32, sizeof(copy));
+    benchmark_set_point(BEGIN_QUANTIZE);
+    preprocess_quantize_mfcc_f32(mfcc_f32, mfcc, 83, 0.5847029089);
+    benchmark_set_point(QUNATIZE);
+    preprocess_quantize_mfcc_f32_naive(copy, mfcc, 83, 0.5847029089);
+    benchmark_set_point(QUANTIZE_NAIVE);
+
+    benchmark_set_point(BEGIN_RUN);
+    ai_model_run(mfcc);
+    benchmark_set_point(END_RUN);
+    printf("\r\nTask watermark: %lu (words left)\r\n",
+           uxTaskGetStackHighWaterMark(NULL));
+
+    printf("\r\n");
+    printf("Calculate:\r\n");
+    printf("f32: %f\r\n",
+           (double)benchmark_get_result_between_ms(BEGIN_PREPOC, PREPROC_F32));
+    printf("q31: %f\r\n",
+           (double)benchmark_get_result_between_ms(PREPROC_F32, PREPROC_Q31));
+    printf("q15: %f\r\n",
+           (double)benchmark_get_result_between_ms(PREPROC_Q31, PREPROC_Q15));
+    printf("Quantize:\r\n");
+    printf("using dsp: %f\r\n",
+           (double)benchmark_get_result_between_ms(BEGIN_QUANTIZE, QUNATIZE));
+    printf("naive: %f\r\n",
+           (double)benchmark_get_result_between_ms(QUNATIZE, QUANTIZE_NAIVE));
+    printf("Run:\r\n");
+    printf("load model: %f\r\n",
+           (double)benchmark_get_result_between_ms(BEGIN_RUN, INSIDE_LOAD_MODEL));
+    printf("setup: %f\r\n", (double)benchmark_get_result_between_ms(
+                                INSIDE_LOAD_MODEL, INSIDE_SETUP));
+    printf("junk prints and variables: %f\r\n",
+           (double)benchmark_get_result_between_ms(INSIDE_SETUP,
+                                                INSIDE_BEFORE_INVOKE));
+    printf("invoke: %f\r\n", (double)benchmark_get_result_between_ms(
+                                 INSIDE_BEFORE_INVOKE, INSIDE_AFTER_INVOKE));
+    printf("junk post print: %f\r\n",
+           (double)benchmark_get_result_between_ms(INSIDE_AFTER_INVOKE, END_RUN));
+    printf("Full runmodel call: %f\r\n",
+           (double)benchmark_get_result_between_ms(BEGIN_RUN, END_RUN));
+    printf("MAX possible measruement: %f",
+           (double)benchmark_get_possible_max_ms());
+
+    printf("END OF TASK ================================================");
     vTaskDelay(10000 / portTICK_PERIOD_MS);
     // while (1);
   }
