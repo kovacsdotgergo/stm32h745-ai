@@ -173,7 +173,7 @@ Storage:
 | cm4 | -O0   | 37268  | 500    | 9968   | 47636  | ba14    | no tflite |
 | cm4 | -O0   | 172752 | 12524  | 9984   | 195260 | 2fabc   |           |
 | cm4 | -O3   | 88724  | 12520  | 9976   | 111220 | 1b274   |           |
-| cm4 | -Os   | 76460  | 12520  | 9976   | 98956  | 1828c   |           | 
+| cm4 | -Os   | 76460  | 12520  | 9976   | 98956  | 1828c   |           |
 | cm4 | -Ofast| 88692  | 12520  | 9976   | 111188 | 1b254   |           |
 | cm7 | -O0   | 55580  | 500    | 11256  | 67336  | 10708   | C base*   |
 | cm7 | -O3   | 44620  | 500    | 11256  | 56376  | dc38    | C base*   |
@@ -307,11 +307,29 @@ The KWS nets are nicely summarized in [Hello Edge: Keyword Spotting on Microcont
 
 #### Google
 
-The google KWS [repo](https://github.com/google-research/google-research/blob/master/kws_streaming/README.md) contains some more models, including the previous [paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/streaming_keyword_spotting.pdf). The citations can be useful for the better performing options.
+The google KWS [repo](https://github.com/google-research/google-research/blob/master/kws_streaming/README.md) contains some more models, including the previous [paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/streaming_keyword_spotting.pdf). The citations can be useful for the better performing options. Also a TFLM [question](https://groups.google.com/a/tensorflow.org/g/micro/c/EidfTbxqk3o?pli=1) about the streaming model leads to this article.
 
 ### Tiny CRNN
 
 [Paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/tiny-crnn.pdf) about a convolutional GRU with additional attention. It also mentions the streaming implementation of the recurrent part. The models contain from 50K to 2M parameters.
+
+## Setting up the environment for NN
+
+__Benchmark__ files: the keyword spotting tiny benchmarks source code.
+
+I had to update the GPU driver to have access to the recent solutions for running ai workloads. Docker and alternatives now [support](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) the GPUs pretty well. After following this tutorial to set up the gpu, I have added the start command for the docker daemon (service) in wsl.
+
+The tensorflow containers have most of the required packages already installed. The most recent version did not work for me, luckily I found an older version, that does.
+
+I set up a devcontainer to run the ai scripts inside. The source code is bind mounted and the kws dataset from the tiny benchmark is also downloaded here.
+
+The speech_commands dataset has input samples as a waveform. The benchmark files pad them probably to 16k samples, which is 1s with the 16kHz sampling rate. There is a [paper](/mnt/e/BME/VIK/MSc/Onallo_labor/dipterv1/sources/ai/speech_commands.pdf) about the dataset. The paper states, that some of the files can be shorter than one second, this is why the padding was needed.
+
+### Input preprocessing
+
+The samples can be retrieved in the benchmark code as waves or as preprocessed inputs. Because the models use a spectrogram input, this has to implemented on the device as well.
+
+The `quantization` script performes simple tflite quantization and model export. The preprocessing for test data can be performed using the `make_bin_files` script. It exports the selected inputs to binary after preprocesisng them (the `README` describes these in detail).
 
 ## Optimization
 
@@ -322,3 +340,158 @@ todo:
 * cores
 * kernel optimization
 * quantization, quantization aware training
+
+## KWS benchmark net
+
+The float net had some operations that are not supported in TFLM (different types for the conv2d kernel(int8) and inputs(float32)).
+
+The benchmark net can run with sufficient task stack space. The output of the TFLM profiling for debug:
+
+```text
+"Unique Tag","Total ticks across all events with that tag."
+CONV_2D, 108195201
+DEPTHWISE_CONV_2D, 25946035
+AVERAGE_POOL_2D, 277088
+RESHAPE, 1384
+FULLY_CONNECTED, 56098
+SOFTMAX, 32287
+"total number of ticks", 134508093
+
+[RecordingMicroAllocator] Arena allocation total 23412 bytes
+[RecordingMicroAllocator] Arena allocation head 16004 bytes
+[RecordingMicroAllocator] Arena allocation tail 7408 bytes
+[RecordingMicroAllocator] 'TfLiteEvalTensor data' used 420 bytes with alignment overhead (requested 420 bytes for 35 allocations)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor data' used 64 bytes with alignment overhead (requested 64 bytes for 2 tensors)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor quantization data' used 40 bytes with alignment overhead (requested 40 bytes for 4 allocations)
+[RecordingMicroAllocator] 'Persistent buffer data' used 5884 bytes with alignment overhead (requested 5812 bytes for 34 allocations)
+[RecordingMicroAllocator] 'NodeAndRegistration struct' used 416 bytes with alignment overhead (requested 416 bytes for 13 NodeAndRegistration structs)
+```
+
+```shell
+arm-none-eabi-size /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM7/build/debug/tflm/stm32h745-ai_CM7.elf
+text data bss dec hex filename
+491384 504 11232 503120 7ad50
+```
+
+And for release:
+
+```text
+"Unique Tag","Total ticks across all events with that tag."
+CONV_2D, 4457435
+DEPTHWISE_CONV_2D, 2051249
+AVERAGE_POOL_2D, 109619
+RESHAPE, 544
+FULLY_CONNECTED, 4301
+SOFTMAX, 3718
+"total number of ticks", 6626866
+
+[RecordingMicroAllocator] Arena allocation total 23412 bytes
+[RecordingMicroAllocator] Arena allocation head 16008 bytes
+[RecordingMicroAllocator] Arena allocation tail 7404 bytes
+[RecordingMicroAllocator] 'TfLiteEvalTensor data' used 420 bytes with alignment overhead (requested 420 bytes for 35 allocations)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor data' used 64 bytes with alignment overhead (requested 64 bytes for 2 tensors)
+[RecordingMicroAllocator] 'Persistent TfLiteTensor quantization data' used 40 bytes with alignment overhead (requested 40 bytes for 4 allocations)
+[RecordingMicroAllocator] 'Persistent buffer data' used 5880 bytes with alignment overhead (requested 5812 bytes for 34 allocations)
+[RecordingMicroAllocator] 'NodeAndRegistration struct' used 416 bytes with alignment overhead (requested 416 bytes for 13 NodeAndRegistration structs)
+```
+
+```shell
+arm-none-eabi-size /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM7/build/release/tflm/stm32h745-ai_CM7.elf
+text data bss dec hex filename
+181636 500 11232 193368 2f358
+```
+
+This runtime for the optimized run is 13.8 ms, which is 72 times per second. The input is 16kHz, from which we produce the MFCC. After testing with a few binary samples form the test set, the network produced correct outputs.
+
+__todo__: check how much data is required for one frame (if there is any subsampling step for example for the mel scale), if the net can run at all. (After a quick calculation even without compression, the processing power should be enough).
+
+### Preprocessing
+
+The preprocessing inside `get_dataset.py` in the benchmark repository:
+The MFCC implementation in tflite: [link](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/kernels/mfcc.cc).
+
+* it only transforms the data, not the labels
+* cast to float32
+* reduce max, max scaling
+* (pad the back to be `desired_samples` long (1s))
+* (scales if the previously specified 1 is not ok (reduce max results in max of 1))
+* (shifting the start of the sample, but as I understand, the current setup pads with 2 0's from front and back, then slices starting from the second value, so nothing happens in the end)
+* (for training background data is added)
+
+After this the MFCC transformation:
+
+* stft: `tf.signal.stft` with the config variables from the command line
+* absolute value of spectrogram
+* frequency scale conversion to mel using the default values from [here](https://www.tensorflow.org/api_docs/python/tf/raw_ops/Mfcc)
+* log of the apmlitudes to result in logarithmic mel spectrogram
+
+#### CMSIS
+
+The python wrapper of the DSP library calls the C functions. I have first assembled a small python code to test the float implementation. After this other datatypes have to be checked, and the quantization of the inputs in the `make_bin_files` script.
+
+There was a differnece between the calculated MFCC's using CMSIS and the tensorflow preprocessing function. Because in tensorflow the implementation uses STFT, the whole input window is handled at once. The normalization also happens on this 1s segment. Using the cmsis implementation in a loop, there is no normalization (if there was, it would be calculated on one window of the stft, which results in a different max for each window). This caused the difference.
+
+With this normalization the preprocessing can not easily converted to streaming, as for the overlapping parts the normalization is different, so the previous mfcc can not be utilized.
+
+Results from the first check, after running the quantized net on the test sets preprocessed with the different functions.
+Accuracy = 0.917 (4482/4890) (original)
+Accuracy = 0.918 (4490/4890) (f32 cmsis)
+Accuracy = 0.906 (4428/4890) (i32 cmsis)
+Accuracy = 0.911 (4453/4890) (i16 cmsis)
+
+There is no significant difference, checking some samples manually, for the higher order mfcc coefficients there is a detectable difference, but for the main components it is really small. The cause of this is still unknown for me.
+
+Also there is a possibility of saturation when using quantized preprocessing. If this happens, and how serious the effect can be, has to be explored. It can probably be assumed that the input is normalized, because the mfcc in only used with the neural net (this might simplify the exploration of the saturation).
+
+##### Difference between the mfcc results
+
+There is a small difference between the mfccs calculated with cmsis, or tensorflow. I have checked the mel scale transformation and the window functions. Both are identical. The intermediate results can be checked by writing a python wrapper around a custom C debug code. This seemed more complicated that I have time for. The other possibility could be to only use the C library and serialize the intermediate results. Then all the stages can be checked. This can also be done on the mcu, because the preprocessing has to be implemented. Then the intermediate results can be saved by using the debugger.
+
+The mfcc may saturate, I checked the max sum of the mel filters, and it can be compared with the mfcc code. It uses several magic numbers and is not well commented, so I couldn't decide if saturation may occur for my configuration.
+#### Implementation on the MCU
+
+First the build rules have to be written, then the neccessary files should be listed and copied in this main project. When the C implementation of the preprocessing is done on the device, add log statements for the intermediate results, then compare with the intermediate results of the tensorflow python results.
+
+To build the CMSIS-DSP library, the required sources are listed using a script. This script uses the compilers feature to discover dependencies automatically. If more functions are needed from the library, it can be quickly collected. The size of this repository is smaller this way.
+
+After adding in the preprocessing, malloc failed. There was not enough space, because the current default linker script uses DTCM, which is only 128k. When I increased the required size of the stack and heap in the linker script, it wouldn't fit (at least in debug mode for sure). Other mems should be tested an the speed of the memories compared. Currently with some bigger heap size it still fails, before the scheduler is running, the `sbrk()` function tries to reserve past the current stack pointer. The largest is the D1 RAM on the CM7, I have selected this instead of the DTCM. Later as an optimization step, the DTCM can be used as the fastest mem.
+
+The implementation using max, hereby saturating shows similar results as the the implementation with absmax. The original implementation uses the max solution, but I suspect that in real a real world application in extreme cases the absmax can be more beneficial. Also the absmax seemed to perform slightly better. Results of the evaluation:
+
+|            | test               | val                | train               |
+|------------|--------------------|--------------------|---------------------|
+| original   | 0.917 (4482/4890)  | 0.956 (9655/10102) | 0.968 (82778/85511) |
+| f32        | 0.918 (4490/4890)  | 0.957 (9664/10102) | 0.964 (964/1000)    |
+| i32        | 0.906 (4428/4890)  | 0.945 (9550/10102) | 0.951 (951/1000)    |
+| i16        | 0.911 (4453/4890)  | 0.948 (9577/10102) | 0.950 (950/1000)    |
+| i32_absmax | 0.908 (4438/4890)  | 0.947 (9568/10102) | 0.956 (956/1000)    |
+| i16_absmax | 0.915 (4473/4890)  | 0.951 (9603/10102) | 0.956 (956/1000)    |
+
+Due to these resutls I decided to implement the absmax soulution on the device. Also immediately applied all the cmsis fucntions for conversion, scaling, max calculation, etc. (conversion is difficult to implement right without these, also these perform similarly to the naive implementation (for loop)).
+
+M7 release results [ms]:
+
+```shell
+Calculate:
+f32: 8.027917
+q31: 10.955775
+q15: 7.854500
+Quantize:
+using dsp: 0.014533
+naive: 0.028433
+Run:
+load model: 1.304908
+setup: 0.869517
+junk prints and variables: 224.254135
+invoke: 13.580501
+junk post print: 11.086708
+Full runmodel call: 251.095779
+M4 core does nothing...
+MAX possible measruement: 17895.697266
+```
+
+#### Debugging MFCC
+
+After the stack setup seemed right, I encountered a hard fault while calculating the MFCC result. The hard fault is precise (bus fault), an address outside of the valid memory range is used. It happened because the values inside bss are corrupted. The exact error is inside the task switch, when the current TCB is checked, which pointer value is altered. When debugging inside MFCC, a watchpoint was on this TCB pointer variable. The scaling function uses source and dest pointers, which pointed there. After this the exact root cause when these pointers are corrupted has to be found. The problem was an input buffer with not sufficient size as the input to the mfcc transformation funciton. The overflow currupted the mentioned variables.
+
+Currently I didn't start to check the root cause of the difference between the mfccs. The net performs similarly on these inputs as well.

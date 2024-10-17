@@ -18,11 +18,14 @@ limitations under the License.
 #include <math.h>
 
 #include <cstdio>
+#include <cstring>
 
-#include "models/sine_model_dyn_quant.h"
-#include "models/sine_model_fb_quant.h"
-#include "models/sine_model_full_quant.h"
-#include "models/sine_model_no_quant.h"
+#include "kws_test_file3.h"
+#include "models/kws_model_quant.h"
+// #include "models/sine_model_dyn_quant.h"
+// #include "models/sine_model_fb_quant.h"
+// #include "models/sine_model_full_quant.h"
+// #include "models/sine_model_no_quant.h"
 #include "tensorflow/lite/core/c/common.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_log.h"
@@ -32,32 +35,39 @@ limitations under the License.
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tim.h"
+#include "benchmark.h"
+
+const uint8_t* test_file_arr = src_nn_kws_bin_files_mfcc_tst_000103_On_5_bin;
+const unsigned int test_file_len =
+    src_nn_kws_bin_files_mfcc_tst_000103_On_5_bin_len;
 
 namespace {
-using QuantOpResolver = tflite::MicroMutableOpResolver<1>;
-using FloatOpResolver = tflite::MicroMutableOpResolver<3>;
+// the same resolver works for the float and quantized models
+constexpr int kNumberOperators = 6;
+using KwsOpResolver = tflite::MicroMutableOpResolver<kNumberOperators>;
 
-TfLiteStatus RegisterOps(QuantOpResolver& op_resolver) {
+TfLiteStatus RegisterOps(KwsOpResolver& op_resolver) {
+  TF_LITE_ENSURE_STATUS(op_resolver.AddAveragePool2D());
+  TF_LITE_ENSURE_STATUS(op_resolver.AddConv2D());
+  TF_LITE_ENSURE_STATUS(op_resolver.AddDepthwiseConv2D());
   TF_LITE_ENSURE_STATUS(op_resolver.AddFullyConnected());
-  return kTfLiteOk;
-}
+  TF_LITE_ENSURE_STATUS(op_resolver.AddReshape());
+  TF_LITE_ENSURE_STATUS(op_resolver.AddSoftmax());
 
-TfLiteStatus RegisterOps(FloatOpResolver& op_resolver) {
-  TF_LITE_ENSURE_STATUS(op_resolver.AddFullyConnected());
-  TF_LITE_ENSURE_STATUS(op_resolver.AddQuantize());
-  TF_LITE_ENSURE_STATUS(op_resolver.AddDequantize());
   return kTfLiteOk;
 }
 }  // namespace
 
+// for quantized model
 TfLiteStatus ProfileMemoryAndLatency(const void* p_model) {
   tflite::MicroProfiler profiler;
-  FloatOpResolver op_resolver;
+  KwsOpResolver op_resolver;
+  MicroPrintf("Registering ops");
   TF_LITE_ENSURE_STATUS(RegisterOps(op_resolver));
 
   // Arena size just a round number. The exact arena usage can be determined
   // using the RecordingMicroInterpreter.
-  constexpr int kTensorArenaSize = 3000;
+  constexpr int kTensorArenaSize = 24000;
   uint8_t tensor_arena[kTensorArenaSize];
   constexpr int kNumResourceVariables = 24;
 
@@ -69,8 +79,16 @@ TfLiteStatus ProfileMemoryAndLatency(const void* p_model) {
       &profiler);
 
   TF_LITE_ENSURE_STATUS(interpreter.AllocateTensors());
-  TFLITE_CHECK_EQ(interpreter.inputs_size(), 1);
-  interpreter.input(0)->data.f[0] = 1.f;
+  // TFLITE_CHECK_EQ(interpreter.inputs_size(), 49 * 10);
+  MicroPrintf("Inputs size: %d", interpreter.inputs_size());
+
+  const size_t dimsize = interpreter.input(0)->dims->size;
+  MicroPrintf("dim len: %d", dimsize);
+  for (size_t i = 0; i < dimsize; ++i) {
+    MicroPrintf("dim [%d]: %d", i, interpreter.input(0)->dims->data[i]);
+  }
+
+  interpreter.input(0)->data.int8[0] = 1;
   TF_LITE_ENSURE_STATUS(interpreter.Invoke());
 
   MicroPrintf("");  // Print an empty new line
@@ -81,60 +99,26 @@ TfLiteStatus ProfileMemoryAndLatency(const void* p_model) {
   return kTfLiteOk;
 }
 
-TfLiteStatus LoadFloatModelAndPerformInference(const void* p_model) {
-  const tflite::Model* model = ::tflite::GetModel(p_model);
-  TFLITE_CHECK_EQ(model->version(), TFLITE_SCHEMA_VERSION);
-
-  FloatOpResolver op_resolver;
-  TF_LITE_ENSURE_STATUS(RegisterOps(op_resolver));
-
-  // Arena size just a round number. The exact arena usage can be determined
-  // using the RecordingMicroInterpreter.
-  constexpr int kTensorArenaSize = 3000;
-  uint8_t tensor_arena[kTensorArenaSize];
-
-  tflite::MicroInterpreter interpreter(model, op_resolver, tensor_arena,
-                                       kTensorArenaSize);
-  TF_LITE_ENSURE_STATUS(interpreter.AllocateTensors());
-
-  // Check if the predicted output is within a small range of the
-  // expected output
-  float epsilon = 0.05f;
-  float golden_inputs[] = {0.0F, 0.5F, 1.0F, 3.0F, 5.0F};
-  constexpr int kNumTestValues =
-      sizeof(golden_inputs) / sizeof(golden_inputs[0]);
-
-  for (int i = 0; i < kNumTestValues; ++i) {
-    interpreter.input(0)->data.f[0] = golden_inputs[i];
-    uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
-    TF_LITE_ENSURE_STATUS(interpreter.Invoke());
-    uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
-    float y_pred = interpreter.output(0)->data.f[0];
-    printf("float[%d] out: %f correct: %f\truntime: %f\r\n", i, y_pred,
-           sin(golden_inputs[i]), (float)(end - start) / getTIM2Freq() * 1e6F);
-  }
-
-  return kTfLiteOk;
-}
-
-TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
+TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model, const int8_t* wave) {
   // Map the model into a usable data structure. This doesn't involve any
   // copying or parsing, it's a very lightweight operation.
   const tflite::Model* model = ::tflite::GetModel(p_model);
+  benchmark_set_point(INSIDE_LOAD_MODEL); //-------------------------------
   TFLITE_CHECK_EQ(model->version(), TFLITE_SCHEMA_VERSION);
 
-  QuantOpResolver op_resolver;
+  KwsOpResolver op_resolver;
   TF_LITE_ENSURE_STATUS(RegisterOps(op_resolver));
 
   // Arena size just a round number. The exact arena usage can be determined
   // using the RecordingMicroInterpreter.
-  constexpr int kTensorArenaSize = 3000;
+  constexpr int kTensorArenaSize = 24000;
   uint8_t tensor_arena[kTensorArenaSize];
 
   tflite::MicroInterpreter interpreter(model, op_resolver, tensor_arena,
                                        kTensorArenaSize);
 
   TF_LITE_ENSURE_STATUS(interpreter.AllocateTensors());
+  benchmark_set_point(INSIDE_SETUP); // -----------------------------------
 
   TfLiteTensor* input = interpreter.input(0);
   TFLITE_CHECK_NE(input, nullptr);
@@ -145,51 +129,42 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model) {
   float output_scale = output->params.scale;
   int output_zero_point = output->params.zero_point;
 
-  // Check if the predicted output is within a small range of the
-  // expected output
-  float epsilon = 0.05;
+  // filling the inputs with the test data
+  assert(input->bytes == test_file_len);
+  auto* inputs = tflite::GetTensorData<int8_t>(input);
+  std::memcpy(inputs, wave, test_file_len);
+  // tflite::GetTensorData<int8_t>(input)[0] = golden_input;
+  // input->data.int8[0] = golden_input;
 
-  constexpr int kNumTestValues = 4;
-  float golden_inputs_float[kNumTestValues] = {0.77, 1.57, 2.3, 3.14};
-
-  // The int8 values are calculated using the following formula
-  // (golden_inputs_float[i] / input->params.scale + input->params.scale)
-  int8_t golden_inputs_int8[kNumTestValues];
-  for (size_t i = 0; i < kNumTestValues; ++i) {
-    golden_inputs_int8[i] =
-        golden_inputs_float[i] / input->params.scale + input->params.zero_point;
+  printf("INputs\r\n");
+  for (size_t i = 0; i < input->bytes; ++i) {
+    std::printf("0x%2x ", input->data.uint8[i]);
+    constexpr size_t line_len = 16;
+    if (line_len - 1 == i % line_len) MicroPrintf("");
   }
+  MicroPrintf("");
 
-  for (int i = 0; i < kNumTestValues; ++i) {
-    input->data.int8[0] = golden_inputs_int8[i];
-    uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
-    TF_LITE_ENSURE_STATUS(interpreter.Invoke());
-    uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
-    float y_pred = (output->data.int8[0] - output_zero_point) * output_scale;
-    printf("quant[%d] out: %f correct: %f\trumtime: %f\r\n", i, y_pred,
-           sin(golden_inputs_float[i]),
-           (float)(end - start) / getTIM2Freq() * 1e6F);
+  benchmark_set_point(INSIDE_BEFORE_INVOKE); //----------------------------
+  TF_LITE_ENSURE_STATUS(interpreter.Invoke());
+  benchmark_set_point(INSIDE_AFTER_INVOKE); //-----------------------------
+
+  MicroPrintf("");
+  for (size_t i = 0; i < output->bytes; ++i) {
+    float y_pred = (output->data.int8[i] - output_zero_point) * output_scale;
+    std::printf("%.2f ", y_pred);
   }
 
   return kTfLiteOk;
 }
 
-void ai_model_init() {}
+void ai_model_init() {
 
-void ai_model_run(void) {
+}
+
+void ai_model_run(const int8_t* wave) {
   tflite::InitializeTarget();
-  assert(kTfLiteOk == ProfileMemoryAndLatency(sine_model_no_quant_tflite));
-  MicroPrintf("NO quantization");
-  assert(kTfLiteOk ==
-         LoadFloatModelAndPerformInference(sine_model_no_quant_tflite));
-  MicroPrintf("Fallback quantization");
-  assert(kTfLiteOk ==
-         LoadFloatModelAndPerformInference(sine_model_fb_quant_tflite));
-  MicroPrintf("Dynamic quantization");
-  assert(kTfLiteOk ==
-         LoadFloatModelAndPerformInference(sine_model_dyn_quant_tflite));
-  MicroPrintf("Full quantization");
-  assert(kTfLiteOk ==
-         LoadQuantModelAndPerformInference(sine_model_full_quant_tflite));
-  MicroPrintf("~~~END OF HELLO WORLD~~~\n");
+  printf("STARTING TEST\r\n");
+  // assert(kTfLiteOk == ProfileMemoryAndLatency(g_kws_model_quant_data));
+  assert(kTfLiteOk == LoadQuantModelAndPerformInference(g_kws_model_quant_data, wave));
+  printf("END OF TEST");
 }

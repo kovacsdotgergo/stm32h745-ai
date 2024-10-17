@@ -32,6 +32,6 @@ case $query in
     (makefile_dir) echo $makefile_dir ;;
     (build_dir | executable_dir) echo $build_dir ;;
     (elf_name) echo stm32h745-ai_${core^^}.elf ;;
-    (arguments) echo core=$core debug=$debug nn_framework=$nn_framework ;; # can be used with eval to get the standardized value of the arguments
+    (arguments) echo core=$core debug=$debug nn_framework=$nn_framework ;; # can be used with eval to get the 'standardized' value of the arguments
     (*) echo "Not valid option for the query requested" ; exit 1 ;;
 esac

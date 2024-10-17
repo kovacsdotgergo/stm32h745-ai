@@ -1,32 +1,121 @@
 {
+    "env": {
+        "common_cm7_includes": [
+            "${workspaceRoot}/src/h745/CM7/Core/Inc",
+            "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
+            "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
+            "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
+            "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
+            "${workspaceRoot}/src/h745/Drivers/CMSIS-DSP/Include",
+            "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
+            "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
+            "/usr/lib/arm-none-eabi/include",
+            "/usr/lib/arm-none-eabi/include/c++/10.3.1",
+            "/usr/lib/arm-none-eabi/include/machine",
+            "/usr/lib/arm-none-eabi/include/sys",
+            "/usr/lib/arm-none-eabi/include/nano",
+            "/lib/gcc/arm-none-eabi/10.3.1/include",
+            "/lib/gcc/arm-none-eabi/10.3.1/include-fixed"
+        ],
+        "common_cm7_defines": [
+            "USE_HAL_DRIVER",
+            "STM32H745xx",
+            "CORE_CM7",
+            "TF_LITE_STATIC_MEMORY",
+            "TF_LITE_MCU_DEBUG_LOG",
+            "PROJECT_GENERATION",
+            "CMSIS_NN"
+        ],
+        "commong_cm7_args": [
+            "-mcpu=cortex-m7",
+            "-std=gnu11",
+            "-g3",
+            "-O0",
+            "-Wall",
+            "-Wextra",
+            "-fdata-sections",
+            "-ffunction-sections",
+            "-fstack-usage",
+            "--specs=nano.specs",
+            "-mfpu=fpv5-d16",
+            "-mfloat-abi=hard",
+            "-mthumb"
+        ],
+        "common_cm4_includes": [
+            "${workspaceRoot}/src/h745/CM4/Core/Inc",
+            "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
+            "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
+            "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
+            "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
+            "${workspaceRoot}/src/h745/Drivers/CMSIS-DSP/Include",
+            "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
+            "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
+            "/usr/lib/arm-none-eabi/include",
+            "/usr/lib/arm-none-eabi/include/c++/10.3.1",
+            "/usr/lib/arm-none-eabi/include/machine",
+            "/usr/lib/arm-none-eabi/include/sys",
+            "/usr/lib/arm-none-eabi/include/nano",
+            "/lib/gcc/arm-none-eabi/10.3.1/include",
+            "/lib/gcc/arm-none-eabi/10.3.1/include-fixed"
+        ],
+        "common_cm4_defines": [
+            "USE_HAL_DRIVER",
+            "STM32H745xx",
+            "CORE_CM4"
+        ],
+        "commong_cm4_args": [
+            "-mcpu=cortex-m4",
+            "-std=gnu11",
+            "-g3",
+            "-O0",
+            "-Wall",
+            "-Wextra",
+            "-fdata-sections",
+            "-ffunction-sections",
+            "-fstack-usage",
+            "--specs=nano.specs",
+            "-mfpu=fpv4-sp-d16",
+            "-mfloat-abi=hard",
+            "-mthumb"
+        ]
+    },
     "configurations": [
         {
-            "name": "cm7",
+            "name": "cm7 - cubeai",
             "includePath": [
-                "${workspaceRoot}/src/h745/CM7/Core/Inc",
-                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
-                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
-                "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
-                "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
-                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
-                "${workspaceRoot}/src/h745/Middlewares/Third_Party/tflite_micro/**",
-                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
-                "${workspaceRoot}/src/h745/Middlewares/ST/AI/Inc",
-                "/usr/lib/arm-none-eabi/include",
-                "/usr/lib/arm-none-eabi/include/c++/10.3.1",
-                "/usr/lib/arm-none-eabi/include/machine",
-                "/usr/lib/arm-none-eabi/include/sys",
-                "/usr/lib/arm-none-eabi/include/nano",
-                "/lib/gcc/arm-none-eabi/10.3.1/include",
-                "/lib/gcc/arm-none-eabi/10.3.1/include-fixed"
+                "${common_cm7_includes}",
+                "${workspaceRoot}/src/h745/CM7/nn_framework",
+                "${workspaceRoot}/src/h745/CM7/nn_framework/X-CUBE-AI",
+                "${workspaceRoot}/src/h745/Middlewares/ST/AI/Inc"
             ],
             "defines": [
-                "USE_HAL_DRIVER",
-                "STM32H745xx",
-                "CORE_CM7",
+                "${common_cm7_defines}"
+            ],
+            "intelliSenseMode": "linux-gcc-arm",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "browse": {
+                "path": [],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
+            },
+            "compilerArgs": [
+                "${commong_cm7_args}"
+            ],
+            "compilerPath": "/usr/bin/arm-none-eabi-gcc"
+        },
+        {
+            "name": "cm7 - tflm",
+            "includePath": [
+                "${common_cm7_includes}",
+                "${workspaceRoot}/src/h745/Middlewares/Third_Party/tflite_micro/**",
+                "${workspaceRoot}/src/h745/CM7/nn_framework/",
+                "${workspaceRoot}/src/h745/CM7/nn_framework/tflm"
+            ],
+            "defines": [
+                "${common_cm7_defines}",
                 "TF_LITE_STATIC_MEMORY",
                 "TF_LITE_MCU_DEBUG_LOG",
-                "PROJECT_GENERATION",
                 "CMSIS_NN"
             ],
             "intelliSenseMode": "linux-gcc-arm",
@@ -38,47 +127,20 @@
                 "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
             },
             "compilerArgs": [
-                "-mcpu=cortex-m7",
-                "-std=gnu11",
-                "-g3",
-                "-O0",
-                "-Wall",
-                "-Wextra",
-                "-fdata-sections",
-                "-ffunction-sections",
-                "-fstack-usage",
-                "--specs=nano.specs",
-                "-mfpu=fpv5-d16",
-                "-mfloat-abi=hard",
-                "-mthumb"
+                "${commong_cm7_args}"
             ],
             "compilerPath": "/usr/bin/arm-none-eabi-gcc"
         },
         {
-            "name": "cm4",
+            "name": "cm4 - cubeai",
             "includePath": [
-                "${workspaceRoot}/src/h745/CM4/Core/Src/hello_world",
-                "${workspaceRoot}/src/h745/CM4/Core/Inc",
-                "${workspaceRoot}/src/h745/CM4/X-CUBE-AI/App",
-                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
-                "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
-                "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",
-                "${workspaceRoot}/src/h745/Drivers/CMSIS/Include",
-                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/include",
-                "${workspaceRoot}/src/h745/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F",
-                "${workspaceRoot}/src/h745/Middlewares/ST/AI/Inc",
-                "/usr/lib/arm-none-eabi/include",
-                "/usr/lib/arm-none-eabi/include/c++/10.3.1",
-                "/usr/lib/arm-none-eabi/include/machine",
-                "/usr/lib/arm-none-eabi/include/sys",
-                "/usr/lib/arm-none-eabi/include/nano",
-                "/lib/gcc/arm-none-eabi/10.3.1/include",
-                "/lib/gcc/arm-none-eabi/10.3.1/include-fixed"
+                "${common_cm4_includes}",
+                "${workspaceRoot}/src/h745/CM4/nn_framework",
+                "${workspaceRoot}/src/h745/CM4/nn_framework/X-CUBE-AI",
+                "${workspaceRoot}/src/h745/Middlewares/ST/AI/Inc"
             ],
             "defines": [
-                "USE_HAL_DRIVER",
-                "STM32H745xx",
-                "CORE_CM4"
+                "${common_cm4_defines}"
             ],
             "intelliSenseMode": "linux-gcc-arm",
             "cStandard": "c11",
@@ -89,19 +151,35 @@
                 "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
             },
             "compilerArgs": [
-                "-mcpu=cortex-m4",
-                "-std=gnu11",
-                "-g3",
-                "-O0",
-                "-Wall",
-                "-Wextra",
-                "-fdata-sections",
-                "-ffunction-sections",
-                "-fstack-usage",
-                "--specs=nano.specs",
-                "-mfpu=fpv4-sp-d16",
-                "-mfloat-abi=hard",
-                "-mthumb"
+                "${commong_cm4_args}"
+            ],
+            "compilerPath": "/usr/bin/arm-none-eabi-gcc",
+            "mergeConfigurations": false
+        },
+        {
+            "name": "cm4 - tflm",
+            "includePath": [
+                "${common_cm4_includes}",
+                "${workspaceRoot}/src/h745/Middlewares/Third_Party/tflite_micro/**",
+                "${workspaceRoot}/src/h745/CM4/nn_framework/",
+                "${workspaceRoot}/src/h745/CM4/nn_framework/tflm"
+            ],
+            "defines": [
+                "${common_cm4_defines}"
+            ],
+            "intelliSenseMode": "linux-gcc-arm",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "browse": {
+                "path": [],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "${workspaceRoot}/.vscode/browse.vc.db"
+            },
+            "compilerArgs": [
+                "${commong_cm4_args}",
+                "TF_LITE_STATIC_MEMORY",
+                "TF_LITE_MCU_DEBUG_LOG",
+                "CMSIS_NN"
             ],
             "compilerPath": "/usr/bin/arm-none-eabi-gcc",
             "mergeConfigurations": false

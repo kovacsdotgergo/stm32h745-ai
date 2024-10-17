@@ -33,3 +33,9 @@ $33 = -43960
 ```
 
 It is outside the stack, maybe this is why the value was corrupted.
+
+## Stack overflows
+
+When starting a proper net, it required a large stack. This is allocated by a malloc in the freertos task creation code. The TCB pointers are only updated on init, so the current sp should always be observed. First I got hard faults when the stack overflowed, later the code got stuck in an unrelated interrupt. When checking the `(StackType_t*)<current sp read from the debugger variables view> - pxCurrentTCB->pxStack`, it showed overflow. The freertos stack checking didn't catch this, and it didn't usually work before either.
+
+I think the previous stack overflows happened, because with a too small stack allocated, when it overflowed, it grew past the start address of the ram. In the linker script the DTCM ram is used, below which is a reserved region, I might have written that.

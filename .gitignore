@@ -1,3 +1,6 @@
 **/build
-
+src/nn/dataset
+src/nn/kws_bin_files
+src/nn/preprocessing/*.h
+src/nn/preprocessing/calculate_done
 .vscode/browse*

@@ -39,7 +39,7 @@ $(build_dir)/%.o: $(root_dir)/%.S Makefile
 	$(log) compiling $(patsubst $(root_dir)/%,%,$@)
 	$(q)$(AS) -c $(ASFLAGS) $< -o $@
 
-$(build_dir)/$(target).elf: $(objects) $(tflite_lib) Makefile
+$(build_dir)/$(target).elf: $(objects) $(libs) Makefile
 	@mkdir -p $(dir $@)
 	$(log) linking $(patsubst $(root_dir)/%,%,$@)
 	$(q)$(CXX) $(objects) $(LDFLAGS) $(LDLIBS) -o $@
@@ -51,5 +51,7 @@ $(build_dir)/%.hex: $(build_dir)/%.elf
 $(build_dir)/%.bin: $(build_dir)/%.elf
 	$(BIN) $< $@	
 
+# -h: include section headers
+# -S: intermix the source code with disassebly
 $(build_dir)/%.list: $(build_dir)/%.elf
 	$(DP) -h -S $< > $@

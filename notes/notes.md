@@ -93,13 +93,23 @@ To make semihosting work, the debugger and the required linker flags have to be 
 
 Some bad warnings are cast between incompatible pointers and implicit function declarations, these should be turned to errors.
 
-### Flags for embedded projects
+### Listing the predefined macros
+
+`cpp -dM tmp.c` on a [dummy source](https://gcc.gnu.org/onlinedocs/cpp/Invocation.html) file lists all the defines during preprocessing, that includes all the predefined macros as well
+
+On ARM processors some feature defines can be checked like this, e.g. if the DSP features are present. This is determined by `__ARM_FEATURE_DSP` which is defined on M7 (and on M4 probably).
+
+### Options for embedded projects
 
 * [great article](https://interrupt.memfault.com/blog/best-and-worst-gcc-clang-compiler-flags)
 
 The cmake file for building for arm cores are in ethos-u-core-platform/cmake/toolchain/arm-none-eabi-gcc.cmake. This sets several flags. It is inlcuded when building for the core.
 
 The tflite-micro/tensorflow/lite/micro/tools/make/targets/cortex_m_generic_makefile.inc is similar, sets up everything used for the core, also sets a bunch of compiler flags, but it is a Makefile.
+
+#### Machine specific options
+
+These start with `-m`, e.g. `-mcpu`. I found, that these change the code generation and enable some predefined macros as well.
 
 ## Objdump
 
@@ -137,7 +147,7 @@ There is a flag to enable (usually it is on) generating these unwind tables. It 
 
 The tables is stored in a seperate section. Each function with exceptions has its own unwind table, so it can only propagate back through functions with unwind tables (logical noexcept requirement). There is a callback function implemented in the compiler that is able to unwind form any point.
 
-In assembly to be compatible functions have to follow the exeption handling abi (e.g. [ARM](https://developer.arm.com/documentation/dui0473/m/writing-arm-assembly-language/exception-tables-and-unwind-tables))
+In assembly, to be compatible functions have to follow the exeption handling abi (e.g. [ARM](https://developer.arm.com/documentation/dui0473/m/writing-arm-assembly-language/exception-tables-and-unwind-tables))
 
 #### CRTP (Curiously Recurring Template Pattern)
 
@@ -175,6 +185,8 @@ Extern "C" is required for the FreeRTOS hooks and the init functions that are ca
 ## Hard fault
 
 todo: write about the article and the hard fault analyzer
+[The page I've found first](https://interrupt.memfault.com/blog/cortex-m-hardfault-debug#cortex-m3-m4-debug-trick).
+[Similar content](https://www.freertos.org/Debugging-Hard-Faults-On-Cortex-M-Microcontrollers.html) on the freertos webpage.
 
 ## Checking task stack
 todo: move this section below anything relevant
@@ -208,3 +220,12 @@ m += $2} END {print sum}'
 
 * `=`: format document
 * `<line num>G`: go to line
+
+## Naked asm functions
+
+[Related stackoverflow question](https://stackoverflow.com/questions/2716884/using-the-naked-attribute-for-functions-in-gcc)
+[Some of the related GCC documentation](https://gcc.gnu.org/onlinedocs/gcc-3.0.4/gcc/Function-Entry.html)
+[Interrupt handling, that references the ARM ABI](https://www.embedded.com/programming-embedded-systems-how-interrupts-work-in-arm-cortex-m/)
+The parts appended to the function by the compiler are called prologue and epilogue.
+The ARM ABI specifies some of the instructions required.
+Register window: when the registers can be aliased for several procedures, this eliminates the need for some stack operations on function call
