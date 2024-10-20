@@ -495,3 +495,25 @@ MAX possible measruement: 17895.697266
 After the stack setup seemed right, I encountered a hard fault while calculating the MFCC result. The hard fault is precise (bus fault), an address outside of the valid memory range is used. It happened because the values inside bss are corrupted. The exact error is inside the task switch, when the current TCB is checked, which pointer value is altered. When debugging inside MFCC, a watchpoint was on this TCB pointer variable. The scaling function uses source and dest pointers, which pointed there. After this the exact root cause when these pointers are corrupted has to be found. The problem was an input buffer with not sufficient size as the input to the mfcc transformation funciton. The overflow currupted the mentioned variables.
 
 Currently I didn't start to check the root cause of the difference between the mfccs. The net performs similarly on these inputs as well.
+
+## Feeding the inputs
+
+The possible choices are uart form the debugger or the usb port on the dev board. Using these communication channels I have the option to send test data or use the microphone from the PC. The virtual serial port should be tested if it can handle 16000 Hz 16bit data. This would be the easier choice, as only the debugger is needed and feeding the serial from the PC is also really simple.
+
+The standard required serial baud rate is at least 460800. This might not be possible via UART.
+
+### Input test
+
+The microcontroller is sending two byte values via the serial. A timmer triggers the time when the transmission is required. The data is an increasing value in each step. The PC reads the inputs and checkes if the values are correct. It also prints the maximum length of the input buffer. The result of a 3 min run:
+
+```shell
+Errors: 0, max in line: 1527
+```
+
+Promising result, no incorrect or missing values.
+
+### Output test
+
+The PC feeds the microcontroller which checks the values. Also using DMA the timing details of the communication should be evaluated.
+
+Reading in a busy loop also gave no errors. The PC sends the data in a block, then initiates the next transaction on every 1s. This is not the same as receiving the data with 16 kHz, but the processing is when the data is collected in a buffer. To test further I am going to implement handling the input data with DMA. Then the content of the buffer is checked.

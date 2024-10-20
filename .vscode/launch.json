@@ -14,6 +14,7 @@
             "servertype": "openocd",
             "configFiles": ["st_nucleo_h745zi.cfg"],
             "device": "STM32H745ZI",
+            "svdFile": "STM32H745_CM7.svd",
             "numberOfProcessors": 2,
             "targetProcessor": 0,
             "loadFiles": [
@@ -25,7 +26,7 @@
                 "monitor init",
                 "monitor reset halt"
             ],
-            "postLaunchCommands": ["monitor reset run"]    
+            "postLaunchCommands": ["monitor reset run"]
         },
         {
             "name": "Attach CM4 - openocd",
@@ -36,6 +37,7 @@
             "servertype": "external",
             "gdbTarget": "localhost:50001",
             "device": "STM32H745ZI",
+            "svdFile": "STM32H745_CM4.svd",
             "numberOfProcessors": 2,
             "targetProcessor": 1,
         },
@@ -51,6 +53,7 @@
             "request": "launch",
             "servertype": "openocd",
             "device": "STM32H745ZI",
+            "svdFile": "STM32H745_CM7.svd",
             "interface": "swd",
             "numberOfProcessors": 2,
             "targetProcessor": 0,
@@ -64,14 +67,14 @@
                 "waitOnEvent": "postInit",
                 "detached": false,
                 "delayMs": 0,    // Wait 0s, 5s wasn't neccessary
-                "lifecycleManagedByParent": true,   
-                "launches": [ 
+                "lifecycleManagedByParent": true,
+                "launches": [
                     {
                         "name": "Attach CM4 - openocd",
                         "folder": "${workspaceFolder}"
                     }
                 ]
-            }       
+            }
         }
     ],
     "inputs": [

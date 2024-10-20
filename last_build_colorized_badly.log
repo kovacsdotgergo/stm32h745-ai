@@ -1,0 +1,14 @@
+make: Entering directory '/home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM7'
+compiling Makefile/CM7/build/release/tflm/CM7/Core/Src/benchmark.o
+/home/gergo/workspace/stm32h745-ai/src/h745/CM7/Core/Src/benchmark.c: In function 'benchmark_get_possible_max_ms':
+/home/gergo/workspace/stm32h745-ai/src/h745/CM7/Core/Src/benchmark.c:7:28: error: expected ')' before ';' token
+    7 | #define TICK_MAX UINT32_MAX;
+      |                            ^
+/home/gergo/workspace/stm32h745-ai/src/h745/CM7/Core/Src/benchmark.c:27:28: note: in expansion of macro 'TICK_MAX'
+   27 |   return 1000.0F * (float)(TICK_MAX) / get_ticks_per_sec();
+      |                            ^~~~~~~~
+/home/gergo/workspace/stm32h745-ai/src/h745/CM7/Core/Src/benchmark.c:27:27: note: to match this '('
+   27 |   return 1000.0F * (float)(TICK_MAX) / get_ticks_per_sec();
+      |                           ^
+make: *** [../build_rules.mk:26: /home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM7/build/release/tflm/CM7/Core/Src/benchmark.o] Error 1
+make: Leaving directory '/home/gergo/workspace/stm32h745-ai/src/h745/Makefile/CM7'

@@ -55,6 +55,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_usart3_rx;
 extern TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN EV */
