@@ -108,3 +108,4 @@
 ## Optimization
 
 * when measured the speed of the preprocessing, the conversion of the input samples could be removed if the waveform is already stored in the proper format
+* maximize the DMA burst (max burst for bytes or max width and maximized burst)

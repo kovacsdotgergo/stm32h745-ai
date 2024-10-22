@@ -1,4 +1,3 @@
-/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
  * @file           : main.c
@@ -23,11 +22,13 @@
 
 #include "FreeRTOS.h"
 #include "crc.h"
+#include "dma.h"
 #include "gpio.h"
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
 #include "usb_otg.h"
+#include "wave_provisioner.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -93,7 +94,6 @@ int main(void) {
 
   /* Enable D-Cache---------------------------------------------------------*/
   SCB_EnableDCache();
-
   /* USER CODE BEGIN Boot_Mode_Sequence_1 */
   /* Wait until CPU2 boots and enters in stop mode or timeout*/
   timeout = 0xFFFF;
@@ -129,6 +129,7 @@ int main(void) {
   if (timeout < 0) {
     Error_Handler();
   }
+
   /* USER CODE END Boot_Mode_Sequence_2 */
 
   /* USER CODE BEGIN SysInit */
@@ -136,6 +137,8 @@ int main(void) {
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+  MX_DMA_Init();
+
   MX_GPIO_Init();
 
   MX_USART3_UART_Init();
@@ -156,27 +159,15 @@ int main(void) {
   // vTaskStartScheduler();
 
   /* We should never get here as control is now taken by the scheduler */
-
-  // to start the send test
-  // HAL_TIM_Base_Start_IT(&htim3);
-
-  // to start the recv test
-  uint16_t prev, new;
-  uint32_t errors = 0;
-  uint32_t i = 0;
-  HAL_UART_Receive(&huart3, (uint8_t *)&prev, sizeof(prev), HAL_MAX_DELAY);
+  wave_start_provisioning();
   /* USER CODE BEGIN WHILE */
   while (1) {
     /* USER CODE END WHILE */
-    HAL_UART_Receive(&huart3, (uint8_t *)&new, sizeof(new), HAL_MAX_DELAY);
-
-    if ((uint16_t)(prev + 1U) != (uint16_t) new) ++errors;
-    prev = new;
-
-    if (i % 16000 == 0) {
-      printf("Errors: %ld \r\n", errors);
+    if (print_errors) {
+      printf("Errors: %ld\r\n", errors);
+      print_errors = 0;
+      errors = 0;
     }
-    ++i;
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -186,6 +177,7 @@ int main(void) {
  * @brief System Clock Configuration
  * @retval None
  */
+
 void SystemClock_Config(void) {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -196,6 +188,7 @@ void SystemClock_Config(void) {
 
   /** Configure the main internal regulator output voltage
    */
+
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
 
   while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
@@ -265,7 +258,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
   /* USER CODE END Callback 1 */
 }
-
 /**
  * @brief  This function is executed in case of error occurrence.
  * @retval None

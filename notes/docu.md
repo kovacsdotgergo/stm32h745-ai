@@ -517,3 +517,15 @@ Promising result, no incorrect or missing values.
 The PC feeds the microcontroller which checks the values. Also using DMA the timing details of the communication should be evaluated.
 
 Reading in a busy loop also gave no errors. The PC sends the data in a block, then initiates the next transaction on every 1s. This is not the same as receiving the data with 16 kHz, but the processing is when the data is collected in a buffer. To test further I am going to implement handling the input data with DMA. Then the content of the buffer is checked.
+
+So the test is to send a large number of test inputs consecutively, and teh controller receives these and checkes the buffer. The transmission happends every 1s for 1s of waveform data, so the abstraction is at the buffer level, handling a full buffer is same in case of a DAC and the test inputs.
+
+#### DMA error debugging
+
+The MCU receives utilizing a DMA, which takes the bytes from the UART peripheral. It can use buffering and burst transmission to memory. The first problem was that the received buffer had wrong values randomly (seemingly UART values were dropped), but at every speed from 115200 to 460800.
+
+The root cause was that the D cache wasn't invalidated, which is the most basic problem with cache and DMA. After this the first set (one buffer full) of values were correct, but no further transmissions were successful (no DMA interrupt). The DMA transfer size was registered correctly and the DMA was enabled. During the second set of values the UART input buffer was overrun. This leads to the suspicion that the DMA does not move any data. Breaking after a few sent characters shows that the DMA was in fact idle the whole time, to values were moved into the internal buffer.
+
+This was due to the messed up value of the uart instance (huart3). The base address of the peripheral was changed, so the DMA had an incorrect peripheral address (which could be seen in the SVD view). The huart handle value was changed during the SCB_InvalidateDCache_by_Addr call. This required 32 byte aligned inputs which the wave buffer was not. This caused several additinal variables to be invalidated, that had the correct value in the cache.
+
+After calling the cache invalidation function with the correctly aligned buffer, the wave buffer check passed even for the largest baud rate.

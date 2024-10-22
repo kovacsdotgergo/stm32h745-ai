@@ -46,6 +46,8 @@ if __name__ == "__main__":
 
             range_end = range_beg + burst
             array = b''.join([(x % (2**16)).to_bytes(2, 'little') for x in range(range_beg, range_end)])
+            # with open(f"python_tmp{i}", "wb") as file:
+            #     file.write(array)
             range_beg = range_end
 
             begin = time.perf_counter_ns()
@@ -58,7 +60,8 @@ if __name__ == "__main__":
 
             begin_sleep = time.perf_counter_ns()
             sleep_time = (begin_sleep - begin_run) / 1e9
-            if sleep_time < 1:
-                time.sleep(1 - sleep_time)
+            period = 1
+            if sleep_time < period:
+                time.sleep(period - sleep_time)
             else:
                 print("Didn't sleep: ", sleep_time)
