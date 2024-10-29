@@ -21,6 +21,7 @@
 #include "FreeRTOS.h"
 
 #include <stdio.h>
+#include "ai_task.h"
 
 #include "benchmark.h"
 #include "gpio.h"
@@ -129,6 +130,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 // static TaskHandle_t defaultTask = NULL;
 static TaskHandle_t aiTask = NULL;
+static TaskHandle_t test_task = NULL;
 
 /**
  * @brief  FreeRTOS initialization
@@ -150,6 +152,8 @@ void MX_FREERTOS_Init(void) {
       StartAiTask, "AiTask", stack_size_words,
       NULL,  // mallocks the required amount in words (stack_type_t? is 4 bytes)
       tskIDLE_PRIORITY + 2, &aiTask);
+  xTaskCreate(test_input_task, "test_uart_task", configMINIMAL_STACK_SIZE, NULL,
+              tskIDLE_PRIORITY + 2, &test_task);
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -188,9 +192,9 @@ void StartAiTask(void *pvParameters) {
   static int8_t mfcc[MFCC_TOTAL_LENGTH];
   while (1) {
     // Wait before doing it again
-    printf("START OF TASK ==============================================");
-    printf("\r\nTask watermark: %lu (words left)\r\n",
-           uxTaskGetStackHighWaterMark(NULL));
+//     printf("START OF TASK ==============================================");
+//     printf("\r\nTask watermark: %lu (words left)\r\n",
+       //     uxTaskGetStackHighWaterMark(NULL));
 
     benchmark_set_point(BEGIN_PREPOC);
     preprocess_calculate_f32(waveform, mfcc_f32);
@@ -211,40 +215,40 @@ void StartAiTask(void *pvParameters) {
     benchmark_set_point(BEGIN_RUN);
     ai_model_run(mfcc);
     benchmark_set_point(END_RUN);
-    printf("\r\nTask watermark: %lu (words left)\r\n",
-           uxTaskGetStackHighWaterMark(NULL));
+//     printf("\r\nTask watermark: %lu (words left)\r\n",
+//            uxTaskGetStackHighWaterMark(NULL));
 
-    printf("\r\n");
-    printf("Calculate:\r\n");
-    printf("f32: %f\r\n",
-           (double)benchmark_get_result_between_ms(BEGIN_PREPOC, PREPROC_F32));
-    printf("q31: %f\r\n",
-           (double)benchmark_get_result_between_ms(PREPROC_F32, PREPROC_Q31));
-    printf("q15: %f\r\n",
-           (double)benchmark_get_result_between_ms(PREPROC_Q31, PREPROC_Q15));
-    printf("Quantize:\r\n");
-    printf("using dsp: %f\r\n",
-           (double)benchmark_get_result_between_ms(BEGIN_QUANTIZE, QUNATIZE));
-    printf("naive: %f\r\n",
-           (double)benchmark_get_result_between_ms(QUNATIZE, QUANTIZE_NAIVE));
-    printf("Run:\r\n");
-    printf("load model: %f\r\n",
-           (double)benchmark_get_result_between_ms(BEGIN_RUN, INSIDE_LOAD_MODEL));
-    printf("setup: %f\r\n", (double)benchmark_get_result_between_ms(
-                                INSIDE_LOAD_MODEL, INSIDE_SETUP));
-    printf("junk prints and variables: %f\r\n",
-           (double)benchmark_get_result_between_ms(INSIDE_SETUP,
-                                                INSIDE_BEFORE_INVOKE));
-    printf("invoke: %f\r\n", (double)benchmark_get_result_between_ms(
-                                 INSIDE_BEFORE_INVOKE, INSIDE_AFTER_INVOKE));
-    printf("junk post print: %f\r\n",
-           (double)benchmark_get_result_between_ms(INSIDE_AFTER_INVOKE, END_RUN));
-    printf("Full runmodel call: %f\r\n",
-           (double)benchmark_get_result_between_ms(BEGIN_RUN, END_RUN));
-    printf("MAX possible measruement: %f",
-           (double)benchmark_get_possible_max_ms());
+//     printf("\r\n");
+//     printf("Calculate:\r\n");
+//     printf("f32: %f\r\n",
+//            (double)benchmark_get_result_between_ms(BEGIN_PREPOC, PREPROC_F32));
+//     printf("q31: %f\r\n",
+//            (double)benchmark_get_result_between_ms(PREPROC_F32, PREPROC_Q31));
+//     printf("q15: %f\r\n",
+//            (double)benchmark_get_result_between_ms(PREPROC_Q31, PREPROC_Q15));
+//     printf("Quantize:\r\n");
+//     printf("using dsp: %f\r\n",
+//            (double)benchmark_get_result_between_ms(BEGIN_QUANTIZE, QUNATIZE));
+//     printf("naive: %f\r\n",
+//            (double)benchmark_get_result_between_ms(QUNATIZE, QUANTIZE_NAIVE));
+//     printf("Run:\r\n");
+//     printf("load model: %f\r\n",
+//            (double)benchmark_get_result_between_ms(BEGIN_RUN, INSIDE_LOAD_MODEL));
+//     printf("setup: %f\r\n", (double)benchmark_get_result_between_ms(
+//                                 INSIDE_LOAD_MODEL, INSIDE_SETUP));
+//     printf("junk prints and variables: %f\r\n",
+//            (double)benchmark_get_result_between_ms(INSIDE_SETUP,
+//                                                 INSIDE_BEFORE_INVOKE));
+//     printf("invoke: %f\r\n", (double)benchmark_get_result_between_ms(
+//                                  INSIDE_BEFORE_INVOKE, INSIDE_AFTER_INVOKE));
+//     printf("junk post print: %f\r\n",
+//            (double)benchmark_get_result_between_ms(INSIDE_AFTER_INVOKE, END_RUN));
+//     printf("Full runmodel call: %f\r\n",
+//            (double)benchmark_get_result_between_ms(BEGIN_RUN, END_RUN));
+//     printf("MAX possible measruement: %f",
+//            (double)benchmark_get_possible_max_ms());
 
-    printf("END OF TASK ================================================");
+//     printf("END OF TASK ================================================");
     vTaskDelay(10000 / portTICK_PERIOD_MS);
     // while (1);
   }

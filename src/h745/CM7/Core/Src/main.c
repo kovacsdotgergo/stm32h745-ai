@@ -28,7 +28,6 @@
 #include "tim.h"
 #include "usart.h"
 #include "usb_otg.h"
-#include "wave_provisioner.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -153,21 +152,15 @@ int main(void) {
   /* Init scheduler */
 
   /* Call init function for freertos objects (in cmsis_os2.c) */
-  // MX_FREERTOS_Init();
+  MX_FREERTOS_Init();
 
   /* Start scheduler */
-  // vTaskStartScheduler();
+  vTaskStartScheduler();
 
   /* We should never get here as control is now taken by the scheduler */
-  wave_start_provisioning();
   /* USER CODE BEGIN WHILE */
   while (1) {
     /* USER CODE END WHILE */
-    if (print_errors) {
-      printf("Errors: %ld\r\n", errors);
-      print_errors = 0;
-      errors = 0;
-    }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

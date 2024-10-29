@@ -136,23 +136,25 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model, const int8_t
   // tflite::GetTensorData<int8_t>(input)[0] = golden_input;
   // input->data.int8[0] = golden_input;
 
-  printf("INputs\r\n");
-  for (size_t i = 0; i < input->bytes; ++i) {
-    std::printf("0x%2x ", input->data.uint8[i]);
-    constexpr size_t line_len = 16;
-    if (line_len - 1 == i % line_len) MicroPrintf("");
-  }
-  MicroPrintf("");
+  // logging
+  // printf("INputs\r\n");
+  // for (size_t i = 0; i < input->bytes; ++i) {
+  //   std::printf("0x%2x ", input->data.uint8[i]);
+  //   constexpr size_t line_len = 16;
+  //   if (line_len - 1 == i % line_len) MicroPrintf("");
+  // }
+  // MicroPrintf("");
 
   benchmark_set_point(INSIDE_BEFORE_INVOKE); //----------------------------
   TF_LITE_ENSURE_STATUS(interpreter.Invoke());
   benchmark_set_point(INSIDE_AFTER_INVOKE); //-----------------------------
 
-  MicroPrintf("");
-  for (size_t i = 0; i < output->bytes; ++i) {
-    float y_pred = (output->data.int8[i] - output_zero_point) * output_scale;
-    std::printf("%.2f ", y_pred);
-  }
+  // logging
+  // MicroPrintf("");
+  // for (size_t i = 0; i < output->bytes; ++i) {
+  //   float y_pred = (output->data.int8[i] - output_zero_point) * output_scale;
+  //   std::printf("%.2f ", y_pred);
+  // }
 
   return kTfLiteOk;
 }
@@ -163,8 +165,6 @@ void ai_model_init() {
 
 void ai_model_run(const int8_t* wave) {
   tflite::InitializeTarget();
-  printf("STARTING TEST\r\n");
   // assert(kTfLiteOk == ProfileMemoryAndLatency(g_kws_model_quant_data));
   assert(kTfLiteOk == LoadQuantModelAndPerformInference(g_kws_model_quant_data, wave));
-  printf("END OF TEST");
 }

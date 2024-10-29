@@ -3,7 +3,7 @@ import time
 import threading
 
 # Set up the serial connection (adjust 'COM3' and 'baudrate' as needed)
-runtime = 180
+runtime = 20
 frequency = 16000
 
 def precise_periodic_task(frequency, ser):
@@ -23,21 +23,16 @@ def precise_periodic_task(frequency, ser):
 def reader_func(ser):
     global stop
     while True:
-        line = ser.read(1)
-        if line != b'':
-            print(line.decode('ascii'), end="")
+        print(ser.readline().decode('ascii'), end='')
 
-        time.sleep(0.5)
         if stop.is_set():
             return
 
 if __name__ == "__main__":
-    with serial.Serial('/dev/ttyACM0', baudrate=460800, timeout=0.05) as ser:
-        # stop = threading.Event()
-        # reader = threading.Thread(target=reader_func, args=(ser,))
-        # reader.start()
-        # stop.set()
-        # reader.join()
+    with serial.Serial('/dev/ttyACM0', baudrate=460800, timeout=1) as ser:
+        stop = threading.Event()
+        reader = threading.Thread(target=reader_func, args=(ser,))
+        reader.start()
 
         burst = frequency
         range_beg = 0
@@ -53,7 +48,6 @@ if __name__ == "__main__":
             begin = time.perf_counter_ns()
             ser.write(array)
             end = time.perf_counter_ns()
-            print(ser.readline())
 
             send_time = (end - begin) / 1e9
             print("TIME to send data: ", send_time)
@@ -65,3 +59,5 @@ if __name__ == "__main__":
                 time.sleep(period - sleep_time)
             else:
                 print("Didn't sleep: ", sleep_time)
+        stop.set()
+        reader.join()
