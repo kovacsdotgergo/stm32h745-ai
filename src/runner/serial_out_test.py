@@ -2,23 +2,8 @@ import serial
 import time
 import threading
 
-# Set up the serial connection (adjust 'COM3' and 'baudrate' as needed)
 runtime = 10
-frequency = 16000
-
-def precise_periodic_task(frequency, ser):
-    interval = 1 / frequency
-    repeat = int(runtime / interval)
-
-    i = 0
-    counter = 0
-    while i < repeat:
-        ser.write(b'0x00' + b'0x00')
-        # value_bytes = counter.to_bytes(2, byteorder='little')
-        # ser.write(value_bytes)
-        # counter = (counter + 1) % (2**16)
-        # time.sleep(interval / 10)
-        i += 1
+frequency = 15872
 
 def reader_func(ser):
     global stop

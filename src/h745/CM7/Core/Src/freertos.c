@@ -152,8 +152,10 @@ void MX_FREERTOS_Init(void) {
   //     StartAiTask, "AiTask", stack_size_words,
   //     NULL,  // mallocks the required amount in words (stack_type_t? is 4 bytes)
   //     tskIDLE_PRIORITY + 2, &aiTask);
-  xTaskCreate(test_input_task, "test_uart_task", configMINIMAL_STACK_SIZE, NULL,
-              tskIDLE_PRIORITY + 2, &test_task);
+  xTaskCreate(
+      test_input_task, "test_uart_task",
+      stack_size_words,  // mallocks the required amount in words (4 bytes)
+      NULL, tskIDLE_PRIORITY + 2, &test_task);
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */

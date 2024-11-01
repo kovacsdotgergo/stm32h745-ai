@@ -4,8 +4,11 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include <mfcc_config/shapes_config.h>
+
 // todo circ_buffer_beg, circ_buffer_len, wave_beg_idx, wave_len
-typedef void (*wave_ready_callback)(volatile int16_t *wave, size_t len);
+/// @param[in] wave input waveform of shape WAVEFORM_LEN
+typedef void (*wave_ready_callback)(volatile int16_t *wave);
 
 // IMPORTANT: this callback is called from an ISR
 void wave_set_wave_ready_callback(wave_ready_callback cb);

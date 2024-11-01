@@ -22,10 +22,12 @@ limitations under the License.
 
 #include "kws_test_file3.h"
 #include "models/kws_model_quant.h"
+#include "postprocess.h"
 // #include "models/sine_model_dyn_quant.h"
 // #include "models/sine_model_fb_quant.h"
 // #include "models/sine_model_full_quant.h"
 // #include "models/sine_model_no_quant.h"
+#include "benchmark.h"
 #include "tensorflow/lite/core/c/common.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_log.h"
@@ -35,7 +37,6 @@ limitations under the License.
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tim.h"
-#include "benchmark.h"
 
 const uint8_t* test_file_arr = src_nn_kws_bin_files_mfcc_tst_000103_On_5_bin;
 const unsigned int test_file_len =
@@ -151,10 +152,22 @@ TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model, const int8_t
 
   // logging
   // MicroPrintf("");
-  // for (size_t i = 0; i < output->bytes; ++i) {
-  //   float y_pred = (output->data.int8[i] - output_zero_point) * output_scale;
-  //   std::printf("%.2f ", y_pred);
-  // }
+  printf("Net outputs:\r\n");
+  int8_t argmax_max = INT8_MIN;
+  size_t argmax_idx = 0;
+  for (size_t i = 0; i < output->bytes; ++i) {
+    int8_t cur_output = output->data.int8[i];
+    if (argmax_max < cur_output) {
+      argmax_max = cur_output;
+      argmax_idx = i;
+    }
+    float y_pred = (cur_output - output_zero_point) * output_scale;
+    printf("%.2f ", y_pred);
+  }
+
+  assert(argmax_idx < POSTPROCESS_LABEL_NUM);
+  printf("%s ", postprocess_label_to_str[argmax_idx]);
+  printf("\r\n");
 
   return kTfLiteOk;
 }

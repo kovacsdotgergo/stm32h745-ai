@@ -14,12 +14,9 @@ SemaphoreHandle_t wave_ready_semaphore = NULL;
 static float32_t mfcc_f32[MFCC_TOTAL_LENGTH];
 static int8_t mfcc[MFCC_TOTAL_LENGTH];
 static volatile int16_t *volatile waveform = NULL;
-static volatile size_t waveform_len =
-    0;  // todo: could be fixed, as preprocessing also expects fixed
 
-void notify_ai_task_callback(volatile int16_t *wave, size_t len) {
+void notify_ai_task_callback(volatile int16_t *wave) {
   waveform = wave;
-  waveform_len = len;
   // notfy task
   BaseType_t higher_prio_task_woken = pdFALSE;
   xSemaphoreGiveFromISR(wave_ready_semaphore, &higher_prio_task_woken);
@@ -33,23 +30,18 @@ void test_input_task(void *pvParameters) {
   assert(wave_ready_semaphore != NULL);
   wave_set_wave_ready_callback(notify_ai_task_callback);
 
-  // ai_model_init();
-  // preprocess_init_f32();
+  ai_model_init();
+  preprocess_init_f32();
 
   wave_start_provisioning();
   while (1) {
     // todo: add error handler if uart takes longer than the period
     if (xSemaphoreTake(wave_ready_semaphore, portMAX_DELAY) == pdTRUE) {
-      size_t errors = 0;
+      // printf("First few: %d, %d, %d\r\n", waveform[0], waveform[1], waveform[2]);
 
-      assert(0 < waveform_len);
-      for (size_t i = 1; i < waveform_len; ++i) {
-        if ((int16_t)(waveform[i - 1] + 1) != waveform[i]) ++errors;
-      }
-      printf("Errors: %d\r\n", errors);
-      printf("First few: %u, %u, %u\r\n", waveform[0], waveform[1], waveform[2]);
-
-      // ai_model_run(mfcc);
+      preprocess_calculate_f32(waveform, mfcc_f32);
+      preprocess_quantize_mfcc_f32(mfcc_f32, mfcc, 83, 0.5847029089);
+      ai_model_run(mfcc);
     }
   }
 };

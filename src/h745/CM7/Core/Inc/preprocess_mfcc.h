@@ -4,11 +4,7 @@
 #include <stdint.h>
 
 #include "arm_math_types.h"
-
-#define WAVEFORM_LEN 15872
-#define MFCC_NUM_DCT_OUTPUTS 10
-#define MFCC_TIMESTEPS 49
-#define MFCC_TOTAL_LENGTH ((MFCC_NUM_DCT_OUTPUTS) * (MFCC_TIMESTEPS))
+#include "mfcc_config/shapes_config.h"
 
 void preprocess_init_f32(void);
 void preprocess_init_q15(void);
@@ -17,7 +13,7 @@ void preprocess_init_q31(void);
 /// @param[in] waveform Input waveform of WAVEFORM_LEN length
 /// @param[out] mfcc 2D output of shape (MFCC_TIMESTEPS, MFCC_NUM_DCT_OUTPUTS)
 /// @note waveform is modified during the call
-void preprocess_calculate_f32(int16_t waveform[], float32_t mfcc[]);
+void preprocess_calculate_f32(volatile int16_t waveform[], float32_t mfcc[]);
 void preprocess_calculate_q15(int16_t waveform[], q15_t mfcc[]);
 void preprocess_calculate_q31(int16_t waveform[], q31_t mfcc[]);
 

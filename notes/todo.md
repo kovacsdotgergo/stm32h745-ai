@@ -112,7 +112,8 @@
 
 ## Next:
 
-* move the waveform check to the test_task
-* add double buffering
+* x move the waveform check to the test_task
+* x add double buffering
 * set up the net init, quantization query
-* on the received current buffer run the net
+* x on the received current buffer run the net
+* clean up the ai task, add postprocess

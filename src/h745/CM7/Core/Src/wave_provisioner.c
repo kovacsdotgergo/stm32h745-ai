@@ -6,7 +6,7 @@
 #include "macros.h"
 #include "usart.h"
 
-#define WAVE_BUFFER_LEN 16000
+#define WAVE_BUFFER_LEN WAVEFORM_LEN
 #define WAVE_BUFFER_NUM 2
 
 static wave_ready_callback g_callback = NULL;
@@ -37,8 +37,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
                                sizeof(wave_buffers[prev_buffer_idx]));
 
   if (g_callback != NULL) {
-    g_callback(wave_buffers[prev_buffer_idx],
-               ARRAY_SIZE(wave_buffers[prev_buffer_idx]));
+    g_callback(wave_buffers[prev_buffer_idx]);
   }
 }
 
