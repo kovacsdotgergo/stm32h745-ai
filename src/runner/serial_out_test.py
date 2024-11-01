@@ -3,7 +3,7 @@ import time
 import threading
 
 # Set up the serial connection (adjust 'COM3' and 'baudrate' as needed)
-runtime = 20
+runtime = 10
 frequency = 16000
 
 def precise_periodic_task(frequency, ser):

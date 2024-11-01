@@ -6,45 +6,42 @@
 #include "macros.h"
 #include "usart.h"
 
-static wave_ready_callback g_callback = NULL;
-static int16_t wave[16000] __attribute__((aligned(32)));
+#define WAVE_BUFFER_LEN 16000
+#define WAVE_BUFFER_NUM 2
 
-volatile uint32_t errors = 0;
-volatile uint32_t print_errors = 0;
+static wave_ready_callback g_callback = NULL;
+static volatile int16_t wave_buffers[WAVE_BUFFER_NUM][WAVE_BUFFER_LEN]
+    __attribute__((aligned(32)));
+static size_t wave_buffer_idx = 0;
 
 void wave_set_wave_ready_callback(wave_ready_callback cb) { g_callback = cb; }
 
 void wave_start_provisioning(void) {
   HAL_StatusTypeDef status =
-      HAL_UART_Receive_DMA(&huart3, (uint8_t *)wave, sizeof(wave));
+      HAL_UART_Receive_DMA(&huart3, (uint8_t *)wave_buffers[wave_buffer_idx],
+                           sizeof(wave_buffers[wave_buffer_idx]));
   assert(status == HAL_OK);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   assert(huart == &huart3);  // only this is implemented
-  // todo start new reception immediately
-  SCB_InvalidateDCache_by_Addr(wave, sizeof(wave));
-  assert(0 < ARRAY_SIZE(wave));
-  for (size_t i = 1; i < ARRAY_SIZE(wave); ++i) {
-    if ((int16_t)(wave[i - 1] + 1) != wave[i]) ++errors;
-  }
-  print_errors = 1;
 
+  size_t prev_buffer_idx = wave_buffer_idx;
+  wave_buffer_idx = (wave_buffer_idx + 1) % WAVE_BUFFER_NUM;
   HAL_StatusTypeDef status =
-      HAL_UART_Receive_DMA(&huart3, (uint8_t *)wave, sizeof(wave));
+      HAL_UART_Receive_DMA(&huart3, (uint8_t *)wave_buffers[wave_buffer_idx],
+                           sizeof(wave_buffers[wave_buffer_idx]));
   assert(status == HAL_OK);
+  // todo set up mpu
+  SCB_InvalidateDCache_by_Addr((void *)wave_buffers[prev_buffer_idx],
+                               sizeof(wave_buffers[prev_buffer_idx]));
 
   if (g_callback != NULL) {
-    g_callback(wave, sizeof(wave));  // todo
+    g_callback(wave_buffers[prev_buffer_idx],
+               ARRAY_SIZE(wave_buffers[prev_buffer_idx]));
   }
 }
 
-void HAL_UARTEx_RxFifoFullCallback(UART_HandleTypeDef *huart) {
-  while(1)
-    ;
-}
+void HAL_UARTEx_RxFifoFullCallback(UART_HandleTypeDef *huart) { while (1); }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-  while (1)
-    ;
-}
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) { while (1); }

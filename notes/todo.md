@@ -109,3 +109,10 @@
 
 * when measured the speed of the preprocessing, the conversion of the input samples could be removed if the waveform is already stored in the proper format
 * maximize the DMA burst (max burst for bytes or max width and maximized burst)
+
+## Next:
+
+* move the waveform check to the test_task
+* add double buffering
+* set up the net init, quantization query
+* on the received current buffer run the net

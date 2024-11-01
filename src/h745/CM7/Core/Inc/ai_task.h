@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-void notify_ai_task_callback(int16_t* wave, size_t len);
+void notify_ai_task_callback(volatile int16_t* wave, size_t len);
 void test_input_task(void *pvParameters);
+void StartAiTask(void *pvParameters);
 
 #endif // AI_TASK_H

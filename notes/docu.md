@@ -533,3 +533,5 @@ After calling the cache invalidation function with the correctly aligned buffer,
 ### Testing with FreeRTOS enabled
 
 When the communication showed no errors with the OS disabled, I have assembled a short task that verifies that the behaviour is the same with it enabled. There were no errors. The sample task prints errors when the wavefrom arrived. The DMA interrupt signals with a binary semaphore.
+
+First I am setting up the application to run with the float preprocessing, the quantized version can be measured after this.

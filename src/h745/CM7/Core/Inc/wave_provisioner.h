@@ -4,11 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
-extern volatile uint32_t errors;
-extern volatile uint32_t print_errors;
-
 // todo circ_buffer_beg, circ_buffer_len, wave_beg_idx, wave_len
-typedef void (*wave_ready_callback)(int16_t *wave, size_t len);
+typedef void (*wave_ready_callback)(volatile int16_t *wave, size_t len);
 
 // IMPORTANT: this callback is called from an ISR
 void wave_set_wave_ready_callback(wave_ready_callback cb);
