@@ -495,3 +495,65 @@ MAX possible measruement: 17895.697266
 After the stack setup seemed right, I encountered a hard fault while calculating the MFCC result. The hard fault is precise (bus fault), an address outside of the valid memory range is used. It happened because the values inside bss are corrupted. The exact error is inside the task switch, when the current TCB is checked, which pointer value is altered. When debugging inside MFCC, a watchpoint was on this TCB pointer variable. The scaling function uses source and dest pointers, which pointed there. After this the exact root cause when these pointers are corrupted has to be found. The problem was an input buffer with not sufficient size as the input to the mfcc transformation funciton. The overflow currupted the mentioned variables.
 
 Currently I didn't start to check the root cause of the difference between the mfccs. The net performs similarly on these inputs as well.
+
+## Feeding the inputs
+
+The possible choices are uart form the debugger or the usb port on the dev board. Using these communication channels I have the option to send test data or use the microphone from the PC. The virtual serial port should be tested if it can handle 16000 Hz 16bit data. This would be the easier choice, as only the debugger is needed and feeding the serial from the PC is also really simple.
+
+The standard required serial baud rate is at least 460800. This might not be possible via UART.
+
+### Input test
+
+The microcontroller is sending two byte values via the serial. A timmer triggers the time when the transmission is required. The data is an increasing value in each step. The PC reads the inputs and checkes if the values are correct. It also prints the maximum length of the input buffer. The result of a 3 min run:
+
+```shell
+Errors: 0, max in line: 1527
+```
+
+Promising result, no incorrect or missing values.
+
+### Output test
+
+The PC feeds the microcontroller which checks the values. Also using DMA the timing details of the communication should be evaluated.
+
+Reading in a busy loop also gave no errors. The PC sends the data in a block, then initiates the next transaction on every 1s. This is not the same as receiving the data with 16 kHz, but the processing is when the data is collected in a buffer. To test further I am going to implement handling the input data with DMA. Then the content of the buffer is checked.
+
+So the test is to send a large number of test inputs consecutively, and teh controller receives these and checkes the buffer. The transmission happends every 1s for 1s of waveform data, so the abstraction is at the buffer level, handling a full buffer is same in case of a DAC and the test inputs.
+
+#### DMA error debugging
+
+The MCU receives messages using a DMA, which takes the bytes from the UART peripheral. It can use buffering and burst transmission to memory. The first problem was that the received buffer had wrong values randomly (seemingly UART values were dropped), but at every speed from 115200 to 460800.
+
+The root cause was that the D cache wasn't invalidated, which is the most basic problem with cache and DMA. After this the first set (one buffer full) of values were correct, but no further transmissions were successful (no DMA interrupt). The DMA transfer size was registered correctly and the DMA was enabled. During the second set of values the UART input buffer was overrun. This leads to the suspicion that the DMA does not move any data. Breaking after a few sent characters shows that the DMA was in fact idle the whole time, to values were moved into the internal buffer.
+
+This was due to the messed up value of the uart instance (huart3). The base address of the peripheral was changed, so the DMA had an incorrect peripheral address (which could be seen in the SVD view). The huart handle value was changed during the SCB_InvalidateDCache_by_Addr call. This required 32 byte aligned inputs which the wave buffer was not. This caused several additinal variables to be invalidated, that had the correct value in the cache.
+
+After calling the cache invalidation function with the correctly aligned buffer, the wave buffer check passed even for the largest baud rate.
+
+### Testing with FreeRTOS enabled
+
+When the communication showed no errors with the OS disabled, I have assembled a short task that verifies that the behaviour is the same with it enabled. There were no errors. The sample task prints errors when the wavefrom arrived. The DMA interrupt signals with a binary semaphore.
+
+First I am setting up the application to run with the float preprocessing, the quantized version can be measured after this.
+
+## The final application
+
+### Artificial test inputs
+
+The data from the test set is sent in the exact form as it was used during the net evaluation (no offset of the recordings). The result on a few test files is sent back from the device and the ground truth is also printed for comparison. The results are as expected, close to the ground truth.
+
+### The base application
+
+The base application runs on every full buffer. The inputs are collected using DMA and double buffering. When the inputs are ready the processing task is triggered using a binary semaphore. Preprocessing is performed by float mfcc using cmsis. The quantization uses the naive float implmenetation. The net only has a single version. The outputs are processed using argmax and the result is sent back.
+
+The PC feeds the the inputs from the microphone array in blocks and prints the results.
+
+The solution has a larger latency due to sending the data in larger blocks. The UART transmission is similarly fast if using a shorter block size, e.g. 512 instead of 15872. The net only runs once in every second, the keyword are often missed.
+
+With the worse quality microphone integrated into a laptop the accuracy is bad. Swithching to a better quality headset most of the keywords are recognized by the application. Better resolution is neccessary for better localization and therefore accuracy.
+
+### Recording own test files
+
+As the base application recognized few of the keywords while running continuously, I will test with recorded inputs as well. I made several scripts for recording test data, exporting the original files to wav, sending own recording to the device for testing, feeding the device continuously, etc.
+
+### Optimization

@@ -75,7 +75,7 @@ void preprocess_init_q15(void) {
   assert(ARM_MATH_SUCCESS == status);
 }
 
-void preprocess_calculate_f32(int16_t waveform[], float32_t mfcc[]) {
+void preprocess_calculate_f32(volatile int16_t waveform[], float32_t mfcc[]) {
   // todo: static to save stack space
   static float32_t scratchpad[STFT_FFT_SIZE + 2];
   static float32_t waveform_inner_dtype[WAVEFORM_LEN];

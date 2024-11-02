@@ -33,16 +33,20 @@ extern "C" {
 /* USER CODE END Includes */
 
 extern TIM_HandleTypeDef htim2;
+extern TIM_HandleTypeDef htim3;
+
 
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
 
 void MX_TIM2_Init(void);
+void MX_TIM3_Init(void);
 
 static inline uint32_t getTIM2Freq(void) {
   return HAL_RCC_GetHCLKFreq();
 }
+
 
 /* USER CODE BEGIN Prototypes */
 
@@ -53,4 +57,3 @@ static inline uint32_t getTIM2Freq(void) {
 #endif
 
 #endif /* __TIM_H__ */
-

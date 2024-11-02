@@ -126,10 +126,10 @@ int main(void)
 
   /* Init scheduler */
   /* Call init function for freertos objects (in cmsis_os2.c) */
-  MX_FREERTOS_Init();
+  // MX_FREERTOS_Init();
 
   /* Start scheduler */
-	vTaskStartScheduler();
+	// vTaskStartScheduler();
 
   /* We should never get here as control is now taken by the scheduler */
 
@@ -142,7 +142,7 @@ int main(void)
 
 
     /* USER CODE BEGIN 3 */
-    
+
   }
   /* USER CODE END 3 */
 }

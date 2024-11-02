@@ -19,6 +19,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "assert.h"
+#include "usart.h"
+#include "tim.h"
+#include "stm32h7xx_hal_tim.h"
+
 #include "stm32h7xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -161,8 +166,19 @@ void DebugMon_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief This function handles TIM6 global interrupt, DAC1_CH1 and DAC1_CH2 underrun error interrupts.
+  * @brief This function handles DMA1 stream0 global interrupt.
   */
+void DMA1_Stream0_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Stream0_IRQn 0 */
+
+  /* USER CODE END DMA1_Stream0_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_usart3_rx);
+  /* USER CODE BEGIN DMA1_Stream0_IRQn 1 */
+
+  /* USER CODE END DMA1_Stream0_IRQn 1 */
+}
+
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
@@ -174,6 +190,23 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
+void TIM3_IRQHandler(void)
+{
+  uint32_t itsource = htim3.Instance->DIER;
+  uint32_t itflag   = htim3.Instance->SR;
+  // the configured interrupt type:
+  assert((itflag & (TIM_FLAG_UPDATE)) == (TIM_FLAG_UPDATE));
+  assert((itsource & (TIM_IT_UPDATE)) == (TIM_IT_UPDATE));
+  __HAL_TIM_CLEAR_FLAG(&htim3, TIM_FLAG_UPDATE);
+
+  static uint16_t next;
+  HAL_UART_Transmit(&huart3, (uint8_t*)&next, sizeof(next), HAL_MAX_DELAY);
+  ++next;
+
+  // triggered again, so interrupt too long
+  itflag   = htim3.Instance->SR;
+  assert((itflag & (TIM_FLAG_UPDATE)) != (TIM_FLAG_UPDATE));
+}
 
 /* USER CODE BEGIN 1 */
 
