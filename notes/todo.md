@@ -109,11 +109,13 @@
 
 * when measured the speed of the preprocessing, the conversion of the input samples could be removed if the waveform is already stored in the proper format
 * maximize the DMA burst (max burst for bytes or max width and maximized burst)
+* streaming dma reception, overlapping buffers
 
-## Next:
+## Next
 
 * x move the waveform check to the test_task
 * x add double buffering
-* set up the net init, quantization query
+* x set up the net init, quantization query
 * x on the received current buffer run the net
-* clean up the ai task, add postprocess
+* x clean up the ai task, add postprocess
+* record own test files, send them instead of the test data (might also evaluate on the python model)

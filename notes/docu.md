@@ -535,3 +535,23 @@ After calling the cache invalidation function with the correctly aligned buffer,
 When the communication showed no errors with the OS disabled, I have assembled a short task that verifies that the behaviour is the same with it enabled. There were no errors. The sample task prints errors when the wavefrom arrived. The DMA interrupt signals with a binary semaphore.
 
 First I am setting up the application to run with the float preprocessing, the quantized version can be measured after this.
+
+## The final application
+
+### Artificial test inputs
+
+The data from the test set is sent in the exact form as it was used during the net evaluation (no offset of the recordings). The result on a few test files is sent back from the device and the ground truth is also printed for comparison. The results are as expected, close to the ground truth.
+
+### The base application
+
+The base application runs on every full buffer. The inputs are collected using DMA and double buffering. When the inputs are ready the processing task is triggered using a binary semaphore. Preprocessing is performed by float mfcc using cmsis. The quantization uses the naive float implmenetation. The net only has a single version. The outputs are processed using argmax and the result is sent back.
+
+The PC feeds the the inputs from the microphone array in blocks and prints the results.
+
+The solution has a larger latency due to sending the data in larger blocks. The UART transmission is similarly fast if using a shorter block size, e.g. 512 instead of 15872. The net only runs once in every second, the keyword are often missed.
+
+### Recording own test files
+
+As the base application recognized few of the keywords while running continuously, I will test with recorded inputs as well.
+
+### Optimization

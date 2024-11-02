@@ -5,8 +5,10 @@
 
 #include "FreeRTOS.h"
 #include "benchmark.h"
+#include "macros.h"
 #include "nn_framework.h"
 #include "preprocess_mfcc.h"
+#include "postprocess.h"
 #include "semphr.h"
 #include "wave_provisioner.h"
 
@@ -31,17 +33,41 @@ void test_input_task(void *pvParameters) {
   wave_set_wave_ready_callback(notify_ai_task_callback);
 
   ai_model_init();
+  int32_t input_zero_point;
+  float input_scale;
+  ai_get_input_quant_details(&input_scale, &input_zero_point);
   preprocess_init_f32();
 
   wave_start_provisioning();
   while (1) {
     // todo: add error handler if uart takes longer than the period
     if (xSemaphoreTake(wave_ready_semaphore, portMAX_DELAY) == pdTRUE) {
-      // printf("First few: %d, %d, %d\r\n", waveform[0], waveform[1], waveform[2]);
+      // printf("First few: %d, %d, %d\r\n", waveform[0], waveform[1],
+      // waveform[2]);
 
       preprocess_calculate_f32(waveform, mfcc_f32);
-      preprocess_quantize_mfcc_f32(mfcc_f32, mfcc, 83, 0.5847029089);
-      ai_model_run(mfcc);
+      preprocess_quantize_mfcc_f32(mfcc_f32, mfcc, input_zero_point,
+                                   input_scale);
+      float probabilities[POSTPROCESS_LABEL_NUM];
+      ai_model_run(mfcc, probabilities);
+
+      // postprocess and logging
+      printf("Net outputs:\r\n");
+      for (size_t i = 0; i < ARRAY_SIZE(probabilities); ++i) {
+        printf("%.2f ", (double)probabilities[i]);
+      }
+
+      float argmax_max = probabilities[0];
+      size_t argmax_idx = 0;
+      for (size_t i = 1; i < ARRAY_SIZE(probabilities); ++i) {
+        if (argmax_max < probabilities[i]) {
+          argmax_max = probabilities[i];
+          argmax_idx = i;
+        }
+      }
+
+      assert(argmax_idx < POSTPROCESS_LABEL_NUM);
+      printf("%s\r\n", postprocess_label_to_str[argmax_idx]);
     }
   }
 };

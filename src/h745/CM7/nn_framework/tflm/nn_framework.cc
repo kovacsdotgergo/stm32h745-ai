@@ -20,14 +20,11 @@ limitations under the License.
 #include <cstdio>
 #include <cstring>
 
+#include "benchmark.h"
 #include "kws_test_file3.h"
+#include "mfcc_config/shapes_config.h"
 #include "models/kws_model_quant.h"
 #include "postprocess.h"
-// #include "models/sine_model_dyn_quant.h"
-// #include "models/sine_model_fb_quant.h"
-// #include "models/sine_model_full_quant.h"
-// #include "models/sine_model_no_quant.h"
-#include "benchmark.h"
 #include "tensorflow/lite/core/c/common.h"
 #include "tensorflow/lite/micro/micro_interpreter.h"
 #include "tensorflow/lite/micro/micro_log.h"
@@ -36,16 +33,13 @@ limitations under the License.
 #include "tensorflow/lite/micro/recording_micro_interpreter.h"
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
-#include "tim.h"
-
-const uint8_t* test_file_arr = src_nn_kws_bin_files_mfcc_tst_000103_On_5_bin;
-const unsigned int test_file_len =
-    src_nn_kws_bin_files_mfcc_tst_000103_On_5_bin_len;
 
 namespace {
 // the same resolver works for the float and quantized models
 constexpr int kNumberOperators = 6;
 using KwsOpResolver = tflite::MicroMutableOpResolver<kNumberOperators>;
+
+tflite::MicroInterpreter* interpreter = nullptr;
 
 TfLiteStatus RegisterOps(KwsOpResolver& op_resolver) {
   TF_LITE_ENSURE_STATUS(op_resolver.AddAveragePool2D());
@@ -58,6 +52,78 @@ TfLiteStatus RegisterOps(KwsOpResolver& op_resolver) {
   return kTfLiteOk;
 }
 }  // namespace
+
+// returns pointer to the initialized static local interpreter in the function
+static tflite::MicroInterpreter* init_interpreter() {
+  // Map the model into a usable data structure. This doesn't involve any
+  // copying or parsing, it's a very lightweight operation.
+  static const tflite::Model* model =
+      ::tflite::GetModel(g_kws_model_quant_data);
+  TFLITE_CHECK_EQ(model->version(), TFLITE_SCHEMA_VERSION);
+
+  static KwsOpResolver op_resolver;
+  TfLiteStatus status = RegisterOps(op_resolver);
+  TFLITE_CHECK_EQ(status, kTfLiteOk);
+
+  // Arena size just a round number. The exact arena usage can be determined
+  // using the RecordingMicroInterpreter.
+  constexpr int kTensorArenaSize = 24000;
+  static uint8_t tensor_arena[kTensorArenaSize];
+
+  static tflite::MicroInterpreter interpreter{model, op_resolver, tensor_arena,
+                                              kTensorArenaSize};
+
+  status = interpreter.AllocateTensors();
+  TFLITE_DCHECK_EQ(status, kTfLiteOk);
+
+  return &interpreter;
+}
+
+void ai_model_init() {
+  tflite::InitializeTarget();
+  interpreter = init_interpreter();
+}
+
+void ai_get_input_quant_details(float* scale, int32_t* zero_point) {
+  TFLITE_DCHECK_NE(interpreter, nullptr);
+  TfLiteTensor* input = interpreter->input(0);
+  TFLITE_CHECK_NE(input, nullptr);
+
+  *scale = input->params.scale;
+  *zero_point = input->params.zero_point;
+}
+
+void ai_model_run(const int8_t* mfcc, float* probabilities) {
+  TFLITE_DCHECK_NE(interpreter, nullptr);
+  benchmark_set_point(INSIDE_SETUP);  // -----------------------------------
+
+  TfLiteTensor* input = interpreter->input(0);
+  TFLITE_CHECK_NE(input, nullptr);
+
+  TfLiteTensor* output = interpreter->output(0);
+  TFLITE_CHECK_NE(output, nullptr);
+
+  float output_scale = output->params.scale;
+  int32_t output_zero_point = output->params.zero_point;
+
+  // filling the inputs with the test data
+  auto* inputs = tflite::GetTensorData<int8_t>(input);
+  std::memcpy(inputs, mfcc, MFCC_TOTAL_LENGTH * sizeof(*mfcc));
+
+  benchmark_set_point(INSIDE_BEFORE_INVOKE);  //----------------------------
+  TfLiteStatus status = interpreter->Invoke();
+  TFLITE_CHECK_EQ(status, kTfLiteOk);
+  benchmark_set_point(INSIDE_AFTER_INVOKE);  //-----------------------------
+
+  TFLITE_DCHECK_EQ(output->bytes, POSTPROCESS_LABEL_NUM);
+  for (size_t i =0; i < output->bytes; ++i) {
+    probabilities[i] =
+        (output->data.int8[i] - output_zero_point) * output_scale;
+  }
+}
+
+// todo: is this already measured?
+// assert(kTfLiteOk == ProfileMemoryAndLatency(g_kws_model_quant_data));
 
 // for quantized model
 TfLiteStatus ProfileMemoryAndLatency(const void* p_model) {
@@ -98,86 +164,4 @@ TfLiteStatus ProfileMemoryAndLatency(const void* p_model) {
   MicroPrintf("");  // Print an empty new line
   interpreter.GetMicroAllocator().PrintAllocations();
   return kTfLiteOk;
-}
-
-TfLiteStatus LoadQuantModelAndPerformInference(const void* p_model, const int8_t* wave) {
-  // Map the model into a usable data structure. This doesn't involve any
-  // copying or parsing, it's a very lightweight operation.
-  const tflite::Model* model = ::tflite::GetModel(p_model);
-  benchmark_set_point(INSIDE_LOAD_MODEL); //-------------------------------
-  TFLITE_CHECK_EQ(model->version(), TFLITE_SCHEMA_VERSION);
-
-  KwsOpResolver op_resolver;
-  TF_LITE_ENSURE_STATUS(RegisterOps(op_resolver));
-
-  // Arena size just a round number. The exact arena usage can be determined
-  // using the RecordingMicroInterpreter.
-  constexpr int kTensorArenaSize = 24000;
-  uint8_t tensor_arena[kTensorArenaSize];
-
-  tflite::MicroInterpreter interpreter(model, op_resolver, tensor_arena,
-                                       kTensorArenaSize);
-
-  TF_LITE_ENSURE_STATUS(interpreter.AllocateTensors());
-  benchmark_set_point(INSIDE_SETUP); // -----------------------------------
-
-  TfLiteTensor* input = interpreter.input(0);
-  TFLITE_CHECK_NE(input, nullptr);
-
-  TfLiteTensor* output = interpreter.output(0);
-  TFLITE_CHECK_NE(output, nullptr);
-
-  float output_scale = output->params.scale;
-  int output_zero_point = output->params.zero_point;
-
-  // filling the inputs with the test data
-  assert(input->bytes == test_file_len);
-  auto* inputs = tflite::GetTensorData<int8_t>(input);
-  std::memcpy(inputs, wave, test_file_len);
-  // tflite::GetTensorData<int8_t>(input)[0] = golden_input;
-  // input->data.int8[0] = golden_input;
-
-  // logging
-  // printf("INputs\r\n");
-  // for (size_t i = 0; i < input->bytes; ++i) {
-  //   std::printf("0x%2x ", input->data.uint8[i]);
-  //   constexpr size_t line_len = 16;
-  //   if (line_len - 1 == i % line_len) MicroPrintf("");
-  // }
-  // MicroPrintf("");
-
-  benchmark_set_point(INSIDE_BEFORE_INVOKE); //----------------------------
-  TF_LITE_ENSURE_STATUS(interpreter.Invoke());
-  benchmark_set_point(INSIDE_AFTER_INVOKE); //-----------------------------
-
-  // logging
-  // MicroPrintf("");
-  printf("Net outputs:\r\n");
-  int8_t argmax_max = INT8_MIN;
-  size_t argmax_idx = 0;
-  for (size_t i = 0; i < output->bytes; ++i) {
-    int8_t cur_output = output->data.int8[i];
-    if (argmax_max < cur_output) {
-      argmax_max = cur_output;
-      argmax_idx = i;
-    }
-    float y_pred = (cur_output - output_zero_point) * output_scale;
-    printf("%.2f ", y_pred);
-  }
-
-  assert(argmax_idx < POSTPROCESS_LABEL_NUM);
-  printf("%s ", postprocess_label_to_str[argmax_idx]);
-  printf("\r\n");
-
-  return kTfLiteOk;
-}
-
-void ai_model_init() {
-
-}
-
-void ai_model_run(const int8_t* wave) {
-  tflite::InitializeTarget();
-  // assert(kTfLiteOk == ProfileMemoryAndLatency(g_kws_model_quant_data));
-  assert(kTfLiteOk == LoadQuantModelAndPerformInference(g_kws_model_quant_data, wave));
 }

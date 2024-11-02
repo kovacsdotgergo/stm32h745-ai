@@ -17,10 +17,6 @@ enum postprocess_labels {
   POSTPROCESS_LABEL_NUM,
 };
 
-static const char* postprocess_label_to_str[] {
-  [DOWN] = "Down", [GO] = "Go", [LEFT] = "Left", [NO] = "No", [OFF] = "Off",
-  [ON] = "On", [RIGHT] = "Right", [STOP] = "Stop", [UP] = "Up", [YES] = "Yes",
-  [SILENCE] = "Silent", [UNKNOWN] = "Unknown",
-};
+extern const char* const postprocess_label_to_str[POSTPROCESS_LABEL_NUM];
 
 #endif  // POSTPROCESS_H

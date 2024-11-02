@@ -5,3 +5,5 @@ src/nn/preprocessing/*.h
 src/nn/preprocessing/calculate_done
 src/nn/runner_inputs
 .vscode/browse*
+
+src/runner/sync_audio_scripts.sh

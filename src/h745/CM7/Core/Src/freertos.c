@@ -129,7 +129,6 @@ void StartAiTask(void *pvParameters);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 // static TaskHandle_t defaultTask = NULL;
-static TaskHandle_t aiTask = NULL;
 static TaskHandle_t test_task = NULL;
 
 /**
@@ -148,10 +147,6 @@ void MX_FREERTOS_Init(void) {
   //     */ tskIDLE_PRIORITY + 1,         /* Task priority. */ &defaultTask); /*
   //     Task handle, used to unblock task from interrupt. */
   size_t stack_size_words = 8096 + 4096;
-  // xTaskCreate(
-  //     StartAiTask, "AiTask", stack_size_words,
-  //     NULL,  // mallocks the required amount in words (stack_type_t? is 4 bytes)
-  //     tskIDLE_PRIORITY + 2, &aiTask);
   xTaskCreate(
       test_input_task, "test_uart_task",
       stack_size_words,  // mallocks the required amount in words (4 bytes)

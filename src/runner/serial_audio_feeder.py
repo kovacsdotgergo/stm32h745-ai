@@ -1,4 +1,5 @@
 import wave
+import time
 import threading
 import serial
 
@@ -20,9 +21,6 @@ def reader_func(ser):
             return
 
 
-# with wave.open("output.wav", "wb") as wf, serial.Serial(
-#     "COM3", baudrate=460800, timeout=1
-# ) as ser:
 with serial.Serial("COM5", baudrate=460800, timeout=1) as ser:
     stop = threading.Event()
     reader = threading.Thread(target=reader_func, args=(ser,))
@@ -30,17 +28,17 @@ with serial.Serial("COM5", baudrate=460800, timeout=1) as ser:
     # TODO: add logging about timing
 
     p = pyaudio.PyAudio()
-    # wf.setnchannels(CHANNELS)
-    # wf.setsampwidth(p.get_sample_size(FORMAT))
-    # wf.setframerate(RATE)
 
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True)
 
     print("Recording...")
     for _ in range(0, RATE // CHUNK * RECORD_SECONDS):
+        beg = time.perf_counter_ns()
         frame = stream.read(CHUNK)
-        # wf.writeframes(frame)
         ser.write(frame)
+        end = time.perf_counter_ns()
+        period = (end - beg) / 1e9
+        print(f"Period: {period:.4f} (exp: {CHUNK / RATE})")
 
     print("Done")
 

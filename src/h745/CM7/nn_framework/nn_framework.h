@@ -8,7 +8,8 @@ extern "C" {
 #include "stdint.h"
 
 void ai_model_init();
-void ai_model_run(const int8_t* wave);
+void ai_get_input_quant_details(float* input_scale, int32_t* input_zero_point);
+void ai_model_run(const int8_t* mfcc, float* probabilities);
 
 #ifdef __cplusplus
 }  // extern "C"
