@@ -4,6 +4,7 @@ src/nn/kws_bin_files
 src/nn/preprocessing/*.h
 src/nn/preprocessing/calculate_done
 src/nn/runner_inputs
+src/nn/test_samples
 .vscode/browse*
 
 src/runner/sync_audio_scripts.sh

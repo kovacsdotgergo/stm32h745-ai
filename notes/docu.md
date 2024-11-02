@@ -550,8 +550,10 @@ The PC feeds the the inputs from the microphone array in blocks and prints the r
 
 The solution has a larger latency due to sending the data in larger blocks. The UART transmission is similarly fast if using a shorter block size, e.g. 512 instead of 15872. The net only runs once in every second, the keyword are often missed.
 
+With the worse quality microphone integrated into a laptop the accuracy is bad. Swithching to a better quality headset most of the keywords are recognized by the application. Better resolution is neccessary for better localization and therefore accuracy.
+
 ### Recording own test files
 
-As the base application recognized few of the keywords while running continuously, I will test with recorded inputs as well.
+As the base application recognized few of the keywords while running continuously, I will test with recorded inputs as well. I made several scripts for recording test data, exporting the original files to wav, sending own recording to the device for testing, feeding the device continuously, etc.
 
 ### Optimization
