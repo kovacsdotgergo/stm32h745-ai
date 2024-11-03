@@ -557,3 +557,13 @@ With the worse quality microphone integrated into a laptop the accuracy is bad. 
 As the base application recognized few of the keywords while running continuously, I will test with recorded inputs as well. I made several scripts for recording test data, exporting the original files to wav, sending own recording to the device for testing, feeding the device continuously, etc.
 
 ### Optimization
+
+Optimization can be runtime, area, sharing between the cores and user experience
+
+#### Improving resolution of the detection
+
+I have added two implementations for this. The first using a circular buffer for reception. From this the waveform is copied to a working buffer. The dma buffer holds one extra block that is used to start the reception as soon as possbile.
+
+The other implementation uses one block less memory and requries on block less copy each cycle. Further differences in performace can be benchmarked. It is documented in the code (`wave_provisioner.c`).
+
+The output is reasonably correct with a few false positives and not too bad accuracy. Further postprocess could be used to correlate with a matched filter that should probably be a triangle signal, and use a threshold on the output of this.

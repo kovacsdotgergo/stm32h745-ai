@@ -53,13 +53,13 @@ void test_input_task(void *pvParameters) {
 
       // postprocess and logging
       printf("Net outputs:\r\n");
-      for (size_t i = 0; i < ARRAY_SIZE(probabilities); ++i) {
+      for (size_t i = 0; i < ARRAY_LEN(probabilities); ++i) {
         printf("%.2f ", (double)probabilities[i]);
       }
 
       float argmax_max = probabilities[0];
       size_t argmax_idx = 0;
-      for (size_t i = 1; i < ARRAY_SIZE(probabilities); ++i) {
+      for (size_t i = 1; i < ARRAY_LEN(probabilities); ++i) {
         if (argmax_max < probabilities[i]) {
           argmax_max = probabilities[i];
           argmax_idx = i;
@@ -68,6 +68,7 @@ void test_input_task(void *pvParameters) {
 
       assert(argmax_idx < POSTPROCESS_LABEL_NUM);
       printf("%s\r\n", postprocess_label_to_str[argmax_idx]);
+      wave_processing_done();
     }
   }
 };

@@ -96,7 +96,7 @@
   * ~~finalize the dependency generation script~~
 * __postponed__: dump intermediate results
 * __postponed__: check the cause of the difference
-* run with wave inputs on the hardware
+* ~~run with wave inputs on the hardware~~
 * measure all types of preprocessing
 * merge the output transformation of the preprocessing and the input quantizaton of the net
 * might be __IMPORTANT__: check if in theory the integer versions could saturate
@@ -110,12 +110,12 @@
 * when measured the speed of the preprocessing, the conversion of the input samples could be removed if the waveform is already stored in the proper format
 * maximize the DMA burst (max burst for bytes or max width and maximized burst)
 * streaming dma reception, overlapping buffers
-
-## Next
-
-* x move the waveform check to the test_task
-* x add double buffering
-* x set up the net init, quantization query
-* x on the received current buffer run the net
-* x clean up the ai task, add postprocess
-* record own test files, send them instead of the test data (might also evaluate on the python model)
+* measure everything and select the fastest option (interrupt, memcpys, benchmarking the ai funciton)
+* add some kind of filter to postprocessing (matched filter)
+* two core
+  * copyt everyhting to m4
+  * benchmark the same way
+  * copy the freertos ipc
+  * split the task at several places (look up notes about what to optimize here: least copy, latency, runtime on each core)
+  * other ipc method
+* cube_ai

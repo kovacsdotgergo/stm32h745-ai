@@ -13,5 +13,7 @@ typedef void (*wave_ready_callback)(volatile int16_t *wave);
 // IMPORTANT: this callback is called from an ISR
 void wave_set_wave_ready_callback(wave_ready_callback cb);
 void wave_start_provisioning(void);
+// this should be called after processing of the current buffer is done
+void wave_processing_done(void);
 
 #endif // WAVE_PROVISIONER_H

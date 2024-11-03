@@ -180,7 +180,7 @@ void preprocess_quantize_mfcc_q31(q31_t* in, int8_t* out,
 
   // todo: add offset
 
-  arm_q31_to_q7(mfcc_inner_dtype, mfcc, ARRAY_SIZE(mfcc_inner_dtype));
+  arm_q31_to_q7(mfcc_inner_dtype, mfcc, ARRAY_LEN(mfcc_inner_dtype));
 #endif
 }
 
