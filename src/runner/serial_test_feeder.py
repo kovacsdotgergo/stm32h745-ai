@@ -5,7 +5,7 @@ import numpy as np
 script_dir = os.path.dirname(__file__)
 # time_pretext = "[time]"
 
-RUNTIME = 10
+RUNTIME = 20
 WAVE_BLOCK_LEN = 15872
 BUFFER_BLOCK_NUM = 4  # todo set this up, sleep between these blocks
 assert WAVE_BLOCK_LEN % BUFFER_BLOCK_NUM == 0

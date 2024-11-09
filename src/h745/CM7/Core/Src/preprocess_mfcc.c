@@ -77,7 +77,6 @@ void preprocess_init_q15(void) {
 
 void preprocess_calculate_f32(volatile int16_t waveform[], float32_t mfcc[]) {
   // todo: static to save stack space
-  static float32_t scratchpad[STFT_FFT_SIZE + 2];
   static float32_t waveform_inner_dtype[WAVEFORM_LEN];
   // implementation for float32
   for (size_t i = 0; i < WAVEFORM_LEN; ++i) {
@@ -98,6 +97,7 @@ void preprocess_calculate_f32(volatile int16_t waveform[], float32_t mfcc[]) {
 
   // transform
   // todo: possible optimization: only copy the overlapping part
+  static float32_t scratchpad[STFT_FFT_SIZE + 2];
   static float32_t input_scratch[STFT_FFT_SIZE];
   for (size_t step = 0; step < MFCC_TIMESTEPS; ++step) {
     memcpy(input_scratch, &waveform_inner_dtype[step * STFT_STRIDE],
@@ -107,7 +107,7 @@ void preprocess_calculate_f32(volatile int16_t waveform[], float32_t mfcc[]) {
   }
 }
 
-void preprocess_calculate_q31(int16_t waveform[], q31_t mfcc[]) {
+void preprocess_calculate_q31(volatile int16_t waveform[], q31_t mfcc[]) {
   // normalize
   static q31_t waveform_inner_dtype[WAVEFORM_LEN];
   arm_q15_to_q31(waveform, waveform_inner_dtype, WAVEFORM_LEN);
@@ -128,7 +128,7 @@ void preprocess_calculate_q31(int16_t waveform[], q31_t mfcc[]) {
 
   // transform
   // todo: possible optimization: only copy the overlapping part
-  static q31_t scratchpad[STFT_FFT_SIZE + 2];
+  static q31_t scratchpad[2 * STFT_FFT_SIZE];
   static q31_t input_scratch[STFT_FFT_SIZE];
   for (size_t step = 0; step < MFCC_TIMESTEPS; ++step) {
     memcpy(input_scratch, &waveform_inner_dtype[step * STFT_STRIDE],
@@ -138,7 +138,7 @@ void preprocess_calculate_q31(int16_t waveform[], q31_t mfcc[]) {
   }
 }
 
-void preprocess_calculate_q15(int16_t waveform[], q15_t mfcc[]) {
+void preprocess_calculate_q15(volatile int16_t waveform[], q15_t mfcc[]) {
   // this differs to tensorflow (absmax instead of max)
   q15_t max;
   arm_absmax_no_idx_q15(waveform, WAVEFORM_LEN, &max);
@@ -163,27 +163,6 @@ void preprocess_calculate_q15(int16_t waveform[], q15_t mfcc[]) {
   }
 }
 
-void preprocess_quantize_mfcc_q31(q31_t* in, int8_t* out,
-                                  int32_t mfcc_zero_point, float mfcc_scale) {
-#if 0
-  // todo only started this
-  assert(mfcc_scale < 1);
-  q31_t mfcc_scale_inner_dtype;
-  arm_float_to_q31(&mfcc_scale, &mfcc_scale_inner_dtype, 1);
-
-  q31_t quotient;
-  int16_t shift;
-  arm_status status = arm_divide_q31(0x7FFFFFFF, mfcc_scale_inner_dtype, &quotient, &shift);
-  assert(status == ARM_MATH_SUCCESS);  // as 1 < mfcc_scale is not possible
-
-  arm_scale_q31(mfcc_inner_dtype, quotient, shift, mfcc_inner_dtype, MFCC_TIMESTEPS * MFCC_NUM_DCT_OUTPUTS);
-
-  // todo: add offset
-
-  arm_q31_to_q7(mfcc_inner_dtype, mfcc, ARRAY_LEN(mfcc_inner_dtype));
-#endif
-}
-
 void preprocess_quantize_mfcc_f32(float32_t* in, int8_t* out,
                                   int32_t mfcc_zero_point, float mfcc_scale) {
   arm_scale_f32(in, 1.0F / mfcc_scale, in, MFCC_TOTAL_LENGTH);
@@ -200,5 +179,47 @@ void preprocess_quantize_mfcc_f32_naive(float32_t* in, int8_t* out,
   }
 }
 
-void preprocess_quantize_mfcc_q15(q15_t* in, int8_t* out,
-                                  int32_t mfcc_zero_point, float mfcc_scale) {}
+void preprocess_quantize_mfcc_q31_naive(q31_t * in, int8_t* out,
+                                        int32_t mfcc_zero_point,
+                                        float mfcc_scale) {
+  float32_t tmp[MFCC_TOTAL_LENGTH];
+  arm_q31_to_float(in, tmp, MFCC_TOTAL_LENGTH);
+  arm_scale_f32(tmp, (float32_t)(1 << 7), tmp,
+                MFCC_TOTAL_LENGTH);  // q31_t MFCC has 8.23 output format
+  preprocess_quantize_mfcc_f32(tmp, out, mfcc_zero_point, mfcc_scale);
+}
+
+void preprocess_quantize_mfcc_q15_naive(q15_t* in, int8_t* out,
+                                        int32_t mfcc_zero_point,
+                                        float mfcc_scale) {
+  float32_t tmp[MFCC_TOTAL_LENGTH];
+  arm_q15_to_float(in, tmp, MFCC_TOTAL_LENGTH);
+  arm_scale_f32(tmp, (float32_t)(1 << 7), tmp,
+                MFCC_TOTAL_LENGTH);  // q31_t MFCC has 8.7 output format
+  preprocess_quantize_mfcc_f32(tmp, out, mfcc_zero_point, mfcc_scale);
+}
+
+/* This implementation is not giving the expected results, but I've abandoned
+it, becuase it can not result in meaningful speedup
+
+void preprocess_quantize_mfcc_q15(q15_t* in, int8_t* out, int32_t mfcc_zero_point,
+float mfcc_scale) { assert(mfcc_scale < 1); q15_t mfcc_scale_inner_dtype;
+  arm_float_to_q15(&mfcc_scale, &mfcc_scale_inner_dtype, 1);
+  assert(mfcc_scale_inner_dtype != 0);
+
+  q15_t quotient;
+  int16_t shift;
+  arm_status status =
+      arm_divide_q15(0x7FFF, mfcc_scale_inner_dtype, &quotient, &shift);
+  assert(status == ARM_MATH_SUCCESS);  // as 1 < mfcc_scale or 0 is not possible
+
+  // scaling to integers, after this `in` is actually regular int16_t
+  // qadd16 is not feasible, as the scaled value will be outside of int16 range
+  int8_t in_integer_bits = 8; // q15_t MFCC has 8.7 output format
+  for (size_t i = 0; i < MFCC_TOTAL_LENGTH; ++i) {
+    q31_t scaled =
+        ((q31_t)in[i] * quotient) >> (15 - in_integer_bits + 15 - shift);
+    in[i] = (int8_t)(scaled + mfcc_zero_point);
+  }
+}
+*/

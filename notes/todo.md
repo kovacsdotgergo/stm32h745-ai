@@ -109,13 +109,16 @@
 
 * when measured the speed of the preprocessing, the conversion of the input samples could be removed if the waveform is already stored in the proper format
 * maximize the DMA burst (max burst for bytes or max width and maximized burst)
-* streaming dma reception, overlapping buffers
+* x streaming dma reception, overlapping buffers
 * measure everything and select the fastest option (interrupt, memcpys, benchmarking the ai funciton)
-* add some kind of filter to postprocessing (matched filter)
+  * x two types of buffering, three preproc -> X implement quantization for q15
+  * add speedy mem
 * two core
   * copyt everyhting to m4
   * benchmark the same way
   * copy the freertos ipc
+    * add shared section
   * split the task at several places (look up notes about what to optimize here: least copy, latency, runtime on each core)
   * other ipc method
+* add some kind of filter to postprocessing (matched filter)
 * cube_ai

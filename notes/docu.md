@@ -567,3 +567,122 @@ I have added two implementations for this. The first using a circular buffer for
 The other implementation uses one block less memory and requries on block less copy each cycle. Further differences in performace can be benchmarked. It is documented in the code (`wave_provisioner.c`).
 
 The output is reasonably correct with a few false positives and not too bad accuracy. Further postprocess could be used to correlate with a matched filter that should probably be a triangle signal, and use a threshold on the output of this.
+
+#### Measurements:
+
+```txt
+BENCHMARK (min, mean, max)
+[irq] start next DMA and stuff: 0.001033, 0.001542, 0.001625
+[irq] start next DMA and stuff: 0.001475, 0.001550, 0.001617
+[irq] start next DMA and stuff: 0.001500, 0.001563, 0.001650
+[irq] start next DMA and stuff: 0.001492, 0.001567, 0.001642
+[irq] start next DMA and stuff: 0.001400, 0.001592, 0.001667
+[irq] invalidate: 0.003783, 0.003800, 0.003833
+[irq] invalidate: 0.003783, 0.003796, 0.003825
+[irq] invalidate: 0.003767, 0.003792, 0.003817
+[irq] invalidate: 0.003767, 0.003792, 0.003842
+[irq] invalidate: 0.003767, 0.003800, 0.003825
+[irq] memcpy: 0.010808, 0.011379, 0.012667
+[irq] memcpy: 0.010800, 0.011442, 0.013008
+[irq] memcpy: 0.010842, 0.011546, 0.012917
+[irq] memcpy: 0.010908, 0.011450, 0.012475
+[irq] memcpy: 0.010775, 0.011608, 0.012933
+[irq] callback: 0.001333, 0.001500, 0.001800
+[irq] callback: 0.001233, 0.001475, 0.001808
+[irq] callback: 0.001300, 0.001467, 0.001850
+[irq] callback: 0.001350, 0.001442, 0.001550
+[irq] callback: 0.001325, 0.001429, 0.001492
+[task] before preproc: 0.000108, 0.000108, 0.000125
+[task] preproc: 7.105766, 7.891912, 8.338908
+[task] preproc: 7.869225, 8.165775, 8.336458
+[task] preproc: 7.490791, 8.185275, 8.343367
+[task] preproc: 7.411391, 8.144046, 8.339275
+[task] preproc: 8.104934, 8.241067, 8.344308
+[task] quantize: 0.015650, 0.015692, 0.015733
+[task] quantize: 0.015625, 0.015679, 0.015733
+[task] quantize: 0.015633, 0.015687, 0.015733
+[task] quantize: 0.015633, 0.015712, 0.016125
+[task] quantize: 0.015633, 0.015712, 0.016100
+[task][run] run before invoke: 0.001692, 0.001763, 0.001842
+[task][run] run before invoke: 0.001675, 0.001787, 0.002225
+[task][run] run before invoke: 0.001675, 0.001787, 0.002092
+[task][run] run before invoke: 0.001667, 0.001812, 0.002033
+[task][run] run before invoke: 0.001717, 0.001763, 0.001817
+[task][run] invoke: 13.570825, 13.574488, 13.578175
+[task][run] invoke: 13.568592, 13.575254, 13.580817
+[task][run] invoke: 13.568666, 13.572912, 13.577750
+[task][run] invoke: 13.567066, 13.574133, 13.579725
+[task][run] invoke: 13.567233, 13.573978, 13.578684
+[task][run] after invoke: 0.000525, 0.000592, 0.000633
+[task][run] after invoke: 0.000517, 0.000558, 0.000633
+[task][run] after invoke: 0.000517, 0.000567, 0.000608
+[task][run] after invoke: 0.000508, 0.000571, 0.000633
+[task][run] after invoke: 0.000533, 0.000579, 0.000617
+[task] print net output: 0.337575, 0.342671, 0.356567
+[task] postproc: 0.000392, 0.000412, 0.000450
+[task] postproc: 0.000383, 0.000412, 0.000458
+[task] postproc: 0.000392, 0.000412, 0.000467
+[task] postproc: 0.000392, 0.000421, 0.000467
+[task] postproc: 0.000400, 0.000408, 0.000442
+[task] label print: 1.393792, 1.427983, 1.502933
+[task] wave proc done: 0.022633, 0.023071, 0.023933
+[task] wave proc done: 0.022442, 0.022942, 0.023325
+[task] wave proc done: 0.022342, 0.022962, 0.023625
+[task] wave proc done: 0.022533, 0.023067, 0.023683
+[task] wave proc done: 0.022608, 0.022917, 0.023450
+[task] full runtime: 22.478884, 23.279484, 23.792351
+MAX possible measruement: 17895.6
+```
+
+Implementation option 1 for `provisioner`. As expected, the only difference is the `wave proc done`, so post copy which is more due to the need to copy one more block.
+f32 preprocessing with optimized quantization
+```txt
+BENCHMARK (min, mean, max)
+[irq] start next DMA and stuff: 0.001508, 0.001642, 0.001717
+[irq] invalidate: 0.003800, 0.003829, 0.003858
+[irq] memcpy: 0.010833, 0.011279, 0.012658
+[irq] callback: 0.001267, 0.001379, 0.001633
+[task] before preproc: 0.000108, 0.000108, 0.000125
+[task] preproc: 7.483475, 8.178845, 8.338117
+[task] quantize: 0.015575, 0.015658, 0.016058
+[task][run] run before invoke: 0.001792, 0.001967, 0.002283
+[task][run] invoke: 13.570817, 13.577408, 13.583541
+[task][run] after invoke: 0.000517, 0.000546, 0.000575
+[task] print net output: 0.337800, 0.340675, 0.349667
+[task] postproc: 0.000383, 0.000404, 0.000433
+[task] label print: 1.394017, 1.451075, 1.502892
+[task] wave proc done: 0.033808, 0.034633, 0.036300
+[task] full runtime: 22.851658, 23.601347, 23.821583
+MAX possible measruement: 17895.697266
+```
+
+f32 preprocessing with naive quantization
+```txt
+BENCHMARK (min, mean, max)
+[task] preproc: 8.098250, 8.236879, 8.338258
+[task] quantize: 0.028800, 0.028854, 0.029267
+```
+
+q31 preprocessing with naive quantization
+Also it recognizes a most of the things similarly well, although it seems a bit more unsecure.
+```txt
+BENCHMARK (min, mean, max)
+[task] preproc: 9.388599, 10.428620, 11.117766
+[task] quantize: 0.029283, 0.030046, 0.031317
+```
+
+q15 preprocessing with naive quantization
+Again, similarly good results.
+```txt
+BENCHMARK (min, mean, max)
+[task] preproc: 6.700391, 7.684579, 8.319942
+[task] preproc: 7.770067, 7.954700, 8.235608
+[task] preproc: 7.771950, 8.009504, 8.241067
+[task] quantize: 0.030808, 0.031654, 0.033400
+[task] quantize: 0.030800, 0.031254, 0.031833
+[task] quantize: 0.030800, 0.031092, 0.031475
+```
+
+q15 preprocessing with optimized q15 quantization
+todo: so far this gives incorrect output, debug is needed
+I might not do this, the q15 preproc is practically the same speed, the quantization is only a small fraction of this anyway. Also the naive way is probably almost as fast.

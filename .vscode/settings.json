@@ -18,7 +18,8 @@
         "nn_framework.h": "c",
         "example_wave.h": "c",
         "semphr.h": "c",
-        "macros.h": "c"
+        "macros.h": "c",
+        "random": "c"
     },
     "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb",
     "cortex-debug.variableUseNaturalFormat": false

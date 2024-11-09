@@ -95,7 +95,6 @@ void ai_get_input_quant_details(float* scale, int32_t* zero_point) {
 
 void ai_model_run(const int8_t* mfcc, float* probabilities) {
   TFLITE_DCHECK_NE(interpreter, nullptr);
-  benchmark_set_point(INSIDE_SETUP);  // -----------------------------------
 
   TfLiteTensor* input = interpreter->input(0);
   TFLITE_CHECK_NE(input, nullptr);
@@ -110,10 +109,10 @@ void ai_model_run(const int8_t* mfcc, float* probabilities) {
   auto* inputs = tflite::GetTensorData<int8_t>(input);
   std::memcpy(inputs, mfcc, MFCC_TOTAL_LENGTH * sizeof(*mfcc));
 
-  benchmark_set_point(INSIDE_BEFORE_INVOKE);  //----------------------------
+  benchmark_set_point(TASK_RUN_BEFORE_INVOKE);
   TfLiteStatus status = interpreter->Invoke();
   TFLITE_CHECK_EQ(status, kTfLiteOk);
-  benchmark_set_point(INSIDE_AFTER_INVOKE);  //-----------------------------
+  benchmark_set_point(TASK_RUN_AFTER_INVOKE);
 
   TFLITE_DCHECK_EQ(output->bytes, POSTPROCESS_LABEL_NUM);
   for (size_t i =0; i < output->bytes; ++i) {

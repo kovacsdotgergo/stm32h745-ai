@@ -120,7 +120,7 @@ SECTIONS
   _sidata = LOADADDR(.data);
 
   /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
+  .data :
   {
     . = ALIGN(4);
     _sdata = .;        /* create a global symbol at data start */
@@ -131,7 +131,7 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
-  
+
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
@@ -159,7 +159,45 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+  _load_start_shared_data = LOADADDR(.shared.data);
+  _load_end_shared_data = LOADADDR(.shared.data) + SIZEOF(.shared.data);
+  .shared.data :
+  {
+    . = ALIGN(4);
+    _start_shared_data = .;
+    *(.shared.data)
+    . = ALIGN(4);
+    _end_shared_data = .;
+  } > RAM_D3 AT > FLASH
+
+  .shared.bss :
+  {
+    . = ALIGN(4);
+    _start_shared_bss = .;
+    *(.shared.data)
+    . = ALIGN(4);
+    _end_shared_bss = .;
+  } > RAM_D3
+
+  _load_start_non_cacheable_data = LOADADDR(.non_cacheable.data);
+  _load_end_non_cacheable_data = LOADADDR(.non_cacheable.data) + SIZEOF(.non_cacheable.data);
+  .non_cacheable.data :
+  {
+    . = ALIGN(4);
+    _start_non_cacheable_data = .;
+    *(.non_cacheable.data)
+    . = ALIGN(4);
+    _end_non_cacheable_data = .;
+  } > RAM AT > FLASH
+
+  .non_cacheable.bss :
+  {
+    . = ALIGN(4);
+    _start_non_cacheable_bss = .;
+    *(.non_cacheable.bss)
+    . = ALIGN(4);
+    _end_non_cacheable_bss = .;
+  } > RAM
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
@@ -171,5 +209,3 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
-

@@ -6,7 +6,6 @@
 
 #include <mfcc_config/shapes_config.h>
 
-// todo circ_buffer_beg, circ_buffer_len, wave_beg_idx, wave_len
 /// @param[in] wave input waveform of shape WAVEFORM_LEN
 typedef void (*wave_ready_callback)(volatile int16_t *wave);
 

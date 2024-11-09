@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "benchmark.h"
 #include "macros.h"
 #include "usart.h"
 
@@ -65,29 +66,34 @@ void wave_start_provisioning(void) {
 // B |    6    |    7    |    x    |    x    | (x don't care)
 //
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  benchmark_set_point(IRQ_BEGIN);
   assert(huart == &huart3);  // only this is implemented
   static_assert(2 <= BUFFER_BLOCK_NUM);
+
+  HAL_StatusTypeDef status = HAL_UART_Receive_DMA(
+      &huart3, (uint8_t *)(*working_buffer)[BUFFER_BLOCK_NUM - 1],
+      BUFFER_BLOCK_SIZE);
+  assert(status == HAL_OK);
 
   volatile int16_t(*volatile tmp)[BUFFER_BLOCK_NUM][BUFFER_BLOCK_LEN] =
       dma_buffer;
   dma_buffer = working_buffer;
   working_buffer = tmp;
 
-  HAL_StatusTypeDef status = HAL_UART_Receive_DMA(
-      &huart3, (uint8_t *)(*dma_buffer)[BUFFER_BLOCK_NUM - 1],
-      BUFFER_BLOCK_SIZE);
-  assert(status == HAL_OK);
   // TODO set up mpu
   // TODO could also use deferred handling for these in a task after the dma is started (use a configurabel function to signal a task to do the rest of the function)
+  benchmark_set_point(IRQ_BEGIN_INVALIDATE);
   SCB_InvalidateDCache_by_Addr((void *)(*working_buffer)[BUFFER_BLOCK_NUM - 1],
                                BUFFER_BLOCK_SIZE);
-
+  benchmark_set_point(IRQ_BEGIN_MEMCPY);
   memcpy((void *)(*dma_buffer)[BUFFER_BLOCK_NUM - 2],
          (void *)(*working_buffer)[BUFFER_BLOCK_NUM - 1], BUFFER_BLOCK_SIZE);
 
+  benchmark_set_point(IRQ_BEGIN_CALLBACK);
   if (g_callback != NULL) {
     g_callback((volatile int16_t *)(*working_buffer)[0]);
   }
+  benchmark_set_point(IRQ_END);
 }
 
 // This perform the copy of the N-2 blocks after processing of the working
@@ -119,6 +125,7 @@ void wave_start_provisioning(void) {
 // The newest block, just prepared by DMA can't be copied earlier
 // The blocks before can be prepared at the end of the previous cycle
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  benchmark_set_point(IRQ_BEGIN);
   assert(huart == &huart3);  // only this is implemented
   static_assert(2 <= BUFFER_BLOCK_NUM);
 
@@ -127,16 +134,20 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
       &huart3, (uint8_t *)dma_buffer[next_dma_buffer_idx], BUFFER_BLOCK_SIZE);
   assert(status == HAL_OK);
   // TODO set up mpu
+  benchmark_set_point(IRQ_BEGIN_INVALIDATE);
   SCB_InvalidateDCache_by_Addr((void *)dma_buffer[dma_buffer_idx],
                                BUFFER_BLOCK_SIZE);
 
+  benchmark_set_point(IRQ_BEGIN_MEMCPY);
   memcpy((void *)working_buffer[BUFFER_BLOCK_NUM - 1],
          (void *)dma_buffer[dma_buffer_idx], BUFFER_BLOCK_SIZE);
 
   dma_buffer_idx = next_dma_buffer_idx;
+  benchmark_set_point(IRQ_BEGIN_CALLBACK);
   if (g_callback != NULL) {
     g_callback((volatile int16_t *)working_buffer);
   }
+  benchmark_set_point(IRQ_END);
 }
 
 // This perform the copy of the N-1 blocks before the buffer received by DMA
