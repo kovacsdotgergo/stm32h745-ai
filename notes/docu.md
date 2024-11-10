@@ -722,3 +722,32 @@ There is another section that coveres areas that are not inside the defualt memo
 The configured regions have a priority, 0 is the lowest, 15 is the highest, so e.g. new memory can be added as an exception from the default region that covers all default addresses mentioned in the previous section.
 
 The TEX bit is only there to provide further information, usign it allows to configure the cache type, so if it should be write-back and write-allocate. Otherwise device and strictly-ordered memories can be set up.
+
+#### MPU instead of invalidate
+
+With MPU:
+
+```txt
+[irq] memcpy: 0.050825, 0.050992, 0.051825
+[task] preproc: 8.623116, 8.827933, 9.104575
+[task] quantize: 0.030475, 0.030871, 0.031158
+[task][run] invoke: 13.595641, 13.598537, 13.603058
+[task] wave proc done: 0.101525, 0.101579, 0.101650
+```
+
+With invalidate:
+
+```txt
+[irq] invalidate: 0.003783, 0.003796, 0.003817
+[irq] memcpy: 0.010875, 0.011917, 0.012992
+[task] preproc: 6.760533, 7.744237, 8.380116
+[task] quantize: 0.030717, 0.031500, 0.032783
+[task][run] invoke: 13.598566, 13.603829, 13.609176
+[task] wave proc done: 0.022575, 0.022979, 0.023558
+```
+
+Invalidate is fast, and using the MPU slows down all other operations, which causes more slowdown, than the invalidate caused.
+
+#### Top and bottom half of interrupt handling
+
+Using deferred function call in FreeRTOS. The software timer daemon task executes the fucntions. It doesn't result in faster executtion, but less time is spent in interrupt handlers, which is desirable in case of more parallel tasks and so in embedded systems in general.

@@ -14,8 +14,11 @@
 static_assert(WAVE_BUFFER_LEN % BUFFER_BLOCK_NUM == 0);
 #define BUFFER_BLOCK_LEN (WAVE_BUFFER_LEN / BUFFER_BLOCK_NUM)
 
-static wave_ready_callback g_callback = NULL;
+static wave_ready_callback g_ready_callback = NULL;
+static wave_pend_bottom_half_callback g_pend_callback = NULL;
 
+// Implementaion option 0 requires a little bit less space and shorter
+// processing after the handling of the waveform is done
 #define IMPLEMENTATION_OPTION 0
 #if IMPLEMENTATION_OPTION == 0
 // Two buffers, both WAVE_BUFFER_LEN in total
@@ -75,13 +78,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
       BUFFER_BLOCK_SIZE);
   assert(status == HAL_OK);
 
+  benchmark_set_point(IRQ_PEND_BOTTOM_HALF);
+  assert(g_pend_callback != NULL);
+  g_pend_callback();
+}
+
+void wave_bottom_half(void) {
+  benchmark_set_point(IRQ_BOTTOM_HALF_BEGIN);
   volatile int16_t(*volatile tmp)[BUFFER_BLOCK_NUM][BUFFER_BLOCK_LEN] =
       dma_buffer;
   dma_buffer = working_buffer;
   working_buffer = tmp;
 
-  // TODO set up mpu
-  // TODO could also use deferred handling for these in a task after the dma is started (use a configurabel function to signal a task to do the rest of the function)
   benchmark_set_point(IRQ_BEGIN_INVALIDATE);
   SCB_InvalidateDCache_by_Addr((void *)(*working_buffer)[BUFFER_BLOCK_NUM - 1],
                                BUFFER_BLOCK_SIZE);
@@ -90,10 +98,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
          (void *)(*working_buffer)[BUFFER_BLOCK_NUM - 1], BUFFER_BLOCK_SIZE);
 
   benchmark_set_point(IRQ_BEGIN_CALLBACK);
-  if (g_callback != NULL) {
-    g_callback((volatile int16_t *)(*working_buffer)[0]);
-  }
-  benchmark_set_point(IRQ_END);
+  assert(g_ready_callback != NULL);
+  g_ready_callback((volatile int16_t *)(*working_buffer)[0]);
 }
 
 // This perform the copy of the N-2 blocks after processing of the working
@@ -133,7 +139,15 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   HAL_StatusTypeDef status = HAL_UART_Receive_DMA(
       &huart3, (uint8_t *)dma_buffer[next_dma_buffer_idx], BUFFER_BLOCK_SIZE);
   assert(status == HAL_OK);
-  // TODO set up mpu
+
+  benchmark_set_point(IRQ_PEND_BOTTOM_HALF);
+  assert(g_pend_callback != NULL);
+  g_pend_callback();
+}
+
+void wave_bottom_half(void) {
+  benchmark_set_point(IRQ_BOTTOM_HALF_BEGIN);
+
   benchmark_set_point(IRQ_BEGIN_INVALIDATE);
   SCB_InvalidateDCache_by_Addr((void *)dma_buffer[dma_buffer_idx],
                                BUFFER_BLOCK_SIZE);
@@ -142,12 +156,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   memcpy((void *)working_buffer[BUFFER_BLOCK_NUM - 1],
          (void *)dma_buffer[dma_buffer_idx], BUFFER_BLOCK_SIZE);
 
-  dma_buffer_idx = next_dma_buffer_idx;
+  dma_buffer_idx = (dma_buffer_idx + 1) % ARRAY_LEN(dma_buffer);
+
   benchmark_set_point(IRQ_BEGIN_CALLBACK);
-  if (g_callback != NULL) {
-    g_callback((volatile int16_t *)working_buffer);
-  }
-  benchmark_set_point(IRQ_END);
+  assert(g_ready_callback != NULL);
+  g_ready_callback((volatile int16_t *)working_buffer);
 }
 
 // This perform the copy of the N-1 blocks before the buffer received by DMA
@@ -169,7 +182,13 @@ void wave_processing_done(void) {
 #error "Invalid IMPLEMENTATION_OPTION value"
 #endif  // IMPLEMENTATION_OPTION
 
-void wave_set_wave_ready_callback(wave_ready_callback cb) { g_callback = cb; }
+void wave_set_wave_ready_callback(wave_ready_callback cb) {
+  g_ready_callback = cb;
+}
+
+void wave_set_pend_bottom_half_callback(wave_pend_bottom_half_callback cb) {
+  g_pend_callback = cb;
+}
 
 void HAL_UARTEx_RxFifoFullCallback(UART_HandleTypeDef *huart) { while (1); }
 

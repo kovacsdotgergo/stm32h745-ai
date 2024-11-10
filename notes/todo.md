@@ -114,7 +114,7 @@
   * x two types of buffering, three preproc -> X implement quantization for q15
   * x add speedy mem > more tests would be good
   * x set up shared and non cacheable sections
-  * top and bottom half of interrupt, without invalidation
+  * x top and bottom half of interrupt, without invalidation -> invalidation is faster, so I kept it
 * two core
   * copyt everyhting to m4
   * benchmark the same way

@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "FreeRTOS.h"
+#include "timers.h"
 #include "benchmark.h"
 #include "macros.h"
 #include "nn_framework.h"
@@ -24,20 +25,34 @@ static volatile int16_t *volatile waveform = NULL;
 void notify_ai_task_callback(volatile int16_t *wave) {
   waveform = wave;
   // notfy task
+  xSemaphoreGive(wave_ready_semaphore);
+}
+
+void pendable_wrapper_bottom_half(void *param1, uint32_t param2) {
+  (void)param1, (void)param2;
+  wave_bottom_half();
+}
+
+void pend_provisioning_bottom_half(void) {
   BaseType_t higher_prio_task_woken = pdFALSE;
-  xSemaphoreGiveFromISR(wave_ready_semaphore, &higher_prio_task_woken);
-  if (higher_prio_task_woken != pdFALSE) {
-    portYIELD_FROM_ISR(higher_prio_task_woken);
-  }
+
+  BaseType_t ret = xTimerPendFunctionCallFromISR(
+      pendable_wrapper_bottom_half, NULL, 0, &higher_prio_task_woken);
+  assert(ret == pdPASS);
+  portYIELD_FROM_ISR(higher_prio_task_woken);
 }
 
 void print_benchmark_results(void) {
   float min, mean, max;
   printf("\r\n");
   printf("BENCHMARK (min, mean, max)\r\n");
-  benchmark_get_result_between_ms(IRQ_BEGIN, IRQ_BEGIN_INVALIDATE, &min, &mean,
+  benchmark_get_result_between_ms(IRQ_BEGIN, IRQ_PEND_BOTTOM_HALF, &min, &mean,
                                   &max);
-  printf("[irq] start next DMA and stuff: %f, %f, %f\r\n", (double)min,
+  printf("[irq] actual interrupt level: %f, %f, %f\r\n", (double)min,
+         (double)mean, (double)max);
+  benchmark_get_result_between_ms(IRQ_PEND_BOTTOM_HALF, IRQ_BOTTOM_HALF_BEGIN, &min, &mean,
+                                  &max);
+  printf("[irq] pend to bottom half begin: %f, %f, %f\r\n", (double)min,
          (double)mean, (double)max);
   benchmark_get_result_between_ms(IRQ_BEGIN_INVALIDATE, IRQ_BEGIN_MEMCPY, &min,
                                   &mean, &max);
@@ -47,9 +62,9 @@ void print_benchmark_results(void) {
                                   &mean, &max);
   printf("[irq] memcpy: %f, %f, %f\r\n", (double)min, (double)mean,
          (double)max);
-  benchmark_get_result_between_ms(IRQ_BEGIN_CALLBACK, IRQ_END, &min, &mean,
+  benchmark_get_result_between_ms(IRQ_BEGIN_CALLBACK, TASK_BEGIN, &min, &mean,
                                   &max);
-  printf("[irq] callback: %f, %f, %f\r\n", (double)min, (double)mean,
+  printf("[irq] callback to task: %f, %f, %f\r\n", (double)min, (double)mean,
          (double)max);
   benchmark_get_result_between_ms(TASK_BEGIN, TASK_PREPROC_BEGIN, &min, &mean,
                                   &max);
@@ -102,6 +117,7 @@ void test_input_task(void *pvParameters) {
   wave_ready_semaphore = xSemaphoreCreateBinary();
   assert(wave_ready_semaphore != NULL);
   wave_set_wave_ready_callback(notify_ai_task_callback);
+  wave_set_pend_bottom_half_callback(pend_provisioning_bottom_half);
 
   ai_model_init();
   int32_t input_zero_point;
