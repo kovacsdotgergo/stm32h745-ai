@@ -112,7 +112,9 @@
 * x streaming dma reception, overlapping buffers
 * measure everything and select the fastest option (interrupt, memcpys, benchmarking the ai funciton)
   * x two types of buffering, three preproc -> X implement quantization for q15
-  * add speedy mem
+  * x add speedy mem > more tests would be good
+  * x set up shared and non cacheable sections
+  * top and bottom half of interrupt, without invalidation
 * two core
   * copyt everyhting to m4
   * benchmark the same way
@@ -120,5 +122,6 @@
     * add shared section
   * split the task at several places (look up notes about what to optimize here: least copy, latency, runtime on each core)
   * other ipc method
+* streaming preprocessing
 * add some kind of filter to postprocessing (matched filter)
 * cube_ai

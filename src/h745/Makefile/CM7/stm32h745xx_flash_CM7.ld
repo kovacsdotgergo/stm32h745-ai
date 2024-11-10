@@ -39,6 +39,8 @@ _estack = 0x24080000;    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x4000;      /* required amount of heap  */
 _Min_Stack_Size = 0x800; /* required amount of stack */
+_mpu_shared_size = 4K;
+_mpu_non_cacheable_size = 16K;
 
 /* Specify the memory areas */
 MEMORY
@@ -148,6 +150,80 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  /* CUSTOM SECTIONS =================================================== */
+  .speedy_mem.bss (NOLOAD) :
+  {
+    . = ALIGN(4);
+    _start_speedy_mem_bss = .;
+    *(.speedy_mem.bss)
+    . = ALIGN(4);
+    _end_speedy_mem_bss = .;
+  } >RAM
+
+  .speedy_mem.data :
+  {
+    . = ALIGN(4);
+    _start_speedy_mem_data = .;
+    *(.speedy_mem.data)
+    . = ALIGN(4);
+    _end_speedy_mem_data = .;
+  } >RAM AT> FLASH
+
+  _load_start_speedy_mem_data = LOADADDR(.speedy_mem.data);
+
+  /* This section is shared between the cores, the content should match and
+   * the address is as well. The values are initialized by the M7 core. H
+   */
+  .shared.bss (NOLOAD) :
+  {
+    . = ALIGN(_mpu_shared_size);
+    _start_shared = .;
+    _start_shared_bss = .;
+    *(.shared.bss)
+    . = ALIGN(4);
+    _end_shared_bss = .;
+  } >RAM_D3
+
+  .shared.data :
+  {
+    . = ALIGN(4);
+    _start_shared_data = .;
+    *(.shared.data)
+    . = ALIGN(4);
+    _end_shared_data = .;
+    _end_shared = .;
+  } >RAM_D3 AT> FLASH
+
+  _load_start_shared_data = LOADADDR(.shared.data);
+  ASSERT(_end_shared - _start_shared < _mpu_shared_size, "error: Shared section longer than configured MPU size")
+  . = _start_shared + _mpu_shared_size;
+
+  .non_cacheable.bss (NOLOAD) :
+  {
+    . = ALIGN(_mpu_non_cacheable_size);
+    _start_non_cacheable = .;
+    _start_non_cacheable_bss = .;
+    *(.non_cacheable.bss)
+    . = ALIGN(4);
+    _end_non_cacheable_bss = .;
+  } >RAM
+
+  .non_cacheable.data :
+  {
+    . = ALIGN(4);
+    _start_non_cacheable_data = .;
+    *(.non_cacheable.data)
+    . = ALIGN(4);
+    _end_non_cacheable_data = .;
+    _end_non_cacheable = .;
+  } >RAM AT> FLASH
+
+  _load_start_non_cacheable_data = LOADADDR(.non_cacheable.data);
+  ASSERT(_end_non_cacheable - _start_non_cacheable < _mpu_non_cacheable_size, "error: Non-cacheable section longer than configured MPU size")
+  . = _start_non_cacheable + _mpu_non_cacheable_size;
+
+  /* END OF CUSTOM SECTIONS ============================================ */
+  /* IMPORTANT: if the size of this section is not configured right, then it will grow into the next section, so it is advisable to locate this to the end of the RAM (last of the sections) */
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -158,46 +234,6 @@ SECTIONS
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
   } >RAM
-
-  _load_start_shared_data = LOADADDR(.shared.data);
-  _load_end_shared_data = LOADADDR(.shared.data) + SIZEOF(.shared.data);
-  .shared.data :
-  {
-    . = ALIGN(4);
-    _start_shared_data = .;
-    *(.shared.data)
-    . = ALIGN(4);
-    _end_shared_data = .;
-  } > RAM_D3 AT > FLASH
-
-  .shared.bss :
-  {
-    . = ALIGN(4);
-    _start_shared_bss = .;
-    *(.shared.data)
-    . = ALIGN(4);
-    _end_shared_bss = .;
-  } > RAM_D3
-
-  _load_start_non_cacheable_data = LOADADDR(.non_cacheable.data);
-  _load_end_non_cacheable_data = LOADADDR(.non_cacheable.data) + SIZEOF(.non_cacheable.data);
-  .non_cacheable.data :
-  {
-    . = ALIGN(4);
-    _start_non_cacheable_data = .;
-    *(.non_cacheable.data)
-    . = ALIGN(4);
-    _end_non_cacheable_data = .;
-  } > RAM AT > FLASH
-
-  .non_cacheable.bss :
-  {
-    . = ALIGN(4);
-    _start_non_cacheable_bss = .;
-    *(.non_cacheable.bss)
-    . = ALIGN(4);
-    _end_non_cacheable_bss = .;
-  } > RAM
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

@@ -19,7 +19,8 @@
         "example_wave.h": "c",
         "semphr.h": "c",
         "macros.h": "c",
-        "random": "c"
+        "random": "c",
+        "stm32h7xx_hal_conf.h": "c"
     },
     "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb",
     "cortex-debug.variableUseNaturalFormat": false

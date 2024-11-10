@@ -11,6 +11,7 @@
 #include "preprocess_mfcc.h"
 #include "semphr.h"
 #include "wave_provisioner.h"
+#include "custom_sections.h"
 
 #define IMPLEMENTATION_OPTION 3
 SemaphoreHandle_t wave_ready_semaphore = NULL;

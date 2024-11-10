@@ -686,3 +686,39 @@ BENCHMARK (min, mean, max)
 q15 preprocessing with optimized q15 quantization
 todo: so far this gives incorrect output, debug is needed
 I might not do this, the q15 preproc is practically the same speed, the quantization is only a small fraction of this anyway. Also the naive way is probably almost as fast.
+
+#### Shared, non_cacheable, speedy section
+
+Added several sections into the linker script. They all serve different purposes. The shared section can be used for communication between the cores, it should have a configured MPU with the shared property. The non_cacheable section can be used for the DMA buffers, so that invalidation is not required. The speedy sectoin is set to DTCM, which can be a little bit faster than the cached memory. In this case it only helped around 1%.
+
+After moving the model data and the allocation buffer of tflm to the speedy mem, the execution is a few percent faster:
+
+```txt
+BENCHMARK (min, mean, max)
+[task] before preproc: 0.000092, 0.000108, 0.000117
+[task] preproc: 6.819450, 7.943692, 8.252450
+[task] quantize: 0.030683, 0.031125, 0.033033
+[task][run] run before invoke: 0.001350, 0.001467, 0.001542
+[task][run] invoke: 13.404592, 13.405554, 13.406983
+[task][run] after invoke: 0.000475, 0.000504, 0.000533
+[task] postproc: 0.000392, 0.000417, 0.000450
+[task] wave proc done: 0.022508, 0.024013, 0.025158
+[task] full runtime: 22.132433, 23.214828, 23.506817
+MAX possible measruement: 17895.697266
+```
+
+Setting up the sections has a few steps. First they have to be written inside the linker script. There was a heap section, which has a size configured to check if the data fits, but I don't usually configure this, as the application changed quickly. This section always grows, and if it can't fit, then it grows into the secitons following it. This caused the my test to print wrong values. If the custom sections are allocated before this, then no error occurs.
+
+Also some startup code has to be written, which initializes these sections, copies the initial values in case of `.data`, and initializes in case of `.bss`.
+
+The shared section is configured to be shareable between the cores. Assertion should be added that it is at the same place on both cores. Practically at the start of D3 RAM. The sectoins are checked if they fit in the assumed mpu size.
+
+The non-cacheable section uses normal memory that is not cacheable.
+
+There is another section that coveres areas that are not inside the defualt memory map, and prohibites all access on them.
+
+#### MPU configuration
+
+The configured regions have a priority, 0 is the lowest, 15 is the highest, so e.g. new memory can be added as an exception from the default region that covers all default addresses mentioned in the previous section.
+
+The TEX bit is only there to provide further information, usign it allows to configure the cache type, so if it should be write-back and write-allocate. Otherwise device and strictly-ordered memories can be set up.
