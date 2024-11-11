@@ -30,6 +30,7 @@
 #include "usb_otg.h"
 #include "mpu.h"
 #include "custom_sections.h"
+#include "app_config.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -140,13 +141,19 @@ int main(void) {
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_DMA_Init();
 
   MX_GPIO_Init();
 
-  MX_USART3_UART_Init();
+  if (M7_INITIALIZES_UART3) {
+    MX_DMA_Init();
+    MX_USART3_UART_Init();
+  }
+  else {
+    setup_USART3_Handle();
+  }
   // MX_CRC_Init();
   MX_TIM2_Init();
+  // todo: remove tim3, it was used for serial test
   MX_TIM3_Init();
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */

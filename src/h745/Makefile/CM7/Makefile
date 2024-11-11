@@ -70,7 +70,7 @@ cxx_sources := $(shell (cd $(root_dir) && find $(cxx_src_dirs) -name *.cc))
 asm_sources :=  \
 $(root_dir)/Makefile/CM7/startup_stm32h745xx_CM7.s
 
-asmm_sources := 
+asmm_sources :=
 
 include ../binaries.mk
 
@@ -95,6 +95,7 @@ as_includes :=
 
 c_includes :=  \
 -I$(root_dir)/CM7/Core/Inc \
+-I$(root_dir)/Common/Inc \
 -I$(root_dir)/Drivers/STM32H7xx_HAL_Driver/Inc \
 -I$(root_dir)/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy \
 -I$(root_dir)/Drivers/CMSIS/Device/ST/STM32H7xx/Include \
@@ -198,7 +199,7 @@ include ../build_rules.mk
 #######################################
 clean:
 	-rm -fR $(base_build_dir)
-  
+
 #######################################
 # dependencies
 #######################################

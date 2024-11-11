@@ -751,3 +751,9 @@ Invalidate is fast, and using the MPU slows down all other operations, which cau
 #### Top and bottom half of interrupt handling
 
 Using deferred function call in FreeRTOS. The software timer daemon task executes the fucntions. It doesn't result in faster executtion, but less time is spent in interrupt handlers, which is desirable in case of more parallel tasks and so in embedded systems in general.
+
+#### Performing the same actions on M4
+
+It start with copying the provisioning part. One of the cores initializes the UART, this core cna use the reception with DMA. The other core only sets up the UART handle, thus can only send (no DMA).
+
+After this the preprocessing can be performed on M4. Then the benchmark should show the difference between performance. The network should not be run here, as the earlier results show that it is not sensible to run on this slower core (3 times slower).

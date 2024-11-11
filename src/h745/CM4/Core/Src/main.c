@@ -21,6 +21,8 @@
 #include "crc.h"
 #include "usart.h"
 #include "tim.h"
+#include "dma.h"
+#include "app_config.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -98,7 +100,14 @@ int main(void)
   HAL_Init();
   setup_TIM2_Handle();
   // MX_USART3_UART_Init();
-  setup_USART3_Handle();
+  if(M7_INITIALIZES_UART3) {
+    setup_USART3_Handle();
+  }
+  else {
+    MX_DMA_Init();
+    MX_USART3_UART_Init();
+  }
+
   // todo: only when measuring m4, for shared semaphore and callbacks
   MX_CRC_Init();
 
@@ -126,10 +135,10 @@ int main(void)
 
   /* Init scheduler */
   /* Call init function for freertos objects (in cmsis_os2.c) */
-  // MX_FREERTOS_Init();
+  MX_FREERTOS_Init();
 
   /* Start scheduler */
-	// vTaskStartScheduler();
+	vTaskStartScheduler();
 
   /* We should never get here as control is now taken by the scheduler */
 

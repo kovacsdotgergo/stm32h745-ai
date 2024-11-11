@@ -20,7 +20,8 @@
         "semphr.h": "c",
         "macros.h": "c",
         "random": "c",
-        "stm32h7xx_hal_conf.h": "c"
+        "stm32h7xx_hal_conf.h": "c",
+        "dma.h": "c"
     },
     "cortex-debug.gdbPath": "/usr/bin/arm-none-eabi-gdb",
     "cortex-debug.variableUseNaturalFormat": false

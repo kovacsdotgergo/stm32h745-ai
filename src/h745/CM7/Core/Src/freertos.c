@@ -128,7 +128,7 @@ void StartAiTask(void *pvParameters);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
-// static TaskHandle_t defaultTask = NULL;
+static TaskHandle_t defaultTask = NULL;
 static TaskHandle_t test_task = NULL;
 
 /**
@@ -137,20 +137,15 @@ static TaskHandle_t test_task = NULL;
  * @retval None
  */
 void MX_FREERTOS_Init(void) {
+  xTaskCreate(StartDefaultTask, "DefaultTaskM7Core",
+              2 * configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1,
+              &defaultTask);
+
+  // size_t stack_size_words = 8096 + 4096;
   // xTaskCreate(
-  //     StartDefaultTask,             /* Function that implements the task. */
-  //     "DefaultTaskM7Core",          /* Task name, for debugging only. */
-  //     2 * configMINIMAL_STACK_SIZE, /* Size of stack (in words) to allocate
-  //     for
-  //                                      this task. */
-  //     NULL,                         /* Task parameter, not used in this case.
-  //     */ tskIDLE_PRIORITY + 1,         /* Task priority. */ &defaultTask); /*
-  //     Task handle, used to unblock task from interrupt. */
-  size_t stack_size_words = 8096 + 4096;
-  xTaskCreate(
-      test_input_task, "test_uart_task",
-      stack_size_words,  // mallocks the required amount in words (4 bytes)
-      NULL, tskIDLE_PRIORITY + 2, &test_task);
+  //     test_input_task, "test_uart_task",
+  //     stack_size_words,  // mallocks the required amount in words (4 bytes)
+  //     NULL, tskIDLE_PRIORITY + 2, &test_task);
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -167,7 +162,7 @@ void StartDefaultTask(void *pvParameters) {
   for (;;) {
     HAL_GPIO_TogglePin(LD_GREEN_GPIO, LD_GREEN_GPIO_PIN);
     uint32_t st = __HAL_TIM_GET_COUNTER(&htim2);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
     uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
     printf("cm7: %f\r\n", (double)((float)(end - st) / getTIM2Freq()));
   }

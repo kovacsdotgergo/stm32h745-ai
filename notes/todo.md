@@ -125,3 +125,12 @@
 * streaming preprocessing
 * add some kind of filter to postprocessing (matched filter)
 * cube_ai
+
+todo:
+* provisioning
+  * x move config to common
+  * x check c and h
+  * x move benchmark to common, for now use one for both cores
+* preprocessing
+* net
+* check if m7 is still running the same way

@@ -38,6 +38,7 @@ extern DMA_HandleTypeDef hdma_usart3_rx;
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
+void setup_USART3_Handle(void);
 
 void MX_USART3_UART_Init(void);
 

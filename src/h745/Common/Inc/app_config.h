@@ -1,0 +1,9 @@
+#ifndef APP_CONFIG_H
+#define APP_CONFIG_H
+
+#define M7_INITIALIZES_UART3 0
+#define M7_PROVISIONING 0
+#define M7_PREPROCESSING 0
+#define M7_RUNNING_NET 0
+
+#endif // APP_CONFIG_H

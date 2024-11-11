@@ -27,6 +27,7 @@
 #include "task.h"
 #include "tim.h"
 #include "usart.h"
+#include "ai_task.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -120,7 +121,6 @@ void vApplicationGetTimerTaskMemory(StaticTask_t **ppxTimerTaskTCBBuffer,
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *pvParamters);
-void StartAiTask(void *pvParamters);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -141,7 +141,8 @@ void MX_FREERTOS_Init(void) {
   //     tskIDLE_PRIORITY + 1,         /* Task priority. */
   //     &defaultTask); /* Task handle, used to unblock task from interrupt. */
 
-  xTaskCreate(StartAiTask, "AiTask", 4 * 4096, NULL,
+  size_t stack_size_words = 8096 + 4096;
+  xTaskCreate(ai_task, "AiTask", stack_size_words, NULL,
               tskIDLE_PRIORITY + 2, &aiTask);
 }
 
@@ -166,17 +167,6 @@ void StartDefaultTask(void *pvParameters) {
   /* USER CODE END StartDefaultTask */
 }
 
-void StartAiTask(void *pvParameters)
-{
-  ai_model_init();
-  while (1)
-  {
-    // Wait before doing it again
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-    ai_model_run();
-    vTaskDelay(9000 / portTICK_PERIOD_MS);
-  }
-}
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 

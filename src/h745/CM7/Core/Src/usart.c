@@ -21,6 +21,23 @@
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_rx;
 
+/* USART3 init function */
+void setup_USART3_Handle(void) {
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 460800;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  // to not return error on transmit
+  huart3.gState = HAL_UART_STATE_READY;
+}
+
 void MX_USART3_UART_Init(void)
 {
   huart3.Instance = USART3;
