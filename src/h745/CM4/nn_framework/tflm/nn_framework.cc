@@ -99,7 +99,7 @@ TfLiteStatus LoadFloatModelAndPerformInference(const void* p_model) {
 
   // Check if the predicted output is within a small range of the
   // expected output
-  float epsilon = 0.05f;
+  // float epsilon = 0.05f;
   float golden_inputs[] = {0.0F, 0.5F, 1.0F, 3.0F, 5.0F};
   constexpr int kNumTestValues =
       sizeof(golden_inputs) / sizeof(golden_inputs[0]);

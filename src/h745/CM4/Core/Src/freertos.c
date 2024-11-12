@@ -162,7 +162,7 @@ void StartDefaultTask(void *pvParameters) {
     uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
     vTaskDelay(500 / portTICK_PERIOD_MS);
     uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
-    printf("cm4: %f\r\n", (float)(end - start) / getTIM2Freq());
+    printf("cm4: %f\r\n", (double)(end - start) / getTIM2Freq());
   }
   /* USER CODE END StartDefaultTask */
 }

@@ -43,6 +43,7 @@
         ],
         "common_cm4_includes": [
             "${workspaceRoot}/src/h745/CM4/Core/Inc",
+            "${workspaceRoot}/src/h745/Common/Inc",
             "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc",
             "${workspaceRoot}/src/h745/Drivers/STM32H7xx_HAL_Driver/Inc/Legacy",
             "${workspaceRoot}/src/h745/Drivers/CMSIS/Device/ST/STM32H7xx/Include",

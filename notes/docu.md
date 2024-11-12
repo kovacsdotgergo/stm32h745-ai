@@ -756,4 +756,45 @@ Using deferred function call in FreeRTOS. The software timer daemon task execute
 
 It start with copying the provisioning part. One of the cores initializes the UART, this core cna use the reception with DMA. The other core only sets up the UART handle, thus can only send (no DMA).
 
-After this the preprocessing can be performed on M4. Then the benchmark should show the difference between performance. The network should not be run here, as the earlier results show that it is not sensible to run on this slower core (3 times slower).
+After this the preprocessing can be performed on M4. Then the benchmark should show the difference between performance. The network should not be run here, as the earlier results show that it is not sensible to run on this slower core (3 times slower). The preprocessing is similarly 4 times slower.
+
+__M4 measurements:__
+
+Implemenetation option 3 (q15 preprocessing and naive quant)
+
+```txt
+BENCHMARK (min, mean, max) (in \[ms])
+[irq] actual interrupt level: 0.002200, 0.002200, 0.002200
+[irq] pend to bottom half begin: 0.006250, 0.006250, 0.006258
+[irq] invalidate: 0.000192, 0.000192, 0.000192
+[irq] memcpy: 0.024192, 0.025458, 0.026725
+[irq] callback to task: 0.507308, 0.607550, 0.771258
+[task] before preproc: 0.000233, 0.000233, 0.000233
+[task] preproc: 23.546265, 25.713312, 27.028933
+[task] quantize: 0.107200, 0.107358, 0.108067
+[task] wave proc done: 0.053317, 0.053367, 0.054167
+[task] full runtime (not running net): 23.707016, 25.874273, 27.189684
+MAX possible measruement: 17895.697266
+```
+
+Implementation option 1 (f32 preprocessing with naive quant)
+
+```txt
+[task] preproc: 25.300066, 25.551458, 25.861557
+[task] quantize: 0.053508, 0.053562, 0.054400
+[task] full runtime (not running net): 25.407091, 25.658646, 25.968582
+```
+
+Implementation option 0 (f32 preprocessing with dsp quantization)
+
+```txt
+[task] preproc: 25.299967, 25.551275, 25.860550
+[task] quantize: 0.049533, 0.049692, 0.050408
+[task] full runtime (not running net): 25.403051, 25.654629, 25.964468
+```
+
+Couldn't measure the last implementation option, because the q31 code locks up the core in release mode. I didn't check the implementation, because on the other core this was the slowest option also, and because the float implementation is even faster than the quantized. It is much simpler, so I will be using that.
+
+#### Communication
+
+My previous calculation is aroun 80 us latency for sending the complete mfcc between the cores. It is less than 1 percent, not worth the optimization effort. So I will implement the simple FreeRTOS supported AMP communication (using Message Buffers).
