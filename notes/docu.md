@@ -798,3 +798,19 @@ Couldn't measure the last implementation option, because the q31 code locks up t
 #### Communication
 
 My previous calculation is aroun 80 us latency for sending the complete mfcc between the cores. It is less than 1 percent, not worth the optimization effort. So I will implement the simple FreeRTOS supported AMP communication (using Message Buffers).
+
+##### Alignment of messages
+
+Although I didn't find anything about this in the documentation, but misaligned inputs can cause problems when usign message buffers. The variable length messages can be differently aligned than the outptu, which causes a misaligned access error. This is caused by a memcpy call.
+
+The exact error happened, when a message was missed, so on the next read the message was starting from the end of the first message. (Not sure why it didn't read the first message first). Becase the buffer sent was not of size 4*x bytes (490 uint16_t values), the next message was not properly aligned. The output wasn't explicitly set to be 4 byte aligned, but it happened to be located this way.
+
+Memcpy should work with unaligned pointers, the newlib source can also be examined.
+
+##### Sorting the sections
+
+The shared sectoin should hold all the shared values on the same addresses, and they should all have the same definintion on both sides. This can be manually specified, which can be problematic to maintain and change. Also the addressess can't hold other variables located by the linker.
+
+The linker script has to be edited to achive correct layout when not specifying adresses manually. This allows to make sure that sections allocated manually dont' overlap with automatic sectoins. If the section is set manually in an attribute, then no section is automatically added for each variable when using `-fdata-sections`. Also the sorting functions in linker scripts don't sort the data one-by-one, but only the subsectoins.
+
+In this case the lauout of the shared sectoin differed in optimized and debug code. The release code had to be instrumented to check teh casue of the fault and lcoate the bug without the debugger. Hard faults can also be checked in C code by extracting the stack frame.

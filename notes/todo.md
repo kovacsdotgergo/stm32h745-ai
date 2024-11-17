@@ -116,8 +116,8 @@
   * x set up shared and non cacheable sections
   * x top and bottom half of interrupt, without invalidation -> invalidation is faster, so I kept it
 * two core
-  * copyt everyhting to m4
-  * benchmark the same way
+  * copyt everyhting to m4 -> net not copied
+  * x benchmark the same way
   * copy the freertos ipc
     * add shared section
   * split the task at several places (look up notes about what to optimize here: least copy, latency, runtime on each core)
@@ -131,6 +131,9 @@ todo:
   * x move config to common
   * x check c and h
   * x move benchmark to common, for now use one for both cores
-* preprocessing
+* x preprocessing
 * net
-* check if m7 is still running the same way
+* x check if m7 is still running the same way
+* measure comm
+* split after preproc
+* stream preproc

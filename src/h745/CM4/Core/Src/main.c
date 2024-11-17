@@ -23,6 +23,7 @@
 #include "tim.h"
 #include "dma.h"
 #include "app_config.h"
+#include "ipc.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -108,6 +109,7 @@ int main(void)
     MX_USART3_UART_Init();
   }
 
+  ipc_mb_init();
   // todo: only when measuring m4, for shared semaphore and callbacks
   MX_CRC_Init();
 

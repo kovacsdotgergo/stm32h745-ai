@@ -132,14 +132,14 @@ static TaskHandle_t aiTask = NULL;
  * @retval None
  */
 void MX_FREERTOS_Init(void) {
-  // xTaskCreate(
-  //     StartDefaultTask,             /* Function that implements the task. */
-  //     "DefaultTaskM7Core",          /* Task name, for debugging only. */
-  //     2 * configMINIMAL_STACK_SIZE, /* Size of stack (in words) to allocate for
-  //                                      this task. */
-  //     NULL,                         /* Task parameter, not used in this case. */
-  //     tskIDLE_PRIORITY + 1,         /* Task priority. */
-  //     &defaultTask); /* Task handle, used to unblock task from interrupt. */
+  xTaskCreate(
+      StartDefaultTask,             /* Function that implements the task. */
+      "DefaultTaskM7Core",          /* Task name, for debugging only. */
+      2 * configMINIMAL_STACK_SIZE, /* Size of stack (in words) to allocate for
+                                       this task. */
+      NULL,                         /* Task parameter, not used in this case. */
+      tskIDLE_PRIORITY + 1,         /* Task priority. */
+      &defaultTask); /* Task handle, used to unblock task from interrupt. */
 
   size_t stack_size_words = 8096 + 4096;
   xTaskCreate(ai_task, "AiTask", stack_size_words, NULL,
@@ -159,10 +159,8 @@ void StartDefaultTask(void *pvParameters) {
   /* Infinite loop */
   for (;;) {
     HAL_GPIO_TogglePin(LD_RED_GPIO, LD_RED_GPIO_PIN);
-    uint32_t start = __HAL_TIM_GET_COUNTER(&htim2);
     vTaskDelay(500 / portTICK_PERIOD_MS);
-    uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
-    printf("cm4: %f\r\n", (double)(end - start) / getTIM2Freq());
+    // printf("cm4: %f\r\n", (double)(end - start) / getTIM2Freq());
   }
   /* USER CODE END StartDefaultTask */
 }

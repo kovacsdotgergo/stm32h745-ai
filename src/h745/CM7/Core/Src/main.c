@@ -31,6 +31,7 @@
 #include "mpu.h"
 #include "custom_sections.h"
 #include "app_config.h"
+#include "ipc.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -151,11 +152,15 @@ int main(void) {
   else {
     setup_USART3_Handle();
   }
+
   // MX_CRC_Init();
   MX_TIM2_Init();
   // todo: remove tim3, it was used for serial test
   MX_TIM3_Init();
+  HAL_GPIO_WritePin(LD_GREEN_GPIO, LD_GREEN_GPIO_PIN, GPIO_PIN_SET);
   MX_USB_OTG_FS_PCD_Init();
+
+  ipc_mb_init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */

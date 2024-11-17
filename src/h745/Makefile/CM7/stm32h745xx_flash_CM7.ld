@@ -40,6 +40,9 @@ _estack = 0x24080000;    /* end of RAM */
 _Min_Heap_Size = 0x4000;      /* required amount of heap  */
 _Min_Stack_Size = 0x800; /* required amount of stack */
 _mpu_shared_size = 4K;
+/* MPU requirement to align to size */
+_shared_align = _mpu_shared_size;
+_shared_size = _mpu_shared_size;
 _mpu_non_cacheable_size = 16K;
 
 /* Specify the memory areas */
@@ -151,6 +154,7 @@ SECTIONS
   } >RAM
 
   /* CUSTOM SECTIONS =================================================== */
+
   .speedy_mem.bss (NOLOAD) :
   {
     . = ALIGN(4);
@@ -171,15 +175,16 @@ SECTIONS
 
   _load_start_speedy_mem_data = LOADADDR(.speedy_mem.data);
 
+
   /* This section is shared between the cores, the content should match and
-   * the address is as well. The values are initialized by the M7 core. H
+   * the address is well. The values are initialized by the M7 core.
    */
   .shared.bss (NOLOAD) :
   {
-    . = ALIGN(_mpu_shared_size);
+    . = ALIGN(_shared_align);
     _start_shared = .;
     _start_shared_bss = .;
-    *(.shared.bss)
+    KEEP(*(SORT_BY_NAME(.shared.bss*)))
     . = ALIGN(4);
     _end_shared_bss = .;
   } >RAM_D3
@@ -188,15 +193,17 @@ SECTIONS
   {
     . = ALIGN(4);
     _start_shared_data = .;
-    *(.shared.data)
+    KEEP(*(SORT_BY_NAME(.shared.data*)))
     . = ALIGN(4);
     _end_shared_data = .;
     _end_shared = .;
   } >RAM_D3 AT> FLASH
 
   _load_start_shared_data = LOADADDR(.shared.data);
-  ASSERT(_end_shared - _start_shared < _mpu_shared_size, "error: Shared section longer than configured MPU size")
-  . = _start_shared + _mpu_shared_size;
+  ASSERT(_start_shared == 0x38000000, "error: Shared section should be at the same location in both linker scripts, please check this")
+  ASSERT(_end_shared - _start_shared < _shared_size, "error: Shared section longer than configured MPU size")
+  . = _start_shared + _shared_size;
+
 
   .non_cacheable.bss (NOLOAD) :
   {
@@ -223,6 +230,7 @@ SECTIONS
   . = _start_non_cacheable + _mpu_non_cacheable_size;
 
   /* END OF CUSTOM SECTIONS ============================================ */
+
   /* IMPORTANT: if the size of this section is not configured right, then it will grow into the next section, so it is advisable to locate this to the end of the RAM (last of the sections) */
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :

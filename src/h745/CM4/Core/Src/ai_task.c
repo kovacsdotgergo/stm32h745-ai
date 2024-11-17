@@ -12,17 +12,19 @@
 #include <stdint.h>
 
 #include "app_config.h"
+#include "ipc.h"
 #include "preprocess_mfcc.h"
 #include "semphr.h"
 #include "wave_provisioner.h"
 // #include "custom_sections.h"
 
-#define IMPLEMENTATION_OPTION 2
+#define IMPLEMENTATION_OPTION 3
 SemaphoreHandle_t wave_ready_semaphore = NULL;
 static float32_t mfcc_f32[MFCC_TOTAL_LENGTH];
 static q31_t mfcc_q31[MFCC_TOTAL_LENGTH];
 static q15_t mfcc_q15[MFCC_TOTAL_LENGTH];
-static int8_t mfcc[MFCC_TOTAL_LENGTH];
+// using a multiple of 4 byte to have aligned messages in message buffer used for sending
+static int8_t mfcc[BUFFER_SIZE_4_BYTE_CEIL(MFCC_TOTAL_LENGTH)];
 static volatile int16_t *volatile waveform = NULL;
 
 void notify_ai_task_callback(volatile int16_t *wave) {
@@ -109,8 +111,8 @@ void ai_task(void *pvParameters) {
   while (1) {
     // todo: add error handler if uart takes longer than the period
     if (xSemaphoreTake(wave_ready_semaphore, portMAX_DELAY) == pdTRUE) {
-      printf("Received: %d, %d, %d, %d\r\n", waveform[0], waveform[1],
-             waveform[2], waveform[3]);
+      //       printf("Received: %d, %d, %d, %d\r\n", waveform[0], waveform[1],
+      //              waveform[2], waveform[3]);
       benchmark_set_point(TASK_BEGIN);
       //       // printf("First few: %d, %d, %d\r\n", waveform[0], waveform[1],
       //       // waveform[2]);
@@ -161,6 +163,8 @@ void ai_task(void *pvParameters) {
       //       benchmark_set_point(TASK_LABLE_PRINT_BEGIN);
       //       assert(argmax_idx < POSTPROCESS_LABEL_NUM);
       //       printf("%s\r\n", postprocess_label_to_str[argmax_idx]);
+      // todo benchmark
+      xMessageBufferSend(shared_data_mb, mfcc, sizeof(mfcc), portMAX_DELAY);
       benchmark_set_point(TASK_WAVE_PROC_DONE_BEGIN);
       wave_processing_done();
 

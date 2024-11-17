@@ -141,11 +141,11 @@ void MX_FREERTOS_Init(void) {
               2 * configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1,
               &defaultTask);
 
-  // size_t stack_size_words = 8096 + 4096;
-  // xTaskCreate(
-  //     test_input_task, "test_uart_task",
-  //     stack_size_words,  // mallocks the required amount in words (4 bytes)
-  //     NULL, tskIDLE_PRIORITY + 2, &test_task);
+  size_t stack_size_words = 8096 + 4096;
+  xTaskCreate(
+      test_input_task, "test_uart_task",
+      stack_size_words,  // mallocks the required amount in words (4 bytes)
+      NULL, tskIDLE_PRIORITY + 2, &test_task);
 }
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -160,11 +160,8 @@ void StartDefaultTask(void *pvParameters) {
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
   for (;;) {
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
     HAL_GPIO_TogglePin(LD_GREEN_GPIO, LD_GREEN_GPIO_PIN);
-    uint32_t st = __HAL_TIM_GET_COUNTER(&htim2);
-    vTaskDelay(2000 / portTICK_PERIOD_MS);
-    uint32_t end = __HAL_TIM_GET_COUNTER(&htim2);
-    printf("cm7: %f\r\n", (double)((float)(end - st) / getTIM2Freq()));
   }
   /* USER CODE END StartDefaultTask */
 }

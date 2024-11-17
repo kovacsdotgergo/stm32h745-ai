@@ -23,6 +23,7 @@
 #include "usart.h"
 #include "tim.h"
 #include "stm32h7xx_hal_tim.h"
+#include <stdio.h> // todo: only for debug
 
 #include "stm32h7xx_it.h"
 /* Private includes ----------------------------------------------------------*/
@@ -85,18 +86,48 @@ void NMI_Handler(void)
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
-/**
-  * @brief This function handles Hard fault interrupt.
-  */
-void HardFault_Handler(void)
-{
-  /* USER CODE BEGIN HardFault_IRQn 0 */
+struct __attribute__((packed)) context_stack_frame {
+  uint32_t r0;
+  uint32_t r1;
+  uint32_t r2;
+  uint32_t r3;
+  uint32_t r12;
+  uint32_t lr;
+  uint32_t return_address;
+  uint32_t xpsr;
+};
 
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
+/**
+ * @brief This function handles Hard fault interrupt.
+ */
+void HardFault_Handler(void) {
+  /* USER CODE BEGIN HardFault_IRQn 0 */
+  __asm volatile(
+      "tst lr, #4 \n"
+      "ite eq \n"
+      "mrseq r0, msp \n"
+      "mrsne r0, psp \n"
+      "b my_fault_handler_c \n");
+}
+
+void my_fault_handler_c(struct context_stack_frame *frame) {
+  printf("[DEBUG] hard fault\r\n");
+
+  printf("[DEBUG] entire cpsr: %lx\r\n", *(uint32_t *)0xE000ED28);
+  printf("[DEBUG] usage fault: %x\r\n", *(uint16_t *)0xE000ED2A);
+  printf("[DEBUG] bus fault: %x\r\n", *(uint8_t *)0xE000ED29);
+  printf("[DEBUG] in case of precise bus fault (address): %lx\r\n",
+         *(uint32_t *)0xE000ED38);
+  printf("[DEBUG] memmanage fault: %x\r\n", *(uint8_t *)0xE000ED28);
+
+  printf("[DEBUG] r0: %lx\r\n", frame->r0);
+  printf("[DEBUG] r1: %lx\r\n", frame->r1);
+  printf("[DEBUG] r2: %lx\r\n", frame->r2);
+  printf("[DEBUG] r3: %lx\r\n", frame->r3);
+  printf("[DEBUG] r12: %lx\r\n", frame->r12);
+  printf("[DEBUG] lr: %lx\r\n", frame->lr);
+  printf("[DEBUG] return address: %lx\r\n", frame->return_address);
+  while (1) {
   }
 }
 

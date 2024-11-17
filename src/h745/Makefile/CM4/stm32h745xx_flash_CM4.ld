@@ -39,12 +39,16 @@ _estack = 0x10048000;    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
 _Min_Heap_Size = 0x800;      /* required amount of heap  */
 _Min_Stack_Size = 0x800; /* required amount of stack */
+/* The alignment is M7 MPU requirement */
+_shared_size = 4K;
+_shared_align = _shared_size;
 
 /* Specify the memory areas */
 MEMORY
 {
 FLASH (rx)      : ORIGIN = 0x08100000, LENGTH = 1024K
 RAM (xrw)      : ORIGIN = 0x10000000, LENGTH = 288K
+RAM_D3 (xrw)   : ORIGIN = 0x38000000, LENGTH = 64K
 }
 
 /* Define output sections */
@@ -116,7 +120,7 @@ SECTIONS
   _sidata = LOADADDR(.data);
 
   /* Initialized data sections goes into RAM, load LMA copy after code */
-  .data : 
+  .data :
   {
     . = ALIGN(4);
     _sdata = .;        /* create a global symbol at data start */
@@ -127,7 +131,7 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
-  
+
   /* Uninitialized data section */
   . = ALIGN(4);
   .bss :
@@ -144,6 +148,38 @@ SECTIONS
     __bss_end__ = _ebss;
   } >RAM
 
+  /* CUSTOM SECTIONS =================================================== */
+
+  /* This section is shared between the cores, the content should match and
+   * the address is well. The values are initialized by the M7 core.
+   */
+  .shared.bss (NOLOAD) :
+  {
+    . = ALIGN(_shared_align);
+    _start_shared = .;
+    _start_shared_bss = .;
+    KEEP(*(SORT_BY_NAME(.shared.bss*)))
+    . = ALIGN(4);
+    _end_shared_bss = .;
+  } >RAM_D3
+
+  .shared.data :
+  {
+    . = ALIGN(4);
+    _start_shared_data = .;
+    KEEP(*(SORT_BY_NAME(.shared.data*)))
+    . = ALIGN(4);
+    _end_shared_data = .;
+    _end_shared = .;
+  } >RAM_D3 AT> FLASH
+
+  _load_start_shared_data = LOADADDR(.shared.data);
+  ASSERT(_start_shared == 0x38000000, "error: Shared section should be at the same location in both linker scripts, please check this")
+  ASSERT(_end_shared - _start_shared < _shared_size, "error: Shared section longer than configured MPU size")
+  . = _start_shared + _shared_size;
+
+  /* END OF CUSTOM SECTIONS ============================================ */
+
   /* User_heap_stack section, used to check that there is enough RAM left */
   ._user_heap_stack :
   {
@@ -155,7 +191,7 @@ SECTIONS
     . = ALIGN(8);
   } >RAM
 
-  
+
 
   /* Remove information from the standard libraries */
   /DISCARD/ :
@@ -167,5 +203,3 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 }
-
-
